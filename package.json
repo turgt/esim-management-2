@@ -1,21 +1,14 @@
 {
-  "name": "esim-management",
+  "name": "zendit-simple-ui",
   "version": "1.0.0",
-  "main": "src/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "migrate": "node migrations/init.js"
+    "start": "node server.js"
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
     "dotenv": "^16.3.1",
-    "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.2",
-    "pg": "^8.11.3",
-    "axios": "^1.6.7"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.0"
+    "express": "^4.18.2",
+    "@zenditplatform/zendit-sdk": "^1.2.0",
+    "uuid": "^9.0.1"
   }
 }
