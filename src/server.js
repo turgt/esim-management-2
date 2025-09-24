@@ -1,9 +1,13 @@
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const pool = require('./config/database');
 
 const app = express();
 app.use(express.json());
+
+// ✅ public klasörünü static olarak servis et
+app.use(express.static(path.join(__dirname, '../public')));
 
 app.get('/health', (req,res)=>res.json({status:'ok'}));
 
