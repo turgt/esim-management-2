@@ -1,0 +1,32 @@
+<%- include('partials/header', { title: 'eSIM Offers' }) %>
+<h1>Offers (<%= country %>)</h1>
+
+<script>
+function priceToStr(obj) {
+  if (!obj) return '-';
+  const divisor = obj.currencyDivisor || 100;
+  const v = (obj.fixed ?? 0) / divisor;
+  return `${v.toFixed(2)} ${obj.currency || ''}`;
+}
+</script>
+
+<% if (!offers || !offers.list || offers.list.length === 0) { %>
+  <p>Hiç offer bulunamadı.</p>
+<% } else { %>
+  <div class="grid">
+  <% offers.list.forEach((o) => { %>
+    <div class="card">
+      <h3><%= o.brandName || o.brand %> — <%= o.shortNotes || o.notes || '' %></h3>
+      <p><strong>Offer ID:</strong> <code><%= o.offerId %></code></p>
+      <p><strong>Süre:</strong> <%= o.durationDays %> gün · <strong>Veri:</strong> <%= o.dataUnlimited ? 'Sınırsız' : (o.dataGB + ' GB') %></p>
+      <p><strong>Fiyat:</strong> <script>document.currentScript.insertAdjacentText('afterend', priceToStr(<%- JSON.stringify(o.price || {}) %>));</script></p>
+      <% if (o.notes) { %><details><summary>Detay</summary><p><%= o.notes %></p></details><% } %>
+      <form method="post" action="/purchase">
+        <input type="hidden" name="offerId" value="<%= o.offerId %>">
+        <button type="submit">Satın Al</button>
+      </form>
+    </div>
+  <% }) %>
+  </div>
+<% } %>
+<%- include('partials/footer') %>

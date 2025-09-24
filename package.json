@@ -1,14 +1,18 @@
 {
-  "name": "zendit-simple-ui",
-  "version": "1.0.0",
-  "main": "server.js",
+  "name": "zendit-esim-express",
+  "version": "0.1.1",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js"
   },
   "dependencies": {
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "@zenditplatform/zendit-sdk": "^1.2.0",
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "morgan": "^1.10.0",
     "uuid": "^9.0.1"
   }
 }
