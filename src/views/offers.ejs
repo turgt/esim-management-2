@@ -14,7 +14,7 @@ function priceToStr(obj) {
   <p>Hiç offer bulunamadı.</p>
 <% } else { %>
   <div class="grid">
-  <% offers.list.forEach((o) => { %>
+  <% offers.list.filter((o) => o.enabled).forEach((o) => { %>
     <div class="card">
       <h3><%= o.brandName || o.brand %> — <%= o.shortNotes || o.notes || '' %></h3>
       <p><strong>Offer ID:</strong> <code><%= o.offerId %></code></p>
