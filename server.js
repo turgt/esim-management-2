@@ -14,7 +14,7 @@ const zendit = new ZenditApi({
 
 app.get('/api/offers', async (req, res) => {
   try {
-    const offers = await zendit.esimOffersGet();
+    const offers = await zendit.esimOffersGet(10, 0, 'TR');
     res.json(offers);
   } catch (err) {
     console.error(err.response?.data || err.message);
