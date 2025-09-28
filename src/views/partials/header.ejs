@@ -1,6 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/public/styles.css">
+</head>
+<body>
+  <nav>
+    <% if (user) { %>
+      <span>Welcome, <%= user.username %></span> |
+      <a href="/offers">Offers</a> |
+      <a href="/purchases">My Purchases</a> |
+      <% if (user.isAdmin) { %>
+        <a href="/admin/users">Admin Panel</a> |
+      <% } %>
+      <a href="/auth/logout">Logout</a>
+    <% } else { %>
+      <a href="/auth/login">Login</a>
+    <% } %>
+  </nav>
   <hr>
-  <footer>
-    <p>&copy; <%= new Date().getFullYear() %> eSIM App</p>
-  </footer>
-</body>
-</html>
