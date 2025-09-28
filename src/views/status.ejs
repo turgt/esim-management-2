@@ -1,4 +1,82 @@
-<%- include('partials/header', {title: 'Purchase Status', user: locals.user}) %>
+<script>
+  // Auto-refresh for pending statuses
+  document.addEventListener('DOMContentLoaded', function() {
+    const currentStatus = '<%= status.status %>'.toLowerCase();
+    const isPending = ['pending', 'processing', 'installing'].includes(currentStatus);
+    
+    if (isPending) {
+      console.log('📡 Status is pending, setting up auto-refresh...');
+      
+      let refreshCount = 0;
+      const maxRefreshes = 10; // Maximum 10 refreshes (5 minutes)
+      
+      const refreshTimer = setInterval(() => {
+        refreshCount++;
+        
+        if (refreshCount >= maxRefreshes) {
+          clearInterval(refreshTimer);
+          console.log('⏰ Auto-refresh stopped after maximum attempts');
+          
+          // Show manual refresh button
+          const refreshBtn = document.querySelector('.btn-secondary');
+          if (refreshBtn) {
+            refreshBtn.style.background = '#fbbf24';
+            refreshBtn.style.color = '#92400e';
+            refreshBtn.innerHTML = '<span class="btn-icon">🔄</span> Manual Refresh Required';
+          }
+          return;
+        }
+        
+        console.log(`🔄 Auto-refreshing... (${refreshCount}/${maxRefreshes})`);
+        window.location.reload();
+        
+      }, 30000); // Refresh every 30 seconds
+      
+      // Show auto-refresh indicator
+      const statusActions = document.querySelector('.status-actions');
+      if (statusActions) {
+        const indicator = document.createElement('div');
+        indicator.className = 'auto-refresh-indicator';
+        indicator.style.cssText = `
+          text-align: center;
+          margin-top: 16px;
+          padding: 12px;
+          background: #fef3c7;
+          color: #92400e;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+        `;
+        indicator.innerHTML = `
+          <span style="animation: pulse 2s infinite;">⏳</span>
+          Auto-refreshing every 30 seconds... (${refreshCount}/${maxRefreshes})
+        `;
+        statusActions.after(indicator);
+        
+        // Update counter
+        setInterval(() => {
+          const counter = indicator.querySelector('span:last-child');
+          if (counter) {
+            counter.textContent = `Auto-refreshing every 30 seconds... (${refreshCount}/${maxRefreshes})`;
+          }
+        }, 1000);
+      }
+    }
+    
+    // Manual refresh button handler
+    const refreshBtn = document.querySelector('.btn-secondary');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', function() {
+        this.disabled = true;
+        this.innerHTML = '<span class="btn-icon">⏳</span> Refreshing...';
+        
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      });
+    }
+  });
+</script><%- include('partials/header', {title: 'Purchase Status', user: locals.user}) %>
 
 <div class="page-header">
   <h1 class="page-title">Purchase Status</h1>
@@ -134,18 +212,38 @@
 
   <!-- Actions -->
   <div class="status-actions">
-    <% if (status.status === 'completed') { %>
+    <% if (isQrReady) { %>
       <a href="/qrcode/<%= status.transactionId %>" class="btn-primary btn-large">
         <span class="btn-icon">📱</span>
         Download QR Code
       </a>
+    <% } else { %>
+      <button class="btn-disabled btn-large" disabled title="QR code will be available when eSIM is ready">
+        <span class="btn-icon">⏳</span>
+        QR Code (Not Ready)
+      </button>
     <% } %>
     
-    <a href="/purchases" class="btn-secondary btn-large">
+    <button onclick="window.location.reload()" class="btn-secondary btn-large">
+      <span class="btn-icon">🔄</span>
+      Refresh Status
+    </button>
+    
+    <a href="/purchases" class="btn-outline btn-large">
       <span class="btn-icon">👈</span>
       Back to My eSIMs
     </a>
   </div>
+
+  <!-- Debug Info (development only) -->
+  <% if (typeof dbStatus !== 'undefined') { %>
+    <div class="debug-status" style="margin-top: 24px; padding: 16px; background: #f0f9ff; border-radius: 8px; font-family: monospace; font-size: 12px;">
+      <strong>Debug Info:</strong><br>
+      Database Status: "<%= dbStatus %>"<br>
+      API Status: "<%= status.status %>"<br>
+      QR Ready: <%= isQrReady ? 'Yes' : 'No' %>
+    </div>
+  <% } %>
 </div>
 
 <%- include('partials/footer') %>
