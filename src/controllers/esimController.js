@@ -6,7 +6,10 @@ import db from '../db/models/index.js';
 export async function showOffers(req, res) {
   try {
     const offers = await listOffers(process.env.COUNTRY || 'TR');
-    res.render('offers', { title: 'Offers', offers: offers.list });
+
+    const activeOffers = offers.list.filter(o => o.enabled);
+
+    res.render('offers', { title: 'Offers', offers: activeOffers  });
   } catch (err) {
     console.error("❌ showOffers error:", err.response?.data || err.message);
     res.render('error', { message: 'Failed to load offers' });
