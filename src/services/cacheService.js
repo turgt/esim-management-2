@@ -1,4 +1,25 @@
-import NodeCache from 'node-cache';
+// ES Module compatible cache service
+let NodeCache;
+
+// Dynamic import for ES module compatibility
+try {
+  const module = await import('node-cache');
+  NodeCache = module.default || module.NodeCache;
+} catch (error) {
+  console.warn('⚠️ NodeCache not available, using fallback');
+  // Fallback to simple in-memory object
+  NodeCache = class {
+    constructor() {
+      this.cache = new Map();
+    }
+    get(key) { return this.cache.get(key); }
+    set(key, value) { this.cache.set(key, value); return true; }
+    del(key) { this.cache.delete(key); return true; }
+    keys() { return Array.from(this.cache.keys()); }
+    getStats() { return { hits: 0, misses: 0, keys: this.cache.size }; }
+    flushAll() { this.cache.clear(); }
+  };
+}
 
 // In-memory cache (for Railway deployment without Redis)
 const cache = new NodeCache({ 
