@@ -141,8 +141,8 @@ export async function showStatus(req, res) {
       }
     }
     
-    // QR readiness check
-    const isQrReady = ['completed', 'success', 'active', 'ready'].includes(
+    // QR readiness check - use centralized constant
+    const isQrReady = QR_READY_STATUSES.includes(
       apiStatus.status.toLowerCase()
     );
     
@@ -177,7 +177,7 @@ export async function showStatus(req, res) {
             status: esimRecord.status,
             statusMessage: 'Status from database (API temporarily unavailable)'
           },
-          isQrReady: ['completed', 'success', 'active'].includes(esimRecord.status.toLowerCase()),
+          isQrReady: QR_READY_STATUSES.includes(esimRecord.status.toLowerCase()),
           dbStatus: esimRecord.status,
           apiError: true
         });
@@ -190,7 +190,7 @@ export async function showStatus(req, res) {
   }
 }
 
-// QR Code with caching
+// QR Code with caching and done status support
 export async function showQrCode(req, res) {
   try {
     const txId = req.params.txId;
@@ -200,10 +200,9 @@ export async function showQrCode(req, res) {
     let qr = cacheService.getQrCode(txId);
     
     if (!qr) {
-      // Verify status first
-      const status = await getPurchase(txId);
-      
-      if (!['completed', 'success', 'active', 'ready'].includes(status.status.toLowerCase())) {
+      // Include 'done' status for QR availability  
+      const qrReadyStatuses = ['completed', 'success', 'active', 'ready', 'done'];
+      if (!qrReadyStatuses.includes(status.status.toLowerCase())) {
         return res.render('error', { 
           message: `QR code not ready yet. Current status: ${status.status}` 
         });
@@ -214,14 +213,72 @@ export async function showQrCode(req, res) {
       cacheService.setQrCode(txId, qr);
     }
     
+    // Check if user has permission
+    const esimRecord = await db.Esim.findOne({
+      where: { transactionId: txId },
+      include: [{
+        model: db.User,
+        attributes: ['id', 'username']
+      }]
+    });
+    
+    // Verify user owns this eSIM
+    if (!esimRecord || esimRecord.userId !== req.session.user.id) {
+      return res.render('error', { 
+        message: 'You do not have permission to access this QR code' 
+      });
+    }
+    
     res.render('qrcode', { 
       title: 'QR Code', 
       qr,
+      esim: esimRecord,
       cached: qr === cacheService.getQrCode(txId)
     });
   } catch (err) {
     console.error("❌ showQrCode error:", err.response?.data || err.message);
     res.render('error', { message: 'Failed to fetch QR code' });
+  }
+}
+
+// Mark QR as downloaded/done (optional endpoint)
+export async function markQrDone(req, res) {
+  try {
+    const txId = req.params.txId;
+    
+    // Find the eSIM record
+    const esimRecord = await db.Esim.findOne({
+      where: { 
+        transactionId: txId,
+        userId: req.session.user.id // Ensure user owns this eSIM
+      }
+    });
+    
+    if (!esimRecord) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'eSIM not found' 
+      });
+    }
+    
+    // Update the record to mark QR as downloaded
+    await esimRecord.update({
+      status: 'done' // or keep original status and add a flag
+    });
+    
+    console.log(`✅ QR marked as downloaded for transaction: ${txId}`);
+    
+    res.json({ 
+      success: true, 
+      message: 'QR code marked as downloaded' 
+    });
+    
+  } catch (err) {
+    console.error("❌ markQrDone error:", err.message);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to mark QR as done' 
+    });
   }
 }
 
