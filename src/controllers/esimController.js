@@ -66,18 +66,28 @@ export async function showStatus(req, res) {
     });
     
     if (!esimRecord) {
-      return res.render('error', { message: 'eSIM record not found' });
+      console.error(`❌ eSIM record not found for transaction: ${txId}`);
+      return res.render('error', { message: 'eSIM record not found in database' });
     }
+    
+    console.log(`💾 Database Status: ${esimRecord.status}`);
     
     // 3. Eğer status değişmişse veritabanını güncelle
     if (esimRecord.status !== apiStatus.status) {
       console.log(`🔄 Updating status: ${esimRecord.status} → ${apiStatus.status}`);
       
-      await esimRecord.update({
-        status: apiStatus.status
-      });
-      
-      console.log(`✅ Status updated in database`);
+      try {
+        await esimRecord.update({
+          status: apiStatus.status
+        });
+        
+        console.log(`✅ Status updated in database successfully`);
+      } catch (updateError) {
+        console.error(`❌ Failed to update database:`, updateError);
+        // Database güncellemesi başarısız olsa da devam et
+      }
+    } else {
+      console.log(`ℹ️ Status unchanged: ${esimRecord.status}`);
     }
     
     // 4. QR Code butonunun görünüp görünmeyeceğini belirle
@@ -85,14 +95,43 @@ export async function showStatus(req, res) {
       apiStatus.status.toLowerCase()
     );
     
+    console.log(`📱 QR Ready: ${isQrReady}`);
+    
     res.render('status', { 
       title: 'Purchase Status', 
       status: apiStatus,
       isQrReady: isQrReady,
-      dbStatus: esimRecord.status // Debug için
+      dbStatus: esimRecord.status, // Debug için
+      updatedAt: new Date().toLocaleTimeString() // Son güncellenme zamanı
     });
   } catch (err) {
     console.error("❌ showStatus error:", err.response?.data || err.message);
+    
+    // API hatası varsa veritabanındaki bilgileri göster
+    try {
+      const esimRecord = await db.Esim.findOne({ 
+        where: { transactionId: req.params.txId }
+      });
+      
+      if (esimRecord) {
+        console.log(`⚠️ API failed, showing database status: ${esimRecord.status}`);
+        return res.render('status', {
+          title: 'Purchase Status',
+          status: {
+            transactionId: esimRecord.transactionId,
+            offerId: esimRecord.offerId,
+            status: esimRecord.status,
+            statusMessage: 'Status from database (API temporarily unavailable)'
+          },
+          isQrReady: ['completed', 'success', 'active'].includes(esimRecord.status.toLowerCase()),
+          dbStatus: esimRecord.status,
+          apiError: true
+        });
+      }
+    } catch (dbErr) {
+      console.error("❌ Database fallback also failed:", dbErr);
+    }
+    
     res.render('error', { message: 'Failed to fetch status' });
   }
 }
@@ -128,28 +167,51 @@ export async function listUserPurchases(req, res) {
       order: [['createdAt', 'DESC']]
     });
     
-    // Her purchase için güncel status'u kontrol et (opsiyonel - performans için)
-    // Büyük listelerde bu yavaş olabilir, o yüzden sadece debug modunda çalıştırabiliriz
-    if (process.env.NODE_ENV === 'development' && purchases.length <= 5) {
-      console.log('🔄 Refreshing purchase statuses...');
+    console.log(`📋 Found ${purchases.length} purchases for user ${req.session.user.id}`);
+    
+    // Development modunda veya az sayıda purchase varsa status'ları güncelle
+    if (process.env.NODE_ENV === 'development' || purchases.length <= 3) {
+      console.log('🔄 Refreshing purchase statuses in background...');
       
       for (const purchase of purchases) {
         try {
+          console.log(`🔍 Checking status for ${purchase.transactionId}...`);
           const apiStatus = await getPurchase(purchase.transactionId);
+          
           if (purchase.status !== apiStatus.status) {
+            console.log(`🔄 Purchase ${purchase.transactionId}: ${purchase.status} → ${apiStatus.status}`);
             await purchase.update({ status: apiStatus.status });
-            console.log(`✅ Updated ${purchase.transactionId}: ${purchase.status} → ${apiStatus.status}`);
+          } else {
+            console.log(`ℹ️ Purchase ${purchase.transactionId}: Status unchanged (${purchase.status})`);
           }
         } catch (updateErr) {
           console.log(`⚠️ Could not update status for ${purchase.transactionId}:`, updateErr.message);
+          // Hata olsa da devam et
         }
       }
+      
+      // Güncellenmiş verileri tekrar çek
+      const refreshedPurchases = await db.Esim.findAll({ 
+        where: { userId: req.session.user.id },
+        order: [['createdAt', 'DESC']]
+      });
+      
+      console.log('✅ Purchase statuses refreshed');
+      
+      res.render('purchases', { 
+        title: 'My Purchases', 
+        purchases: refreshedPurchases,
+        lastRefresh: new Date().toLocaleTimeString()
+      });
+    } else {
+      // Çok fazla purchase varsa güncellemeden göster
+      console.log('ℹ️ Too many purchases, showing cached data');
+      res.render('purchases', { 
+        title: 'My Purchases', 
+        purchases: purchases
+      });
     }
     
-    res.render('purchases', { 
-      title: 'My Purchases', 
-      purchases: purchases
-    });
   } catch (err) {
     console.error("❌ listUserPurchases error:", err.message);
     res.render('error', { message: 'Failed to load purchases' });

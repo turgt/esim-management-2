@@ -4,6 +4,37 @@
     const currentStatus = '<%= status.status %>'.toLowerCase();
     const isPending = ['pending', 'processing', 'installing'].includes(currentStatus);
     
+    console.log('📊 Current status:', currentStatus);
+    console.log('⏳ Is pending:', isPending);
+    
+    // Manual refresh button handler - Her zaman çalışmalı
+    const refreshButtons = document.querySelectorAll('[data-action="refresh"], .btn-secondary');
+    
+    refreshButtons.forEach(btn => {
+      if (btn.textContent.includes('Refresh')) {
+        console.log('🔄 Setting up refresh button:', btn);
+        
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          console.log('🔄 Refresh button clicked');
+          
+          // Button'u disable et ve loading state göster
+          this.disabled = true;
+          this.style.opacity = '0.6';
+          this.style.cursor = 'not-allowed';
+          
+          const originalHTML = this.innerHTML;
+          this.innerHTML = '<span class="btn-icon">⏳</span> Refreshing...';
+          
+          // Kısa delay sonra sayfayı yenile
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        });
+      }
+    });
+    
     if (isPending) {
       console.log('📡 Status is pending, setting up auto-refresh...');
       
@@ -17,12 +48,13 @@
           clearInterval(refreshTimer);
           console.log('⏰ Auto-refresh stopped after maximum attempts');
           
-          // Show manual refresh button
-          const refreshBtn = document.querySelector('.btn-secondary');
-          if (refreshBtn) {
-            refreshBtn.style.background = '#fbbf24';
-            refreshBtn.style.color = '#92400e';
-            refreshBtn.innerHTML = '<span class="btn-icon">🔄</span> Manual Refresh Required';
+          // Manual refresh'e vurgu yap
+          const manualRefreshBtn = document.querySelector('.btn-secondary');
+          if (manualRefreshBtn) {
+            manualRefreshBtn.style.background = '#fbbf24';
+            manualRefreshBtn.style.color = '#92400e';
+            manualRefreshBtn.style.border = '1px solid #f59e0b';
+            manualRefreshBtn.innerHTML = '<span class="btn-icon">🔄</span> Manual Refresh Required';
           }
           return;
         }
@@ -32,7 +64,7 @@
         
       }, 30000); // Refresh every 30 seconds
       
-      // Show auto-refresh indicator
+      // Auto-refresh indicator ekle
       const statusActions = document.querySelector('.status-actions');
       if (statusActions) {
         const indicator = document.createElement('div');
@@ -46,36 +78,49 @@
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
+          border: 1px solid #fde68a;
         `;
-        indicator.innerHTML = `
-          <span style="animation: pulse 2s infinite;">⏳</span>
-          Auto-refreshing every 30 seconds... (${refreshCount}/${maxRefreshes})
-        `;
+        
+        const updateIndicator = () => {
+          indicator.innerHTML = `
+            <span style="animation: pulse 2s infinite;">⏳</span>
+            Auto-refreshing every 30 seconds... (${refreshCount}/${maxRefreshes})
+            <br><small>or click "Refresh Status" for manual update</small>
+          `;
+        };
+        
+        updateIndicator();
         statusActions.after(indicator);
         
-        // Update counter
-        setInterval(() => {
-          const counter = indicator.querySelector('span:last-child');
-          if (counter) {
-            counter.textContent = `Auto-refreshing every 30 seconds... (${refreshCount}/${maxRefreshes})`;
-          }
-        }, 1000);
+        // Update counter every second
+        setInterval(updateIndicator, 1000);
       }
     }
-    
-    // Manual refresh button handler
-    const refreshBtn = document.querySelector('.btn-secondary');
-    if (refreshBtn) {
-      refreshBtn.addEventListener('click', function() {
-        this.disabled = true;
-        this.innerHTML = '<span class="btn-icon">⏳</span> Refreshing...';
-        
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
-      });
-    }
   });
+  
+  // Alternative: Global refresh function
+  window.refreshStatus = function() {
+    console.log('🔄 Global refresh function called');
+    
+    const btn = document.querySelector('[data-action="refresh"]');
+    if (btn) {
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      btn.innerHTML = '<span class="btn-icon">⏳</span> Refreshing...';
+    }
+    
+    setTimeout(() => {
+      window.location.reload();
+    }, 300);
+  };
+  
+  // Debug function - Browser console'da test için
+  window.testRefresh = function() {
+    console.log('🧪 Test refresh function');
+    console.log('Button elements:', document.querySelectorAll('button'));
+    console.log('Refresh button:', document.querySelector('[data-action="refresh"]'));
+    refreshStatus();
+  };
 </script><%- include('partials/header', {title: 'Purchase Status', user: locals.user}) %>
 
 <div class="page-header">
@@ -224,7 +269,7 @@
       </button>
     <% } %>
     
-    <button onclick="window.location.reload()" class="btn-secondary btn-large">
+    <button onclick="location.reload()" class="btn-secondary btn-large" data-action="refresh">
       <span class="btn-icon">🔄</span>
       Refresh Status
     </button>
@@ -237,11 +282,18 @@
 
   <!-- Debug Info (development only) -->
   <% if (typeof dbStatus !== 'undefined') { %>
-    <div class="debug-status" style="margin-top: 24px; padding: 16px; background: #f0f9ff; border-radius: 8px; font-family: monospace; font-size: 12px;">
-      <strong>Debug Info:</strong><br>
+    <div class="debug-status" style="margin-top: 24px; padding: 16px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; font-family: monospace; font-size: 12px;">
+      <strong>🔍 Debug Info:</strong><br>
       Database Status: "<%= dbStatus %>"<br>
       API Status: "<%= status.status %>"<br>
-      QR Ready: <%= isQrReady ? 'Yes' : 'No' %>
+      QR Ready: <%= isQrReady ? 'Yes ✅' : 'No ❌' %><br>
+      <% if (typeof updatedAt !== 'undefined') { %>
+        Last Check: <%= updatedAt %><br>
+      <% } %>
+      <% if (typeof apiError !== 'undefined' && apiError) { %>
+        <span style="color: #dc2626;">⚠️ API Error - Showing DB data</span><br>
+      <% } %>
+      Status Match: <%= dbStatus === status.status ? 'Yes ✅' : 'No (Updated) 🔄' %>
     </div>
   <% } %>
 </div>
