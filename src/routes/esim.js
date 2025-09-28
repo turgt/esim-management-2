@@ -1,12 +1,12 @@
-import {Router} from 'express';
-import * as c from '../controllers/esimController.js';
-import {ensureAuth} from '../middleware/auth.js';
+import express from 'express';
+import { ensureAuth } from '../middleware/auth.js';
+import { showOffers, createPurchase, showStatus, showQrCode } from '../controllers/esimController.js';
 
-const r=Router();
-r.get('/offers',ensureAuth,c.offers);
-r.post('/purchase',ensureAuth,c.createPurchase);
-r.get('/purchases',ensureAuth,c.listPurchases);
-r.get('/purchases/:id',ensureAuth,c.purchaseStatus);
-r.get('/purchases/:id/qrcode',ensureAuth,c.purchaseQr);
+const router = express.Router();
 
-export default r;
+router.get('/offers', ensureAuth, showOffers);
+router.post('/purchases', ensureAuth, createPurchase);
+router.get('/status/:txId', ensureAuth, showStatus);
+router.get('/qrcode/:txId', ensureAuth, showQrCode);
+
+export default router;
