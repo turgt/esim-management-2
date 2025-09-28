@@ -64,6 +64,11 @@ self.addEventListener('fetch', (event) => {
       event.request.url.includes('/metrics')) {
     return;
   }
+
+  if(!event.request.url.includes('/offers')) {
+    return;
+  }
+  
   
   event.respondWith(
     caches.match(event.request)
