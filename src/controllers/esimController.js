@@ -1,38 +1,67 @@
-import {v4 as uuidv4} from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
+import { listOffers, purchaseEsim, getPurchase, getPurchaseQrCode } from '../services/zenditClient.js';
 import db from '../db/models/index.js';
-import {listOffers,purchaseEsim,getPurchase,getPurchaseQrCode} from '../services/zenditClient.js';
 
-export async function offers(req,res){
-  const offers=await listOffers({country:process.env.COUNTRY,_limit:100});
-  res.render('offers',{title:'Offers',offers,country:process.env.COUNTRY});
-}
-
-export async function createPurchase(req,res){
-  const userId=req.session.user.id;
-  const user=await db.User.findByPk(userId,{include:db.Esim});
-  if(user.esimLimit && user.Esims.length>=user.esimLimit){
-    return res.send('Purchase limit reached');
+// Teklifleri listele
+export async function showOffers(req, res) {
+  try {
+    const offers = await listOffers(process.env.COUNTRY || 'TR');
+    res.render('offers', { title: 'Offers', offers: offers.list });
+  } catch (err) {
+    console.error("❌ showOffers error:", err.response?.data || err.message);
+    res.render('error', { message: 'Failed to load offers' });
   }
-  const tx=uuidv4();
-  await db.Esim.create({userId,offerId:req.body.offerId,transactionId:tx,status:'ACCEPTED'});
-  await purchaseEsim({offerId:req.body.offerId,transactionId:tx});
-  res.redirect('/purchases');
 }
 
-export async function listPurchases(req,res){
-  const esims=await db.Esim.findAll({where:{userId:req.session.user.id}});
-  res.render('purchases',{title:'Purchases',esims});
+// Satın alma işlemi
+export async function createPurchase(req, res) {
+  try {
+    const { offerId } = req.body;
+    const user = await db.User.findByPk(req.session.user.id, { include: db.Esim });
+
+    // Kullanıcının limiti dolmuş mu?
+    if (user.esimLimit && user.Esims.length >= user.esimLimit) {
+      return res.render('error', { message: 'eSIM limit reached' });
+    }
+
+    const transactionId = uuidv4();
+    const purchase = await purchaseEsim(offerId, transactionId);
+
+    // DB'ye kaydet
+    await db.Esim.create({
+      userId: user.id,
+      offerId,
+      transactionId,
+      status: purchase.status
+    });
+
+    res.redirect(`/status/${transactionId}`);
+  } catch (err) {
+    console.error("❌ createPurchase error:", err.response?.data || err.message);
+    res.render('error', { message: 'Failed to create purchase' });
+  }
 }
 
-export async function purchaseStatus(req,res){
-  const esim=await db.Esim.findByPk(req.params.id);
-  const data=await getPurchase(esim.transactionId);
-  res.render('status',{title:'Status',purchase:data,txId:esim.transactionId});
+// Satın alma durumu
+export async function showStatus(req, res) {
+  try {
+    const txId = req.params.txId;
+    const status = await getPurchase(txId);
+    res.render('status', { title: 'Purchase Status', status });
+  } catch (err) {
+    console.error("❌ showStatus error:", err.response?.data || err.message);
+    res.render('error', { message: 'Failed to fetch status' });
+  }
 }
 
-export async function purchaseQr(req,res){
-  const esim=await db.Esim.findByPk(req.params.id);
-  const data=await getPurchaseQrCode(esim.transactionId);
-  const imgSrc=`data:image/png;base64,${data.imageBase64}`;
-  res.render('qrcode',{title:'QR',txId:esim.transactionId,imgSrc});
+// QR kod
+export async function showQrCode(req, res) {
+  try {
+    const txId = req.params.txId;
+    const qr = await getPurchaseQrCode(txId);
+    res.render('qrcode', { title: 'QR Code', qr });
+  } catch (err) {
+    console.error("❌ showQrCode error:", err.response?.data || err.message);
+    res.render('error', { message: 'Failed to fetch QR code' });
+  }
 }
