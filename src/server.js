@@ -17,7 +17,11 @@ import {
   cacheMonitor, 
   smartRateLimit, 
   queryMonitor,
-  healthCheck 
+  healthCheck,
+  requestLogger,
+  asyncErrorHandler,
+  securityHeaders,
+  metricsCollector
 } from './middleware/performance.js';
 
 dotenv.config();
@@ -57,10 +61,17 @@ app.use(compression({
   threshold: 1024 // Only compress files larger than 1KB
 }));
 
+// Security headers
+app.use(securityHeaders);
+
 // Performance monitoring
 app.use(performanceMonitor);
 app.use(cacheMonitor);
 app.use(queryMonitor());
+app.use(metricsCollector);
+
+// Request logging
+app.use(requestLogger);
 
 // Rate limiting
 app.use(smartRateLimit(15 * 60 * 1000, 100)); // 100 requests per 15 minutes
@@ -121,9 +132,37 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check endpoint
-app.get('/health', healthCheck);
+// Health check endpoints
+app.get('/health', asyncErrorHandler(healthCheck));
 app.get('/healthz', (req, res) => res.status(200).send('OK'));
+
+// Metrics endpoint (admin only)
+app.get('/metrics', asyncErrorHandler(async (req, res) => {
+  if (!req.session?.user?.isAdmin) {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const metrics = cacheService.get('system:metrics') || [];
+  const recentMetrics = metrics.slice(-100); // Last 100 requests
+  
+  res.json({
+    totalRequests: metrics.length,
+    recentRequests: recentMetrics,
+    summary: {
+      authenticated: metrics.filter(m => m.authenticated).length,
+      methods: metrics.reduce((acc, m) => {
+        acc[m.method] = (acc[m.method] || 0) + 1;
+        return acc;
+      }, {}),
+      topPaths: Object.entries(
+        metrics.reduce((acc, m) => {
+          acc[m.path] = (acc[m.path] || 0) + 1;
+          return acc;
+        }, {})
+      ).sort(([,a], [,b]) => b - a).slice(0, 10)
+    }
+  });
+}));
 
 // API routes
 app.use('/auth', authRoutes);
