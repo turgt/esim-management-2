@@ -1,28 +1,151 @@
-<%- include('partials/header',{title:'Purchase Status',user:locals.user}) %>
+<%- include('partials/header', {title: 'Purchase Status', user: locals.user}) %>
 
-<h1>Purchase Status</h1>
+<div class="page-header">
+  <h1 class="page-title">Purchase Status</h1>
+  <p class="page-subtitle">Track your eSIM activation progress</p>
+</div>
 
-<p><strong>Transaction ID:</strong> <%= status.transactionId %></p>
-<p><strong>Offer ID:</strong> <%= status.offerId %></p>
-<p><strong>Status:</strong> <%= status.status %></p>
+<div class="status-container">
+  <!-- Main Status Card -->
+  <div class="status-main-card">
+    <div class="status-header">
+      <div class="status-icon-large">
+        <% if (status.status === 'completed') { %>
+          <span class="status-emoji success">✅</span>
+        <% } else if (status.status === 'pending') { %>
+          <span class="status-emoji pending">⏳</span>
+        <% } else if (status.status === 'failed') { %>
+          <span class="status-emoji failed">❌</span>
+        <% } else { %>
+          <span class="status-emoji processing">🔄</span>
+        <% } %>
+      </div>
+      <div class="status-info">
+        <h2 class="status-title">
+          <% if (status.status === 'completed') { %>
+            eSIM Ready to Use
+          <% } else if (status.status === 'pending') { %>
+            Processing Your eSIM
+          <% } else if (status.status === 'failed') { %>
+            Activation Failed
+          <% } else { %>
+            <%= status.status %>
+          <% } %>
+        </h2>
+        <p class="status-description">
+          <% if (status.status === 'completed') { %>
+            Your eSIM has been successfully activated and is ready to use
+          <% } else if (status.status === 'pending') { %>
+            Your eSIM is being prepared. This usually takes a few minutes
+          <% } else if (status.status === 'failed') { %>
+            There was an issue activating your eSIM. Please contact support
+          <% } else { %>
+            Current status: <%= status.status %>
+          <% } %>
+        </p>
+      </div>
+    </div>
 
-<h2>Details</h2>
-<ul>
-  <li>Brand: <%= status.brandName %></li>
-  <li>Country: <%= status.country %></li>
-  <li>Duration: <%= status.durationDays %> days</li>
-  <li>Data: <%= status.dataUnlimited ? 'Unlimited' : status.dataGB + ' GB' %></li>
-</ul>
+    <div class="status-details">
+      <div class="detail-grid">
+        <div class="detail-card">
+          <span class="detail-icon">🆔</span>
+          <div class="detail-content">
+            <span class="detail-label">Transaction ID</span>
+            <span class="detail-value"><%= status.transactionId %></span>
+          </div>
+        </div>
 
-<h2>Log</h2>
-<ul>
-  <% if(status.log){ status.log.forEach(l => { %>
-    <li><%= l.dateTime %> — <%= l.status %>: <%= l.statusMessage %></li>
-  <% })} %>
-</ul>
+        <div class="detail-card">
+          <span class="detail-icon">📦</span>
+          <div class="detail-content">
+            <span class="detail-label">Offer ID</span>
+            <span class="detail-value"><%= status.offerId %></span>
+          </div>
+        </div>
 
-<p>
-  <a href="/qrcode/<%= status.transactionId %>">View QR Code</a>
-</p>
+        <div class="detail-card">
+          <span class="detail-icon">🏢</span>
+          <div class="detail-content">
+            <span class="detail-label">Provider</span>
+            <span class="detail-value"><%= status.brandName %></span>
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <span class="detail-icon">🌍</span>
+          <div class="detail-content">
+            <span class="detail-label">Country</span>
+            <span class="detail-value"><%= status.country %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plan Details -->
+  <div class="plan-details-card">
+    <h3 class="card-title">Plan Details</h3>
+    <div class="plan-specs">
+      <div class="spec-row">
+        <span class="spec-icon">📅</span>
+        <span class="spec-label">Duration:</span>
+        <span class="spec-value"><%= status.durationDays %> days</span>
+      </div>
+      
+      <div class="spec-row">
+        <span class="spec-icon">📊</span>
+        <span class="spec-label">Data:</span>
+        <span class="spec-value">
+          <%= status.dataUnlimited ? 'Unlimited' : status.dataGB + ' GB' %>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Log -->
+  <% if (status.log && status.log.length > 0) { %>
+    <div class="activity-log-card">
+      <h3 class="card-title">Activity Log</h3>
+      <div class="activity-timeline">
+        <% status.log.forEach((entry, index) => { %>
+          <div class="timeline-item <%= index === 0 ? 'timeline-current' : '' %>">
+            <div class="timeline-marker">
+              <% if (entry.status === 'completed') { %>
+                <span class="marker-icon success">✅</span>
+              <% } else if (entry.status === 'pending') { %>
+                <span class="marker-icon pending">⏳</span>
+              <% } else if (entry.status === 'failed') { %>
+                <span class="marker-icon failed">❌</span>
+              <% } else { %>
+                <span class="marker-icon">🔄</span>
+              <% } %>
+            </div>
+            <div class="timeline-content">
+              <div class="timeline-status"><%= entry.status %></div>
+              <div class="timeline-message"><%= entry.statusMessage %></div>
+              <div class="timeline-time"><%= entry.dateTime %></div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Actions -->
+  <div class="status-actions">
+    <% if (status.status === 'completed') { %>
+      <a href="/qrcode/<%= status.transactionId %>" class="btn-primary btn-large">
+        <span class="btn-icon">📱</span>
+        Download QR Code
+      </a>
+    <% } %>
+    
+    <a href="/purchases" class="btn-secondary btn-large">
+      <span class="btn-icon">👈</span>
+      Back to My eSIMs
+    </a>
+  </div>
+</div>
 
 <%- include('partials/footer') %>

@@ -1,53 +1,226 @@
-<%- include('partials/header',{title:'Users',user:locals.user}) %>
+<%- include('partials/header', {title: 'Admin Panel', user: locals.user}) %>
 
-<h1>Manage Users</h1>
+<div class="page-header">
+  <h1 class="page-title">User Management</h1>
+  <p class="page-subtitle">Manage users and monitor eSIM usage across your platform</p>
+</div>
 
-<h2>Add New User</h2>
-<form method="post" action="/admin/users">
-  <input name="username" placeholder="Username" required>
-  <input type="password" name="password" placeholder="Password" required>
-  <input type="number" name="esimLimit" placeholder="eSIM Limit (leave empty for unlimited)">
-  <button type="submit">Add User</button>
-</form>
+<div class="admin-container">
+  <!-- Add New User Card -->
+  <div class="admin-card">
+    <div class="card-header">
+      <h3 class="card-title">
+        <span class="card-icon">➕</span>
+        Add New User
+      </h3>
+    </div>
+    
+    <form method="post" action="/admin/users" class="admin-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="username" class="form-label">Username</label>
+          <input 
+            type="text" 
+            id="username"
+            name="username" 
+            class="form-input"
+            placeholder="Enter username"
+            required
+            autocomplete="username"
+          >
+        </div>
 
-<hr>
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input 
+            type="password" 
+            id="password"
+            name="password" 
+            class="form-input"
+            placeholder="Enter password"
+            required
+            autocomplete="new-password"
+          >
+        </div>
 
-<h2>Existing Users</h2>
-<table border="1" cellpadding="5" cellspacing="0">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Username</th>
-      <th>Is Admin?</th>
-      <th>eSIM Limit</th>
-      <th>eSIMs</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% users.forEach(u => { %>
-      <tr>
-        <td><%= u.id %></td>
-        <td><%= u.username %></td>
-        <td><%= u.isAdmin ? "✅" : "❌" %></td>
-        <td><%= u.esimLimit ? u.esimLimit : "Unlimited" %></td>
-        <td>
-          <% if(u.Esims && u.Esims.length){ %>
-            <ul>
-              <% u.Esims.forEach(e => { %>
-                <li>
-                  <strong><%= e.offerId %></strong> - <%= e.status %>
-                  [ <a href="/status/<%= e.transactionId %>">Status</a> ]
-                  [ <a href="/qrcode/<%= e.transactionId %>">QR</a> ]
-                </li>
-              <% }) %>
-            </ul>
-          <% } else { %>
-            No eSIMs
-          <% } %>
-        </td>
-      </tr>
-    <% }) %>
-  </tbody>
-</table>
+        <div class="form-group">
+          <label for="esimLimit" class="form-label">eSIM Limit</label>
+          <input 
+            type="number" 
+            id="esimLimit"
+            name="esimLimit" 
+            class="form-input"
+            placeholder="Leave empty for unlimited"
+            min="1"
+            max="100"
+          >
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary">
+        <span class="btn-icon">👤</span>
+        Create User
+      </button>
+    </form>
+  </div>
+
+  <!-- Users Overview -->
+  <div class="users-overview">
+    <div class="overview-stats">
+      <div class="stat-card">
+        <div class="stat-value"><%= users.length %></div>
+        <div class="stat-label">Total Users</div>
+        <div class="stat-icon">👥</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-value"><%= users.filter(u => u.isAdmin).length %></div>
+        <div class="stat-label">Admins</div>
+        <div class="stat-icon">👨‍💼</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-value">
+          <%= users.reduce((total, u) => total + (u.Esims ? u.Esims.length : 0), 0) %>
+        </div>
+        <div class="stat-label">Total eSIMs</div>
+        <div class="stat-icon">📱</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-value">
+          <%= users.filter(u => u.Esims && u.Esims.some(e => e.status === 'completed')).length %>
+        </div>
+        <div class="stat-label">Active Users</div>
+        <div class="stat-icon">✅</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users List -->
+  <div class="admin-card">
+    <div class="card-header">
+      <h3 class="card-title">
+        <span class="card-icon">📋</span>
+        All Users
+      </h3>
+    </div>
+
+    <div class="users-table-container">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>eSIM Limit</th>
+            <th>eSIMs Used</th>
+            <th>Status</th>
+            <th>eSIM Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach(user => { %>
+            <tr>
+              <td>
+                <div class="user-info">
+                  <div class="user-avatar">
+                    <%= user.username.charAt(0).toUpperCase() %>
+                  </div>
+                  <div class="user-details">
+                    <div class="user-name"><%= user.username %></div>
+                    <div class="user-id">ID: <%= user.id %></div>
+                  </div>
+                </div>
+              </td>
+              
+              <td>
+                <% if (user.isAdmin) { %>
+                  <span class="role-badge admin">
+                    <span class="badge-icon">👨‍💼</span>
+                    Admin
+                  </span>
+                <% } else { %>
+                  <span class="role-badge user">
+                    <span class="badge-icon">👤</span>
+                    User
+                  </span>
+                <% } %>
+              </td>
+              
+              <td>
+                <div class="limit-info">
+                  <% if (user.esimLimit) { %>
+                    <span class="limit-number"><%= user.esimLimit %></span>
+                    <span class="limit-text">eSIMs</span>
+                  <% } else { %>
+                    <span class="limit-unlimited">Unlimited</span>
+                  <% } %>
+                </div>
+              </td>
+              
+              <td>
+                <div class="usage-info">
+                  <span class="usage-current"><%= user.Esims ? user.Esims.length : 0 %></span>
+                  <% if (user.esimLimit) { %>
+                    <span class="usage-total">/ <%= user.esimLimit %></span>
+                    <div class="usage-bar">
+                      <div class="usage-fill" style="width: <%= Math.min(100, (user.Esims ? user.Esims.length : 0) / user.esimLimit * 100) %>%"></div>
+                    </div>
+                  <% } %>
+                </div>
+              </td>
+              
+              <td>
+                <% if (user.Esims && user.Esims.some(e => e.status === 'completed')) { %>
+                  <span class="status-badge active">
+                    <span class="status-dot"></span>
+                    Active
+                  </span>
+                <% } else if (user.Esims && user.Esims.length > 0) { %>
+                  <span class="status-badge pending">
+                    <span class="status-dot"></span>
+                    Pending
+                  </span>
+                <% } else { %>
+                  <span class="status-badge inactive">
+                    <span class="status-dot"></span>
+                    Inactive
+                  </span>
+                <% } %>
+              </td>
+              
+              <td>
+                <% if (user.Esims && user.Esims.length > 0) { %>
+                  <div class="esim-list">
+                    <% user.Esims.forEach(esim => { %>
+                      <div class="esim-item">
+                        <span class="esim-id"><%= esim.offerId %></span>
+                        <span class="esim-status status-<%= esim.status %>">
+                          <%= esim.status %>
+                        </span>
+                        <div class="esim-actions">
+                          <a href="/status/<%= esim.transactionId %>" class="action-link" title="View Status">
+                            📊
+                          </a>
+                          <% if (esim.status === 'completed') { %>
+                            <a href="/qrcode/<%= esim.transactionId %>" class="action-link" title="View QR">
+                              📱
+                            </a>
+                          <% } %>
+                        </div>
+                      </div>
+                    <% }) %>
+                  </div>
+                <% } else { %>
+                  <span class="no-esims">No eSIMs</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
 <%- include('partials/footer') %>

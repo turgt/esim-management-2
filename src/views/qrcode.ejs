@@ -1,15 +1,180 @@
-<%- include('partials/header',{title:'QR Code',user:locals.user}) %>
+<%- include('partials/header', {title: 'QR Code', user: locals.user}) %>
 
-<h1>Your eSIM QR Code</h1>
+<div class="page-header">
+  <h1 class="page-title">Your eSIM QR Code</h1>
+  <p class="page-subtitle">Scan this code with your device to install the eSIM</p>
+</div>
 
-<% if(qr.imageBase64){ %>
-  <img src="data:image/png;base64,<%= qr.imageBase64 %>" alt="QR Code" />
-<% } else { %>
-  <p>No QR code available.</p>
-<% } %>
+<div class="qr-container">
+  <% if (qr.imageBase64) { %>
+    <div class="qr-card">
+      <div class="qr-header">
+        <div class="qr-icon">📱</div>
+        <h3 class="qr-title">Ready to Install</h3>
+        <p class="qr-description">Scan the QR code below with your device camera</p>
+      </div>
 
-<p>
-  <a href="/purchases">Back to Purchases</a>
-</p>
+      <div class="qr-image-container">
+        <div class="qr-image-wrapper">
+          <img src="data:image/png;base64,<%= qr.imageBase64 %>" alt="eSIM QR Code" class="qr-image" />
+        </div>
+      </div>
+
+      <div class="qr-instructions">
+        <h4 class="instructions-title">How to Install:</h4>
+        <div class="instructions-steps">
+          <div class="step">
+            <span class="step-number">1</span>
+            <div class="step-content">
+              <strong>Open Settings</strong>
+              <p>Go to Settings > Cellular/Mobile Data</p>
+            </div>
+          </div>
+          
+          <div class="step">
+            <span class="step-number">2</span>
+            <div class="step-content">
+              <strong>Add eSIM</strong>
+              <p>Tap "Add Cellular Plan" or "Add eSIM"</p>
+            </div>
+          </div>
+          
+          <div class="step">
+            <span class="step-number">3</span>
+            <div class="step-content">
+              <strong>Scan QR Code</strong>
+              <p>Use your camera to scan this QR code</p>
+            </div>
+          </div>
+          
+          <div class="step">
+            <span class="step-number">4</span>
+            <div class="step-content">
+              <strong>Complete Setup</strong>
+              <p>Follow the on-screen instructions</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="qr-tips">
+        <div class="tip-item">
+          <span class="tip-icon">💡</span>
+          <span class="tip-text">Make sure you have a stable internet connection</span>
+        </div>
+        <div class="tip-item">
+          <span class="tip-icon">📶</span>
+          <span class="tip-text">Installation may take a few minutes</span>
+        </div>
+        <div class="tip-item">
+          <span class="tip-icon">🔒</span>
+          <span class="tip-text">Keep this QR code private and secure</span>
+        </div>
+      </div>
+
+      <div class="qr-actions">
+        <button onclick="downloadQR()" class="btn-primary">
+          <span class="btn-icon">💾</span>
+          Save QR Code
+        </button>
+        
+        <button onclick="printQR()" class="btn-secondary">
+          <span class="btn-icon">🖨️</span>
+          Print QR Code
+        </button>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="qr-error-card">
+      <div class="error-icon">❌</div>
+      <h3 class="error-title">QR Code Not Available</h3>
+      <p class="error-description">
+        The QR code for this eSIM is not yet available. 
+        Please check back later or contact support if the issue persists.
+      </p>
+      <div class="error-actions">
+        <a href="/purchases" class="btn-primary">
+          <span class="btn-icon">👈</span>
+          Back to My eSIMs
+        </a>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<div class="qr-navigation">
+  <a href="/purchases" class="nav-link-back">
+    <span class="nav-icon">👈</span>
+    Back to My eSIMs
+  </a>
+</div>
+
+<script>
+  function downloadQR() {
+    const img = document.querySelector('.qr-image');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    ctx.drawImage(img, 0, 0);
+    
+    const link = document.createElement('a');
+    link.download = 'esim-qr-code.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  }
+  
+  function printQR() {
+    const printWindow = window.open('', '_blank');
+    const qrImg = document.querySelector('.qr-image').src;
+    
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>eSIM QR Code</title>
+          <style>
+            body { 
+              margin: 0; 
+              padding: 40px; 
+              text-align: center; 
+              font-family: Arial, sans-serif; 
+            }
+            .print-container { 
+              max-width: 400px; 
+              margin: 0 auto; 
+            }
+            img { 
+              width: 100%; 
+              max-width: 300px; 
+              margin: 20px 0; 
+            }
+            h1 { 
+              color: #333; 
+              margin-bottom: 10px; 
+            }
+            p { 
+              color: #666; 
+              margin-bottom: 20px; 
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-container">
+            <h1>eSIM QR Code</h1>
+            <p>Scan this code to install your eSIM</p>
+            <img src="${qrImg}" alt="eSIM QR Code">
+            <p><small>Keep this QR code private and secure</small></p>
+          </div>
+        </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  }
+</script>
 
 <%- include('partials/footer') %>

@@ -1,10 +1,92 @@
-<%- include('partials/header',{title:'Error',user:locals.user}) %>
+<%- include('partials/header', {title: 'Error', user: locals.user}) %>
 
-<h1>Error</h1>
-<p style="color:red;"><%= message %></p>
+<div class="error-container">
+  <div class="error-card">
+    <div class="error-visual">
+      <div class="error-icon">⚠️</div>
+      <div class="error-code">Oops!</div>
+    </div>
+    
+    <div class="error-content">
+      <h1 class="error-title">Something went wrong</h1>
+      <p class="error-message"><%= message %></p>
+      
+      <div class="error-suggestions">
+        <h3 class="suggestions-title">What can you do?</h3>
+        <ul class="suggestions-list">
+          <li class="suggestion-item">
+            <span class="suggestion-icon">🔄</span>
+            <span class="suggestion-text">Try refreshing the page</span>
+          </li>
+          <li class="suggestion-item">
+            <span class="suggestion-icon">👈</span>
+            <span class="suggestion-text">Go back to the previous page</span>
+          </li>
+          <li class="suggestion-item">
+            <span class="suggestion-icon">🏠</span>
+            <span class="suggestion-text">Return to the homepage</span>
+          </li>
+          <li class="suggestion-item">
+            <span class="suggestion-icon">📞</span>
+            <span class="suggestion-text">Contact support if the issue persists</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="error-actions">
+      <button onclick="history.back()" class="btn-primary">
+        <span class="btn-icon">👈</span>
+        Go Back
+      </button>
+      
+      <a href="/" class="btn-secondary">
+        <span class="btn-icon">🏠</span>
+        Go Home
+      </a>
+      
+      <button onclick="window.location.reload()" class="btn-outline">
+        <span class="btn-icon">🔄</span>
+        Refresh Page
+      </button>
+    </div>
+  </div>
+  
+  <div class="error-help">
+    <p class="help-text">
+      If you continue to experience issues, please contact our support team with the error details above.
+    </p>
+  </div>
+</div>
 
-<p>
-  <a href="/">Go back to home</a>
-</p>
+<script>
+  // Auto-refresh option for certain errors
+  const errorMessage = '<%= message %>';
+  
+  if (errorMessage.toLowerCase().includes('timeout') || 
+      errorMessage.toLowerCase().includes('network') ||
+      errorMessage.toLowerCase().includes('connection')) {
+    
+    let countdown = 10;
+    const refreshBtn = document.querySelector('.btn-outline');
+    const originalText = refreshBtn.innerHTML;
+    
+    const timer = setInterval(() => {
+      refreshBtn.innerHTML = `<span class="btn-icon">🔄</span> Auto-refresh in ${countdown}s`;
+      countdown--;
+      
+      if (countdown < 0) {
+        clearInterval(timer);
+        window.location.reload();
+      }
+    }, 1000);
+    
+    // Cancel auto-refresh if user interacts
+    document.addEventListener('click', () => {
+      clearInterval(timer);
+      refreshBtn.innerHTML = originalText;
+    });
+  }
+</script>
 
 <%- include('partials/footer') %>

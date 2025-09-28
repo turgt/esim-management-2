@@ -1,15 +1,91 @@
-<%- include('partials/header',{title:'My Purchases',user:locals.user}) %>
+<%- include('partials/header', {title: 'My eSIMs', user: locals.user}) %>
 
-<h1>My eSIM Purchases</h1>
+<div class="page-header">
+  <h1 class="page-title">My eSIM Collection</h1>
+  <p class="page-subtitle">Manage and monitor your purchased eSIM plans</p>
+</div>
 
-<ul>
-  <% purchases.forEach(p => { %>
-    <li>
-      <strong><%= p.offerId %></strong> - Status: <%= p.status %>
-      [ <a href="/status/<%= p.transactionId %>">Status</a> ]
-      [ <a href="/qrcode/<%= p.transactionId %>">QR</a> ]
-    </li>
-  <% }) %>
-</ul>
+<% if (purchases.length > 0) { %>
+  <div class="purchases-grid">
+    <% purchases.forEach(purchase => { %>
+      <div class="purchase-card">
+        <div class="purchase-header">
+          <div class="purchase-info">
+            <h3 class="purchase-title">eSIM Plan</h3>
+            <p class="purchase-id">ID: <%= purchase.offerId %></p>
+          </div>
+          <div class="purchase-status">
+            <span class="status-badge status-<%= purchase.status.toLowerCase() %>">
+              <% if (purchase.status === 'completed') { %>
+                <span class="status-icon">✅</span>
+              <% } else if (purchase.status === 'pending') { %>
+                <span class="status-icon">⏳</span>
+              <% } else if (purchase.status === 'failed') { %>
+                <span class="status-icon">❌</span>
+              <% } else { %>
+                <span class="status-icon">🔄</span>
+              <% } %>
+              <%= purchase.status %>
+            </span>
+          </div>
+        </div>
+
+        <div class="purchase-details">
+          <div class="detail-item">
+            <span class="detail-icon">🆔</span>
+            <span class="detail-label">Transaction ID:</span>
+            <span class="detail-value"><%= purchase.transactionId %></span>
+          </div>
+        </div>
+
+        <div class="purchase-actions">
+          <a href="/status/<%= purchase.transactionId %>" class="btn-secondary btn-action">
+            <span class="btn-icon">📊</span>
+            View Details
+          </a>
+          
+          <% if (purchase.status === 'completed') { %>
+            <a href="/qrcode/<%= purchase.transactionId %>" class="btn-primary btn-action">
+              <span class="btn-icon">📱</span>
+              QR Code
+            </a>
+          <% } else { %>
+            <button class="btn-disabled btn-action" disabled>
+              <span class="btn-icon">📱</span>
+              QR Code
+            </button>
+          <% } %>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+
+  <div class="purchases-summary">
+    <div class="summary-card">
+      <div class="summary-stat">
+        <span class="stat-number"><%= purchases.length %></span>
+        <span class="stat-label">Total eSIMs</span>
+      </div>
+      <div class="summary-stat">
+        <span class="stat-number"><%= purchases.filter(p => p.status === 'completed').length %></span>
+        <span class="stat-label">Active</span>
+      </div>
+      <div class="summary-stat">
+        <span class="stat-number"><%= purchases.filter(p => p.status === 'pending').length %></span>
+        <span class="stat-label">Pending</span>
+      </div>
+    </div>
+  </div>
+<% } else { %>
+  <div class="empty-state">
+    <div class="empty-icon">📱</div>
+    <h3 class="empty-title">No eSIMs yet</h3>
+    <p class="empty-description">Start by browsing our available eSIM plans</p>
+    <a href="/offers" class="btn-primary" style="margin-top: 24px;">
+      <span class="btn-icon">🛒</span>
+      Browse Plans
+    </a>
+  </div>
+<% } %>
 
 <%- include('partials/footer') %>
