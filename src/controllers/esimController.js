@@ -3,6 +3,15 @@ import { listOffers, purchaseEsim, getPurchase, getPurchaseQrCode } from '../ser
 import db from '../db/models/index.js';
 import cacheService from '../services/cacheService.js';
 
+
+
+const QR_READY_STATUSES = ['completed', 'success', 'active', 'ready', 'done'];
+
+// Helper function:
+function isQrReady(status) {
+  return QR_READY_STATUSES.includes(status.toLowerCase());
+}
+
 // Teklifleri listele - CACHED
 export async function showOffers(req, res) {
   try {
@@ -141,17 +150,15 @@ export async function showStatus(req, res) {
       }
     }
     
-    // QR readiness check - use centralized constant
-    const isQrReady = QR_READY_STATUSES.includes(
-      apiStatus.status.toLowerCase()
-    );
+    // QR readiness check - use helper function
+    const qrReady = isQrReady(apiStatus.status);
     
     console.log(`📱 QR Ready: ${isQrReady}`);
     
     res.render('status', { 
       title: 'Purchase Status', 
       status: apiStatus,
-      isQrReady: isQrReady,
+      isQrReady: qrReady,
       dbStatus: esimRecord.status,
       statusUpdated: statusUpdated,
       cached: !forceRefresh && cacheService.getStatus(txId) !== null,
@@ -177,7 +184,7 @@ export async function showStatus(req, res) {
             status: esimRecord.status,
             statusMessage: 'Status from database (API temporarily unavailable)'
           },
-          isQrReady: QR_READY_STATUSES.includes(esimRecord.status.toLowerCase()),
+          isQrReady: isQrReady(esimRecord.status),
           dbStatus: esimRecord.status,
           apiError: true
         });
