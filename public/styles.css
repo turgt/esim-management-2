@@ -1,15 +1,6 @@
-/* Premium Modern eSIM Hub Styles */
-
-/* Reset & Base */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
+/* Performance Optimizations */
 * {
-  margin: 0;
-  padding: 0;
+  box-sizing: border-box;
 }
 
 html {
@@ -26,6 +17,178 @@ body {
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  contain: layout style paint;
+}
+
+/* Critical CSS - Above the fold optimization */
+.header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  contain: layout style;
+}
+
+.main-content {
+  flex: 1;
+  padding: 40px 0;
+  contain: layout style;
+}
+
+/* Image optimization */
+img {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+  will-change: auto;
+}
+
+.qr-image {
+  content-visibility: auto;
+  contain-intrinsic-size: 300px 300px;
+}
+
+/* Animation performance */
+.offer-card,
+.purchase-card,
+.btn-primary,
+.btn-secondary {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.offer-card:hover,
+.purchase-card:hover {
+  transform: translateY(-4px) translateZ(0);
+}
+
+/* Intersection Observer for lazy loading */
+.lazy-load {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.lazy-load.loaded {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Cache indicator styles */
+.cache-indicator {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background: rgba(34, 197, 94, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  z-index: 1001;
+  opacity: 0;
+  transform: translateX(100px);
+  transition: all 0.3s ease;
+}
+
+.cache-indicator.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.cache-indicator.cached {
+  background: rgba(59, 130, 246, 0.9);
+}
+
+.cache-indicator.api {
+  background: rgba(251, 191, 36, 0.9);
+}
+
+/* Performance monitoring */
+.perf-info {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-family: monospace;
+  z-index: 1001;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.perf-info.show {
+  opacity: 1;
+}
+
+/* Loading skeletons */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+  height: 200px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+}
+
+.skeleton-text {
+  height: 16px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.skeleton-text.short {
+  width: 60%;
+}
+
+.skeleton-text.long {
+  width: 80%;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print optimization */
+@media print {
+  .header,
+  .footer,
+  .debug-status,
+  .cache-indicator,
+  .perf-info {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .qr-image {
+    max-width: 200px !important;
+  }
 }
 
 /* App Layout */
@@ -649,11 +812,18 @@ tr:last-child td {
   background: #f8fafc;
   color: #475569;
   border: 1px solid #e2e8f0;
+  pointer-events: auto !important;
+  cursor: pointer !important;
 }
 
 .btn-secondary:hover {
   background: #f1f5f9;
   border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
 }
 
 .btn-outline {

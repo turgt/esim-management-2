@@ -3,21 +3,32 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
-    "dev": "node --watch src/server.js",
-    "start": "node src/server.js",
+    "dev": "NODE_ENV=development node --watch src/server.js",
+    "start": "NODE_ENV=production node src/server.js",
     "migrate": "sequelize-cli db:migrate",
-    "seed": "sequelize-cli db:seed:all"
+    "seed": "sequelize-cli db:seed:all",
+    "reset-db": "sequelize-cli db:drop && sequelize-cli db:create && npm run migrate && npm run seed",
+    "health": "curl -f http://localhost:3000/health || exit 1",
+    "analyze": "node --inspect src/server.js",
+    "test": "echo 'No tests specified yet' && exit 0"
   },
   "dependencies": {
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
+    "compression": "^1.7.4",
     "connect-pg-simple": "^9.0.0",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "express-session": "^1.17.3",
+    "helmet": "^7.1.0",
     "morgan": "^1.10.0",
+    "node-cache": "^5.1.2",
     "pg": "^8.11.5",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.3",
@@ -25,5 +36,18 @@
   },
   "devDependencies": {
     "sequelize-cli": "^6.6.2"
+  },
+  "keywords": [
+    "esim",
+    "management",
+    "zendit",
+    "express",
+    "postgresql"
+  ],
+  "author": "eSIM Hub",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/turgt/esim-management-2"
   }
 }

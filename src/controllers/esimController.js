@@ -1,62 +1,109 @@
 import { v4 as uuidv4 } from 'uuid';
 import { listOffers, purchaseEsim, getPurchase, getPurchaseQrCode } from '../services/zenditClient.js';
 import db from '../db/models/index.js';
+import cacheService from '../services/cacheService.js';
 
-// Teklifleri listele
+// Teklifleri listele - CACHED
 export async function showOffers(req, res) {
   try {
-    const offers = await listOffers(process.env.COUNTRY || 'TR');
+    const country = process.env.COUNTRY || 'TR';
+    
+    // Check cache first
+    let offers = cacheService.getOffers(country);
+    
+    if (!offers) {
+      console.log('🌐 Fetching offers from API...');
+      offers = await listOffers(country);
+      cacheService.setOffers(country, offers);
+    }
+
     const activeOffers = offers.list.filter(o => o.enabled);
-    res.render('offers', { title: 'Offers', offers: activeOffers });
+    
+    res.render('offers', { 
+      title: 'Offers', 
+      offers: activeOffers,
+      cached: offers === cacheService.getOffers(country)
+    });
   } catch (err) {
     console.error("❌ showOffers error:", err.response?.data || err.message);
     res.render('error', { message: 'Failed to load offers' });
   }
 }
 
-// Satın alma işlemi
+// Satın alma işlemi - OPTIMIZED
 export async function createPurchase(req, res) {
+  const transaction = await db.sequelize.transaction();
+  
   try {
     const { offerId } = req.body;
-    const user = await db.User.findByPk(req.session.user.id, { include: db.Esim });
+    const userId = req.session.user.id;
+    
+    // Use transaction for atomic operations
+    const user = await db.User.findByPk(userId, { 
+      include: db.Esim,
+      transaction 
+    });
 
-    // Kullanıcının limiti dolmuş mu?
+    // Check limit
     if (user.esimLimit && user.Esims.length >= user.esimLimit) {
+      await transaction.rollback();
       return res.render('error', { message: 'eSIM limit reached' });
     }
 
     const transactionId = uuidv4();
     console.log(`🛒 Creating purchase - User: ${user.username}, Offer: ${offerId}, TX: ${transactionId}`);
     
+    // API call
     const purchase = await purchaseEsim(offerId, transactionId);
     console.log(`✅ Purchase created with status: ${purchase.status}`);
 
-    // DB'ye kaydet
+    // Save to database
     await db.Esim.create({
       userId: user.id,
       offerId,
       transactionId,
       status: purchase.status || 'pending'
-    });
+    }, { transaction });
 
+    // Cache the initial status
+    cacheService.setStatus(transactionId, purchase);
+    
+    // Invalidate user's purchase cache
+    cacheService.invalidateUser(userId);
+
+    await transaction.commit();
     res.redirect(`/status/${transactionId}`);
+    
   } catch (err) {
+    await transaction.rollback();
     console.error("❌ createPurchase error:", err.response?.data || err.message);
     res.render('error', { message: 'Failed to create purchase' });
   }
 }
 
-// Satın alma durumu - VERİTABANI GÜNCELLEMESİ İLE
+// Status with smart caching
 export async function showStatus(req, res) {
   try {
     const txId = req.params.txId;
-    console.log(`🔍 Checking status for transaction: ${txId}`);
+    const forceRefresh = req.query.refresh === 'true';
     
-    // 1. API'den güncel durumu al
-    const apiStatus = await getPurchase(txId);
-    console.log(`📡 API Status: ${apiStatus.status}`);
+    console.log(`🔍 Checking status for transaction: ${txId} (force: ${forceRefresh})`);
     
-    // 2. Veritabanındaki kaydı bul
+    let apiStatus = null;
+    
+    // Try cache first (unless forced refresh)
+    if (!forceRefresh) {
+      apiStatus = cacheService.getStatus(txId);
+    }
+    
+    // If not cached or forced refresh, fetch from API
+    if (!apiStatus) {
+      console.log('🌐 Fetching status from API...');
+      apiStatus = await getPurchase(txId);
+      cacheService.setStatus(txId, apiStatus);
+    }
+    
+    // Find database record
     const esimRecord = await db.Esim.findOne({ 
       where: { transactionId: txId },
       include: [{
@@ -71,8 +118,10 @@ export async function showStatus(req, res) {
     }
     
     console.log(`💾 Database Status: ${esimRecord.status}`);
+    console.log(`📡 API Status: ${apiStatus.status}`);
     
-    // 3. Eğer status değişmişse veritabanını güncelle
+    // Update database if status changed
+    let statusUpdated = false;
     if (esimRecord.status !== apiStatus.status) {
       console.log(`🔄 Updating status: ${esimRecord.status} → ${apiStatus.status}`);
       
@@ -81,17 +130,19 @@ export async function showStatus(req, res) {
           status: apiStatus.status
         });
         
+        // Invalidate related caches
+        cacheService.invalidateUser(esimRecord.userId);
+        cacheService.invalidateStatus(txId);
+        
+        statusUpdated = true;
         console.log(`✅ Status updated in database successfully`);
       } catch (updateError) {
         console.error(`❌ Failed to update database:`, updateError);
-        // Database güncellemesi başarısız olsa da devam et
       }
-    } else {
-      console.log(`ℹ️ Status unchanged: ${esimRecord.status}`);
     }
     
-    // 4. QR Code butonunun görünüp görünmeyeceğini belirle
-    const isQrReady = ['completed', 'success', 'active', 'ready', 'done'].includes(
+    // QR readiness check
+    const isQrReady = ['completed', 'success', 'active', 'ready'].includes(
       apiStatus.status.toLowerCase()
     );
     
@@ -101,13 +152,16 @@ export async function showStatus(req, res) {
       title: 'Purchase Status', 
       status: apiStatus,
       isQrReady: isQrReady,
-      dbStatus: esimRecord.status, // Debug için
-      updatedAt: new Date().toLocaleTimeString() // Son güncellenme zamanı
+      dbStatus: esimRecord.status,
+      statusUpdated: statusUpdated,
+      cached: !forceRefresh && cacheService.getStatus(txId) !== null,
+      updatedAt: new Date().toLocaleTimeString()
     });
+    
   } catch (err) {
     console.error("❌ showStatus error:", err.response?.data || err.message);
     
-    // API hatası varsa veritabanındaki bilgileri göster
+    // Fallback to database
     try {
       const esimRecord = await db.Esim.findOne({ 
         where: { transactionId: req.params.txId }
@@ -123,7 +177,7 @@ export async function showStatus(req, res) {
             status: esimRecord.status,
             statusMessage: 'Status from database (API temporarily unavailable)'
           },
-          isQrReady: ['completed', 'success', 'active', 'ready', 'done'].includes(esimRecord.status.toLowerCase()),
+          isQrReady: ['completed', 'success', 'active'].includes(esimRecord.status.toLowerCase()),
           dbStatus: esimRecord.status,
           apiError: true
         });
@@ -136,81 +190,93 @@ export async function showStatus(req, res) {
   }
 }
 
-// QR kod
+// QR Code with caching
 export async function showQrCode(req, res) {
   try {
     const txId = req.params.txId;
     console.log(`📱 Fetching QR code for transaction: ${txId}`);
     
-    // İlk olarak status'u kontrol et
-    const status = await getPurchase(txId);
+    // Check cache first
+    let qr = cacheService.getQrCode(txId);
     
-    if (!['completed', 'success', 'active', 'ready', 'done'].includes(status.status.toLowerCase())) {
-      return res.render('error', { 
-        message: `QR code not ready yet. Current status: ${status.status}` 
-      });
+    if (!qr) {
+      // Verify status first
+      const status = await getPurchase(txId);
+      
+      if (!['completed', 'success', 'active', 'ready'].includes(status.status.toLowerCase())) {
+        return res.render('error', { 
+          message: `QR code not ready yet. Current status: ${status.status}` 
+        });
+      }
+      
+      console.log('🌐 Fetching QR code from API...');
+      qr = await getPurchaseQrCode(txId);
+      cacheService.setQrCode(txId, qr);
     }
     
-    const qr = await getPurchaseQrCode(txId);
-    res.render('qrcode', { title: 'QR Code', qr });
+    res.render('qrcode', { 
+      title: 'QR Code', 
+      qr,
+      cached: qr === cacheService.getQrCode(txId)
+    });
   } catch (err) {
     console.error("❌ showQrCode error:", err.response?.data || err.message);
     res.render('error', { message: 'Failed to fetch QR code' });
   }
 }
 
-// Kullanıcının satın aldığı eSIM'leri listele - GÜNCELLENMİŞ
+// Optimized purchases list
 export async function listUserPurchases(req, res) {
   try {
-    const purchases = await db.Esim.findAll({ 
-      where: { userId: req.session.user.id },
-      order: [['createdAt', 'DESC']]
-    });
+    const userId = req.session.user.id;
+    const forceRefresh = req.query.refresh === 'true';
     
-    console.log(`📋 Found ${purchases.length} purchases for user ${req.session.user.id}`);
+    console.log(`📋 Loading purchases for user ${userId} (force: ${forceRefresh})`);
     
-    // Development modunda veya az sayıda purchase varsa status'ları güncelle
-    if (process.env.NODE_ENV === 'development' || purchases.length <= 3) {
-      console.log('🔄 Refreshing purchase statuses in background...');
+    let purchases = null;
+    
+    // Try cache first
+    if (!forceRefresh) {
+      purchases = cacheService.getUserPurchases(userId);
+    }
+    
+    if (!purchases) {
+      console.log('💾 Fetching purchases from database...');
+      purchases = await db.Esim.findAll({ 
+        where: { userId: userId },
+        order: [['createdAt', 'DESC']],
+        limit: 20 // Pagination - show last 20
+      });
       
-      for (const purchase of purchases) {
-        try {
-          console.log(`🔍 Checking status for ${purchase.transactionId}...`);
-          const apiStatus = await getPurchase(purchase.transactionId);
-          
-          if (purchase.status !== apiStatus.status) {
-            console.log(`🔄 Purchase ${purchase.transactionId}: ${purchase.status} → ${apiStatus.status}`);
-            await purchase.update({ status: apiStatus.status });
-          } else {
-            console.log(`ℹ️ Purchase ${purchase.transactionId}: Status unchanged (${purchase.status})`);
+      cacheService.setUserPurchases(userId, purchases);
+    }
+    
+    // Background status refresh for recent purchases
+    if (purchases.length > 0 && purchases.length <= 3) {
+      setImmediate(async () => {
+        console.log('🔄 Background refresh of recent purchases...');
+        
+        for (const purchase of purchases.slice(0, 3)) {
+          try {
+            const apiStatus = await getPurchase(purchase.transactionId);
+            if (purchase.status !== apiStatus.status) {
+              await purchase.update({ status: apiStatus.status });
+              cacheService.invalidateUser(userId);
+              console.log(`✅ Background updated ${purchase.transactionId}: ${purchase.status} → ${apiStatus.status}`);
+            }
+          } catch (err) {
+            console.log(`⚠️ Background update failed for ${purchase.transactionId}:`, err.message);
           }
-        } catch (updateErr) {
-          console.log(`⚠️ Could not update status for ${purchase.transactionId}:`, updateErr.message);
-          // Hata olsa da devam et
         }
-      }
-      
-      // Güncellenmiş verileri tekrar çek
-      const refreshedPurchases = await db.Esim.findAll({ 
-        where: { userId: req.session.user.id },
-        order: [['createdAt', 'DESC']]
-      });
-      
-      console.log('✅ Purchase statuses refreshed');
-      
-      res.render('purchases', { 
-        title: 'My Purchases', 
-        purchases: refreshedPurchases,
-        lastRefresh: new Date().toLocaleTimeString()
-      });
-    } else {
-      // Çok fazla purchase varsa güncellemeden göster
-      console.log('ℹ️ Too many purchases, showing cached data');
-      res.render('purchases', { 
-        title: 'My Purchases', 
-        purchases: purchases
       });
     }
+    
+    res.render('purchases', { 
+      title: 'My Purchases', 
+      purchases: purchases,
+      cached: !forceRefresh && cacheService.getUserPurchases(userId) !== null,
+      lastRefresh: new Date().toLocaleTimeString()
+    });
     
   } catch (err) {
     console.error("❌ listUserPurchases error:", err.message);

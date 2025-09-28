@@ -8,6 +8,234 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+// Performance monitoring and UX enhancements
+(function() {
+  'use strict';
+  
+  // Performance observer for monitoring
+  if ('PerformanceObserver' in window) {
+    const perfObserver = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (entry.entryType === 'navigation') {
+          const loadTime = entry.loadEventEnd - entry.loadEventStart;
+          if (loadTime > 2000) {
+            console.warn(`🐌 Slow page load: ${loadTime}ms`);
+          }
+        }
+      }
+    });
+    
+    try {
+      perfObserver.observe({ entryTypes: ['navigation', 'measure'] });
+    } catch (e) {
+      console.log('Performance Observer not supported');
+    }
+  }
+  
+  // Cache indicator
+  function showCacheIndicator(type = 'cached') {
+    const indicator = document.createElement('div');
+    indicator.className = `cache-indicator ${type}`;
+    indicator.textContent = type === 'cached' ? '💾 Cached' : '🌐 Fresh';
+    document.body.appendChild(indicator);
+    
+    setTimeout(() => indicator.classList.add('show'), 100);
+    setTimeout(() => {
+      indicator.classList.remove('show');
+      setTimeout(() => document.body.removeChild(indicator), 300);
+    }, 2000);
+  }
+  
+  // Show cache indicator based on server data
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check if page was served from cache
+    const metaCache = document.querySelector('meta[name="cache-status"]');
+    if (metaCache) {
+      showCacheIndicator(metaCache.content === 'hit' ? 'cached' : 'api');
+    }
+    
+    // Performance info display (development only)
+    if (window.location.hostname === 'localhost' || window.location.hostname.includes('railway')) {
+      const responseTime = performance.getEntriesByType('navigation')[0];
+      if (responseTime) {
+        const perfInfo = document.createElement('div');
+        perfInfo.className = 'perf-info';
+        perfInfo.innerHTML = `
+          Load: ${Math.round(responseTime.loadEventEnd - responseTime.loadEventStart)}ms<br>
+          DOMReady: ${Math.round(responseTime.domContentLoadedEventEnd - responseTime.domContentLoadedEventStart)}ms
+        `;
+        document.body.appendChild(perfInfo);
+        
+        setTimeout(() => perfInfo.classList.add('show'), 1000);
+        setTimeout(() => perfInfo.classList.remove('show'), 10000);
+      }
+    }
+  });
+  
+  // Lazy loading for images and heavy content
+  if ('IntersectionObserver' in window) {
+    const lazyElements = document.querySelectorAll('.lazy-load');
+    
+    const lazyObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('loaded');
+          lazyObserver.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.1,
+      rootMargin: '50px'
+    });
+    
+    lazyElements.forEach(el => lazyObserver.observe(el));
+  }
+  
+  // Optimized form submissions
+  document.addEventListener('submit', function(e) {
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+    
+    if (submitBtn && !submitBtn.disabled) {
+      // Prevent double submission
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = '0.6';
+      
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<span class="btn-icon">⏳</span> Loading...';
+      
+      // Re-enable after timeout (safety net)
+      setTimeout(() => {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.innerHTML = originalText;
+      }, 10000);
+    }
+  });
+  
+  // Smart auto-refresh for status pages
+  function setupSmartRefresh() {
+    const statusElement = document.querySelector('[data-status]');
+    if (!statusElement) return;
+    
+    const status = statusElement.dataset.status.toLowerCase();
+    const isPending = ['pending', 'processing', 'installing'].includes(status);
+    
+    if (isPending) {
+      let refreshCount = 0;
+      const maxRefreshes = 8;
+      const baseInterval = 15000; // Start with 15 seconds
+      
+      function scheduleRefresh() {
+        if (refreshCount >= maxRefreshes) {
+          console.log('⏰ Auto-refresh stopped');
+          return;
+        }
+        
+        refreshCount++;
+        const interval = baseInterval * Math.min(refreshCount, 4); // Progressive delay
+        
+        setTimeout(() => {
+          console.log(`🔄 Auto-refresh ${refreshCount}/${maxRefreshes}`);
+          
+          // Add refresh parameter to avoid full cache
+          const url = new URL(window.location);
+          url.searchParams.set('refresh', 'true');
+          url.searchParams.set('_t', Date.now());
+          
+          window.location.href = url.toString();
+        }, interval);
+      }
+      
+      scheduleRefresh();
+    }
+  }
+  
+  // Enhanced button interactions
+  function enhanceButtons() {
+    const buttons = document.querySelectorAll('button, .btn-primary, .btn-secondary');
+    
+    buttons.forEach(btn => {
+      // Touch/click feedback
+      btn.addEventListener('touchstart', function() {
+        this.style.transform = 'scale(0.98)';
+      });
+      
+      btn.addEventListener('touchend', function() {
+        this.style.transform = '';
+      });
+      
+      // Ripple effect for modern feel
+      btn.addEventListener('click', function(e) {
+        const ripple = document.createElement('span');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+        
+        ripple.style.cssText = `
+          position: absolute;
+          width: ${size}px;
+          height: ${size}px;
+          left: ${x}px;
+          top: ${y}px;
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 50%;
+          transform: scale(0);
+          animation: ripple 0.6s ease-out;
+          pointer-events: none;
+        `;
+        
+        this.style.position = 'relative';
+        this.style.overflow = 'hidden';
+        this.appendChild(ripple);
+        
+        setTimeout(() => {
+          if (ripple.parentNode) {
+            ripple.parentNode.removeChild(ripple);
+          }
+        }, 600);
+      });
+    });
+  }
+  
+  // Initialize enhancements
+  document.addEventListener('DOMContentLoaded', function() {
+    setupSmartRefresh();
+    enhanceButtons();
+    
+    // Mark critical elements as loaded
+    document.body.classList.add('loaded');
+  });
+  
+  // Service Worker for caching (optional)
+  if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(registration => {
+          console.log('✅ SW registered');
+        })
+        .catch(registrationError => {
+          console.log('❌ SW registration failed');
+        });
+    });
+  }
+  
+})();
+
+// Add CSS for ripple animation
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes ripple {
+    to {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
+`;
+document.head.appendChild(style);
+</script>
 </head>
 <body>
   <div class="app">
