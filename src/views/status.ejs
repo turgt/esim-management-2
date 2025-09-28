@@ -1,6 +1,28 @@
-<%- include('partials/header',{title:'Status', user:locals.user}) %>
-<h1>Status</h1>
-<p>Transaction: <%=txId%></p>
-<p>Status: <%=purchase.status%></p>
-<a href='/purchases/<%=txId%>/qrcode'>QR</a>
+<%- include('partials/header',{title:'Purchase Status',user:locals.user}) %>
+
+<h1>Purchase Status</h1>
+
+<p><strong>Transaction ID:</strong> <%= status.transactionId %></p>
+<p><strong>Offer ID:</strong> <%= status.offerId %></p>
+<p><strong>Status:</strong> <%= status.status %></p>
+
+<h2>Details</h2>
+<ul>
+  <li>Brand: <%= status.brandName %></li>
+  <li>Country: <%= status.country %></li>
+  <li>Duration: <%= status.durationDays %> days</li>
+  <li>Data: <%= status.dataUnlimited ? 'Unlimited' : status.dataGB + ' GB' %></li>
+</ul>
+
+<h2>Log</h2>
+<ul>
+  <% if(status.log){ status.log.forEach(l => { %>
+    <li><%= l.dateTime %> — <%= l.status %>: <%= l.statusMessage %></li>
+  <% })} %>
+</ul>
+
+<p>
+  <a href="/qrcode/<%= status.transactionId %>">View QR Code</a>
+</p>
+
 <%- include('partials/footer') %>

@@ -1,4 +1,15 @@
-<%- include('partials/header',{title:'QR', user:locals.user}) %>
-<h1>QR</h1>
-<img src='<%= imgSrc %>' width='200' height='200'>
+<%- include('partials/header',{title:'QR Code',user:locals.user}) %>
+
+<h1>Your eSIM QR Code</h1>
+
+<% if(qr.imageBase64){ %>
+  <img src="data:image/png;base64,<%= qr.imageBase64 %>" alt="QR Code" />
+<% } else { %>
+  <p>No QR code available.</p>
+<% } %>
+
+<p>
+  <a href="/purchases">Back to Purchases</a>
+</p>
+
 <%- include('partials/footer') %>

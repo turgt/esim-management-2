@@ -16,30 +16,46 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.set('view engine','ejs');
-app.set('views',path.join(__dirname,'views'));
 
-app.use(express.urlencoded({extended:true}));
+// EJS ayarı
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Middleware
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan('dev'));
-app.use('/public',express.static(path.join(__dirname,'..','public')));
+app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 
+// Session store (Postgres)
 const PgSession = pgSession(session);
 app.use(session({
-  store:new PgSession({conString:process.env.DATABASE_URL, createTableIfMissing: true}),
-  secret:process.env.SESSION_SECRET||'keyboardcat',
-  resave:false,
-  saveUninitialized:false
+  store: new PgSession({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: true
+  }),
+  secret: process.env.SESSION_SECRET || 'keyboardcat',
+  resave: false,
+  saveUninitialized: false
 }));
 
-app.use((req,res,next)=>{res.locals.user=req.session.user;next();});
+// User'ı her template'e gönder
+app.use((req, res, next) => {
+  res.locals.user = req.session.user;
+  next();
+});
 
-app.use('/auth',authRoutes);
-app.use('/admin',adminRoutes);
-app.use('/',esimRoutes);
+// Routes
+app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
+app.use('/', esimRoutes);
 
-app.get('/',(req,res)=>res.redirect('/offers'));
-app.get('/healthz',(req,res)=>res.send('ok'));
+// Root redirect
+app.get('/', (req, res) => res.redirect('/offers'));
 
-const PORT=process.env.PORT||3000;
-app.listen(PORT,()=>console.log('Server running on '+PORT));
+// Healthcheck
+app.get('/healthz', (req, res) => res.send('ok'));
+
+// Server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

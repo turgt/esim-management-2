@@ -1,9 +1,13 @@
-import {Router} from 'express';
-import * as c from '../controllers/adminController.js';
-import {ensureAdmin} from '../middleware/auth.js';
+import express from 'express';
+import { ensureAuth, ensureAdmin } from '../middleware/auth.js';
+import { listUsers, createUser } from '../controllers/adminController.js';
 
-const r=Router();
-r.get('/users',ensureAdmin,c.listUsers);
-r.post('/users/new',ensureAdmin,c.newUser);
+const router = express.Router();
 
-export default r;
+// Kullanıcıları listele
+router.get('/users', ensureAuth, ensureAdmin, listUsers);
+
+// Yeni kullanıcı ekle
+router.post('/users', ensureAuth, ensureAdmin, createUser);
+
+export default router;

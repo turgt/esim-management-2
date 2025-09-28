@@ -1,12 +1,19 @@
-<%- include('partials/header',{title:'Offers', user:locals.user}) %>
-<h1>Offers</h1>
-<% if(offers.list){ offers.list.forEach(o=>{ %>
-<div class='card'>
-  <h3><%=o.shortNotes%></h3>
-  <form method='post' action='/purchase'>
-    <input type='hidden' name='offerId' value='<%=o.offerId%>'>
-    <button type='submit'>Buy</button>
-  </form>
-</div>
-<% })} %>
+<%- include('partials/header',{title:'Offers',user:locals.user}) %>
+
+<h1>Available eSIM Offers</h1>
+
+<ul>
+  <% offers.forEach(o => { %>
+    <li class="card">
+      <h3><%= o.brandName %> - <%= o.shortNotes %></h3>
+      <p><%= o.notes %></p>
+      <p><strong>Price:</strong> <%= o.price.fixed / o.price.currencyDivisor %> <%= o.price.currency %></p>
+      <form method="post" action="/purchases">
+        <input type="hidden" name="offerId" value="<%= o.offerId %>">
+        <button type="submit">Buy</button>
+      </form>
+    </li>
+  <% }) %>
+</ul>
+
 <%- include('partials/footer') %>

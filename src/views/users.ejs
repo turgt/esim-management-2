@@ -1,13 +1,53 @@
-<%- include('partials/header',{title:'Users', user:locals.user}) %>
-<h1>Users</h1>
-<ul>
-<% users.forEach(u=>{ %><li><%=u.username%> - Limit:<%=u.esimLimit||'∞'%></li><% })%>
-</ul>
-<h2>Add User</h2>
-<form method='post' action='/admin/users/new'>
-  <input name='username' placeholder='Username'>
-  <input type='password' name='password' placeholder='Password'>
-  <input name='esimLimit' placeholder='Limit (blank=∞)'>
-  <button>Add</button>
+<%- include('partials/header',{title:'Users',user:locals.user}) %>
+
+<h1>Manage Users</h1>
+
+<h2>Add New User</h2>
+<form method="post" action="/admin/users">
+  <input name="username" placeholder="Username" required>
+  <input type="password" name="password" placeholder="Password" required>
+  <input type="number" name="esimLimit" placeholder="eSIM Limit (leave empty for unlimited)">
+  <button type="submit">Add User</button>
 </form>
+
+<hr>
+
+<h2>Existing Users</h2>
+<table border="1" cellpadding="5" cellspacing="0">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Username</th>
+      <th>Is Admin?</th>
+      <th>eSIM Limit</th>
+      <th>eSIMs</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% users.forEach(u => { %>
+      <tr>
+        <td><%= u.id %></td>
+        <td><%= u.username %></td>
+        <td><%= u.isAdmin ? "✅" : "❌" %></td>
+        <td><%= u.esimLimit ? u.esimLimit : "Unlimited" %></td>
+        <td>
+          <% if(u.Esims && u.Esims.length){ %>
+            <ul>
+              <% u.Esims.forEach(e => { %>
+                <li>
+                  <strong><%= e.offerId %></strong> - <%= e.status %>
+                  [ <a href="/status/<%= e.transactionId %>">Status</a> ]
+                  [ <a href="/qrcode/<%= e.transactionId %>">QR</a> ]
+                </li>
+              <% }) %>
+            </ul>
+          <% } else { %>
+            No eSIMs
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
 <%- include('partials/footer') %>
