@@ -1,1 +1,9 @@
-<h1>login</h1>
+<%- include('partials/header',{title:'Login', user:locals.user}) %>
+<h1>Login</h1>
+<form method='post' action='/auth/login'>
+  <input name='username' placeholder='Username'>
+  <input type='password' name='password' placeholder='Password'>
+  <button>Login</button>
+</form>
+<% if(error){%><p><%=error%></p><%}%>
+<%- include('partials/footer') %>

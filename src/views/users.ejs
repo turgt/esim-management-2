@@ -1,1 +1,13 @@
-<h1>users</h1>
+<%- include('partials/header',{title:'Users', user:locals.user}) %>
+<h1>Users</h1>
+<ul>
+<% users.forEach(u=>{ %><li><%=u.username%> - Limit:<%=u.esimLimit||'∞'%></li><% })%>
+</ul>
+<h2>Add User</h2>
+<form method='post' action='/admin/users/new'>
+  <input name='username' placeholder='Username'>
+  <input type='password' name='password' placeholder='Password'>
+  <input name='esimLimit' placeholder='Limit (blank=∞)'>
+  <button>Add</button>
+</form>
+<%- include('partials/footer') %>

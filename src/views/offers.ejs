@@ -1,1 +1,12 @@
-<h1>offers</h1>
+<%- include('partials/header',{title:'Offers', user:locals.user}) %>
+<h1>Offers</h1>
+<% if(offers.list){ offers.list.forEach(o=>{ %>
+<div class='card'>
+  <h3><%=o.shortNotes%></h3>
+  <form method='post' action='/purchase'>
+    <input type='hidden' name='offerId' value='<%=o.offerId%>'>
+    <button type='submit'>Buy</button>
+  </form>
+</div>
+<% })} %>
+<%- include('partials/footer') %>

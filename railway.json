@@ -4,8 +4,8 @@
     "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "npm start",
-    "healthcheckPath": "/",
+    "startCommand": "npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all && npm start",
+    "healthcheckPath": "/healthz",
     "healthcheckTimeout": 100,
     "restartPolicyType": "on_failure",
     "restartPolicyMaxRetries": 3

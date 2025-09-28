@@ -1,1 +1,6 @@
-<h1>status</h1>
+<%- include('partials/header',{title:'Status', user:locals.user}) %>
+<h1>Status</h1>
+<p>Transaction: <%=txId%></p>
+<p>Status: <%=purchase.status%></p>
+<a href='/purchases/<%=txId%>/qrcode'>QR</a>
+<%- include('partials/footer') %>
