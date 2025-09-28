@@ -47,31 +47,6 @@
     }, 2000);
   }
   
-  // Show cache indicator based on server data
-  document.addEventListener('DOMContentLoaded', function() {
-    // Check if page was served from cache
-    const metaCache = document.querySelector('meta[name="cache-status"]');
-    if (metaCache) {
-      showCacheIndicator(metaCache.content === 'hit' ? 'cached' : 'api');
-    }
-    
-    // Performance info display (development only)
-    if (window.location.hostname === 'localhost' || window.location.hostname.includes('railway')) {
-      const responseTime = performance.getEntriesByType('navigation')[0];
-      if (responseTime) {
-        const perfInfo = document.createElement('div');
-        perfInfo.className = 'perf-info';
-        perfInfo.innerHTML = `
-          Load: ${Math.round(responseTime.loadEventEnd - responseTime.loadEventStart)}ms<br>
-          DOMReady: ${Math.round(responseTime.domContentLoadedEventEnd - responseTime.domContentLoadedEventStart)}ms
-        `;
-        document.body.appendChild(perfInfo);
-        
-        setTimeout(() => perfInfo.classList.add('show'), 1000);
-        setTimeout(() => perfInfo.classList.remove('show'), 10000);
-      }
-    }
-  });
   
   // Lazy loading for images and heavy content
   if ('IntersectionObserver' in window) {

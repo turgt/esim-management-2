@@ -114,13 +114,6 @@
     }, 300);
   };
   
-  // Debug function - Browser console'da test için
-  window.testRefresh = function() {
-    console.log('🧪 Test refresh function');
-    console.log('Button elements:', document.querySelectorAll('button'));
-    console.log('Refresh button:', document.querySelector('[data-action="refresh"]'));
-    refreshStatus();
-  };
 </script><%- include('partials/header', {title: 'Purchase Status', user: locals.user}) %>
 
 <div class="page-header">
@@ -279,23 +272,6 @@
       Back to My eSIMs
     </a>
   </div>
-
-  <!-- Debug Info (development only) -->
-  <% if (typeof dbStatus !== 'undefined') { %>
-    <div class="debug-status" style="margin-top: 24px; padding: 16px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; font-family: monospace; font-size: 12px;">
-      <strong>🔍 Debug Info:</strong><br>
-      Database Status: "<%= dbStatus %>"<br>
-      API Status: "<%= status.status %>"<br>
-      QR Ready: <%= isQrReady ? 'Yes ✅' : 'No ❌' %><br>
-      <% if (typeof updatedAt !== 'undefined') { %>
-        Last Check: <%= updatedAt %><br>
-      <% } %>
-      <% if (typeof apiError !== 'undefined' && apiError) { %>
-        <span style="color: #dc2626;">⚠️ API Error - Showing DB data</span><br>
-      <% } %>
-      Status Match: <%= dbStatus === status.status ? 'Yes ✅' : 'No (Updated) 🔄' %>
-    </div>
-  <% } %>
 </div>
 
 <%- include('partials/footer') %>

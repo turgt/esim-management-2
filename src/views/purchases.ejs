@@ -6,13 +6,6 @@
 </div>
 
 <% if (purchases.length > 0) { %>
-  <!-- Debug Info (geliştirme aşamasında kaldırılacak) -->
-  <div class="debug-info" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 16px; margin-bottom: 24px; font-family: monospace; font-size: 12px;">
-    <strong>Debug - Status Values:</strong><br>
-    <% purchases.forEach((p, index) => { %>
-      <%= index + 1 %>. <%= p.offerId %> → Status: "<%= p.status %>"<br>
-    <% }) %>
-  </div>
 
   <div class="purchases-grid">
     <% purchases.forEach(purchase => { %>
