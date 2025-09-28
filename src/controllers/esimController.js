@@ -37,7 +37,7 @@ export async function showOffers(req, res) {
   }
 }
 
-// Satın alma işlemi - Cache sadece invalidation için
+// Satın alma işlemi
 export async function createPurchase(req, res) {
   const transaction = await db.sequelize.transaction();
   
@@ -82,7 +82,7 @@ export async function createPurchase(req, res) {
   }
 }
 
-// Status sayfası - API'den güncel status + DB güncelleme
+// Status sayfası - Her zaman fresh API call
 export async function showStatus(req, res) {
   try {
     const txId = req.params.txId;
@@ -219,7 +219,7 @@ export async function showQrCode(req, res) {
   }
 }
 
-// Kullanıcının satın aldığı eSIM'leri listele - Cache'siz
+// Kullanıcının satın aldığı eSIM'leri listele
 export async function listUserPurchases(req, res) {
   try {
     const userId = req.session.user.id;
@@ -227,17 +227,15 @@ export async function listUserPurchases(req, res) {
     console.log(`📋 Loading purchases for user ${userId}`);
     
     // Always fetch fresh from database
-    console.log('💾 Fetching purchases from database...');
     const purchases = await db.Esim.findAll({ 
       where: { userId: userId },
       order: [['createdAt', 'DESC']],
-      limit: 20 // Show last 20 purchases
+      limit: 20
     });
     
     res.render('purchases', { 
       title: 'My Purchases', 
-      purchases: purchases,
-      lastRefresh: new Date().toLocaleTimeString()
+      purchases: purchases
     });
     
   } catch (err) {

@@ -4,7 +4,6 @@ const CACHE_URLS = [
   '/',
   '/public/styles.css',
   '/offers',
-  '/purchases',
   '/offline.html'
 ];
 
