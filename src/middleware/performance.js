@@ -1,5 +1,18 @@
 import cacheService from '../services/cacheService.js';
 
+// Helper function to safely set headers
+function safeSetHeader(res, name, value) {
+  try {
+    if (!res.headersSent) {
+      res.setHeader(name, value);
+      return true;
+    }
+  } catch (error) {
+    console.log(`📊 Could not set header ${name}: ${error.message}`);
+  }
+  return false;
+}
+
 // Performance monitoring middleware
 export function performanceMonitor(req, res, next) {
   const startTime = Date.now();
@@ -11,14 +24,18 @@ export function performanceMonitor(req, res, next) {
     memory: startMemory
   };
   
-  // Hook into response end
+  // Hook into response end - SAFELY
   const originalEnd = res.end;
   res.end = function(...args) {
     const endTime = Date.now();
     const endMemory = process.memoryUsage();
     const duration = endTime - startTime;
     
-    // Log slow requests
+    // Safely add performance headers
+    safeSetHeader(this, 'X-Response-Time', `${duration}ms`);
+    safeSetHeader(this, 'X-Memory-Usage', `${(endMemory.heapUsed / 1024 / 1024).toFixed(2)}MB`);
+    
+    // Log performance data
     if (duration > 1000) {
       console.warn(`🐌 Slow request: ${req.method} ${req.path} took ${duration}ms`);
     }
@@ -29,10 +46,7 @@ export function performanceMonitor(req, res, next) {
       console.warn(`🧠 High memory usage: ${req.path} used ${(memoryDiff / 1024 / 1024).toFixed(2)}MB`);
     }
     
-    // Add performance headers
-    res.setHeader('X-Response-Time', `${duration}ms`);
-    res.setHeader('X-Memory-Usage', `${(endMemory.heapUsed / 1024 / 1024).toFixed(2)}MB`);
-    
+    // Call original end
     originalEnd.apply(this, args);
   };
   
@@ -102,10 +116,10 @@ export function smartRateLimit(windowMs = 15 * 60 * 1000, maxRequests = 100) {
     userRequests.push(now);
     requests.set(ip, userRequests);
     
-    // Add rate limit headers
-    res.setHeader('X-RateLimit-Limit', limit);
-    res.setHeader('X-RateLimit-Remaining', Math.max(0, limit - userRequests.length));
-    res.setHeader('X-RateLimit-Reset', Math.ceil((windowStart + windowMs) / 1000));
+    // Add rate limit headers safely
+    safeSetHeader(res, 'X-RateLimit-Limit', limit);
+    safeSetHeader(res, 'X-RateLimit-Remaining', Math.max(0, limit - userRequests.length));
+    safeSetHeader(res, 'X-RateLimit-Reset', Math.ceil((windowStart + windowMs) / 1000));
     
     next();
   };
@@ -143,8 +157,8 @@ export function queryMonitor() {
           console.warn(`🔍 High query count: ${queries.length} queries for ${req.path}`);
         }
         
-        // Add query info to response headers
-        res.setHeader('X-Query-Count', queries.length);
+        // Add query info to response headers safely
+        safeSetHeader(res, 'X-Query-Count', queries.length);
       });
       
       next();

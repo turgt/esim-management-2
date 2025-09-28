@@ -192,12 +192,25 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   console.error('💥 Global error:', err);
   
+  // Prevent headers already sent error
+  if (res.headersSent) {
+    return next(err);
+  }
+  
   // Don't leak error details in production
   const message = process.env.NODE_ENV === 'production' 
     ? 'Something went wrong' 
     : err.message;
     
-  res.status(err.status || 500).render('error', { 
+  const status = err.status || 500;
+  
+  // Handle specific error types
+  if (err.code === 'ERR_HTTP_HEADERS_SENT') {
+    console.warn('⚠️ Headers already sent error caught');
+    return;
+  }
+  
+  res.status(status).render('error', { 
     message,
     title: 'Error'
   });
@@ -223,12 +236,26 @@ process.on('SIGINT', () => {
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
   console.error('💥 Uncaught Exception:', err);
-  process.exit(1);
+  
+  // Graceful shutdown for critical errors
+  if (err.code !== 'ERR_HTTP_HEADERS_SENT') {
+    console.error('🛑 Critical error, shutting down...');
+    process.exit(1);
+  } else {
+    console.warn('⚠️ Headers already sent error - continuing...');
+  }
 });
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
+  
+  // Don't exit for non-critical errors
+  if (reason && reason.code === 'ERR_HTTP_HEADERS_SENT') {
+    console.warn('⚠️ Headers already sent in promise - continuing...');
+  } else {
+    console.error('🛑 Critical promise rejection, shutting down...');
+    process.exit(1);
+  }
 });
 
 // Start server
