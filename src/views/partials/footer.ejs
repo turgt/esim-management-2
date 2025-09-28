@@ -1,6 +1,36 @@
-  <hr>
-  <footer>
-    <p>&copy; <%= new Date().getFullYear() %> eSIM App</p>
-  </footer>
+</div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-container">
+        <div class="footer-content">
+          <p>&copy; <%= new Date().getFullYear() %> eSIM Hub. All rights reserved.</p>
+          <div class="footer-links">
+            <a href="#" class="footer-link">Privacy</a>
+            <a href="#" class="footer-link">Terms</a>
+            <a href="#" class="footer-link">Support</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    // Simple loading states
+    document.addEventListener('DOMContentLoaded', function() {
+      const forms = document.querySelectorAll('form');
+      forms.forEach(form => {
+        form.addEventListener('submit', function() {
+          const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Loading...';
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>

@@ -1,19 +1,73 @@
-<%- include('partials/header',{title:'Offers',user:locals.user}) %>
+<%- include('partials/header', {title: 'Offers', user: locals.user}) %>
 
-<h1>Available eSIM Offers</h1>
+<div class="page-header">
+  <h1 class="page-title">Available eSIM Plans</h1>
+  <p class="page-subtitle">Choose from our premium eSIM offers for seamless connectivity</p>
+</div>
 
-<ul>
-  <% offers.forEach(o => { %>
-    <li class="card">
-      <h3><%= o.brandName %> - <%= o.shortNotes %></h3>
-      <p><%= o.notes %></p>
-      <p><strong>Price:</strong> <%= o.price.fixed / o.price.currencyDivisor %> <%= o.price.currency %></p>
-      <form method="post" action="/purchases">
-        <input type="hidden" name="offerId" value="<%= o.offerId %>">
-        <button type="submit">Buy</button>
-      </form>
-    </li>
+<div class="offers-grid">
+  <% offers.forEach(offer => { %>
+    <div class="offer-card">
+      <div class="offer-header">
+        <div class="offer-brand">
+          <h3 class="brand-name"><%= offer.brandName %></h3>
+          <span class="offer-type"><%= offer.shortNotes %></span>
+        </div>
+        <div class="offer-price">
+          <span class="price-amount"><%= (offer.price.fixed / offer.price.currencyDivisor).toFixed(2) %></span>
+          <span class="price-currency"><%= offer.price.currency %></span>
+        </div>
+      </div>
+      
+      <div class="offer-details">
+        <p class="offer-description"><%= offer.notes %></p>
+        
+        <div class="offer-specs">
+          <% if (offer.dataGB) { %>
+            <div class="spec-item">
+              <span class="spec-icon">📊</span>
+              <span class="spec-label">Data:</span>
+              <span class="spec-value"><%= offer.dataGB %> GB</span>
+            </div>
+          <% } %>
+          
+          <% if (offer.durationDays) { %>
+            <div class="spec-item">
+              <span class="spec-icon">📅</span>
+              <span class="spec-label">Duration:</span>
+              <span class="spec-value"><%= offer.durationDays %> days</span>
+            </div>
+          <% } %>
+          
+          <% if (offer.country) { %>
+            <div class="spec-item">
+              <span class="spec-icon">🌍</span>
+              <span class="spec-label">Region:</span>
+              <span class="spec-value"><%= offer.country %></span>
+            </div>
+          <% } %>
+        </div>
+      </div>
+      
+      <div class="offer-actions">
+        <form method="post" action="/purchases" class="purchase-form">
+          <input type="hidden" name="offerId" value="<%= offer.offerId %>">
+          <button type="submit" class="btn-primary">
+            <span class="btn-icon">🛒</span>
+            Purchase Plan
+          </button>
+        </form>
+      </div>
+    </div>
   <% }) %>
-</ul>
+</div>
+
+<% if (offers.length === 0) { %>
+  <div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <h3 class="empty-title">No offers available</h3>
+    <p class="empty-description">Please check back later for new eSIM plans</p>
+  </div>
+<% } %>
 
 <%- include('partials/footer') %>

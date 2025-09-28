@@ -1,21 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
-  <title><%= title %></title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - eSIM Management</title>
   <link rel="stylesheet" href="/public/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <nav>
-    <% if (user) { %>
-      <span>Welcome, <%= user.username %></span> |
-      <a href="/offers">Offers</a> |
-      <a href="/purchases">My Purchases</a> |
-      <% if (user.isAdmin) { %>
-        <a href="/admin/users">Admin Panel</a> |
-      <% } %>
-      <a href="/auth/logout">Logout</a>
-    <% } else { %>
-      <a href="/auth/login">Login</a>
-    <% } %>
-  </nav>
-  <hr>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-container">
+        <div class="header-brand">
+          <h2 class="brand-title">eSIM Hub</h2>
+        </div>
+        
+        <% if (user) { %>
+          <nav class="header-nav">
+            <a href="/offers" class="nav-link">
+              <span class="nav-icon">📋</span>
+              Offers
+            </a>
+            <a href="/purchases" class="nav-link">
+              <span class="nav-icon">📱</span>
+              My eSIMs
+            </a>
+            <% if (user.isAdmin) { %>
+              <a href="/admin/users" class="nav-link">
+                <span class="nav-icon">👥</span>
+                Admin
+              </a>
+            <% } %>
+          </nav>
+          
+          <div class="header-user">
+            <div class="user-info">
+              <span class="user-name"><%= user.username %></span>
+              <% if (user.isAdmin) { %>
+                <span class="user-badge admin">Admin</span>
+              <% } else { %>
+                <span class="user-badge">User</span>
+              <% } %>
+            </div>
+            <a href="/auth/logout" class="logout-btn">
+              <span class="nav-icon">🚪</span>
+              Logout
+            </a>
+          </div>
+        <% } else { %>
+          <div class="header-actions">
+            <a href="/auth/login" class="login-btn">Login</a>
+          </div>
+        <% } %>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="container">
