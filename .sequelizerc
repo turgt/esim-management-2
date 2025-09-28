@@ -1,4 +1,4 @@
-// Load .env locally (Railway sets env automatically)
+// Load .env locally (Railway zaten ortam değişkenlerini set eder)
 require('dotenv').config();
 const path = require('path');
 
