@@ -61,9 +61,9 @@ await initializeCache();
 // Cache duration constants (in seconds)
 export const CACHE_DURATIONS = {
   OFFERS: 300,        // 5 minutes - offers don't change often
-  STATUS: 30,         // 30 seconds - status updates frequently
-  QR_CODE: 3600,      // 1 hour - QR codes are static once generated
-  USER_PURCHASES: 60  // 1 minute - user purchases list
+  //STATUS: 30,         // 30 seconds - status updates frequently
+  //QR_CODE: 3600,      // 1 hour - QR codes are static once generated
+  //USER_PURCHASES: 60  // 1 minute - user purchases list
 };
 
 class CacheService {
@@ -114,29 +114,29 @@ class CacheService {
     return this.set(`offers:${country}`, offers, CACHE_DURATIONS.OFFERS);
   }
 
-  getStatus(transactionId) {
-    return this.get(`status:${transactionId}`);
-  }
+  //getStatus(transactionId) {
+  //  return this.get(`status:${transactionId}`);
+  //}
 
-  setStatus(transactionId, status) {
-    return this.set(`status:${transactionId}`, status, CACHE_DURATIONS.STATUS);
-  }
+  //setStatus(transactionId, status) {
+  //  return this.set(`status:${transactionId}`, status, CACHE_DURATIONS.STATUS);
+ // }
 
-  getQrCode(transactionId) {
-    return this.get(`qr:${transactionId}`);
-  }
+  //getQrCode(transactionId) {
+  //  return this.get(`qr:${transactionId}`);
+ // }
 
-  setQrCode(transactionId, qrData) {
-    return this.set(`qr:${transactionId}`, qrData, CACHE_DURATIONS.QR_CODE);
-  }
+  //setQrCode(transactionId, qrData) {
+  //  return this.set(`qr:${transactionId}`, qrData, CACHE_DURATIONS.QR_CODE);
+  //}
 
-  getUserPurchases(userId) {
-    return this.get(`purchases:${userId}`);
-  }
+  //getUserPurchases(userId) {
+  //  return this.get(`purchases:${userId}`);
+  //}
 
-  setUserPurchases(userId, purchases) {
-    return this.set(`purchases:${userId}`, purchases, CACHE_DURATIONS.USER_PURCHASES);
-  }
+  //setUserPurchases(userId, purchases) {
+  //  return this.set(`purchases:${userId}`, purchases, CACHE_DURATIONS.USER_PURCHASES);
+  //}
 
   // Invalidate related caches
   invalidateUser(userId) {
@@ -144,10 +144,10 @@ class CacheService {
     console.log(`🧹 Invalidated user cache for: ${userId}`);
   }
 
-  invalidateStatus(transactionId) {
-    this.del(`status:${transactionId}`);
-    console.log(`🧹 Invalidated status cache for: ${transactionId}`);
-  }
+  //invalidateStatus(transactionId) {
+  //  this.del(`status:${transactionId}`);
+  //  console.log(`🧹 Invalidated status cache for: ${transactionId}`);
+  //}
 
   // Cache statistics
   getStats() {
