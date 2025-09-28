@@ -1,6 +1,15 @@
-<%- include('partials/header',{title:'Purchases', user:locals.user}) %>
-<h1>Purchases</h1>
+<%- include('partials/header',{title:'My Purchases',user:locals.user}) %>
+
+<h1>My eSIM Purchases</h1>
+
 <ul>
-<% esims.forEach(e=>{ %><li><%=e.offerId%> - <a href='/purchases/<%=e.id%>'>View</a></li><% })%>
+  <% purchases.forEach(p => { %>
+    <li>
+      <strong><%= p.offerId %></strong> - Status: <%= p.status %>
+      [ <a href="/status/<%= p.transactionId %>">Status</a> ]
+      [ <a href="/qrcode/<%= p.transactionId %>">QR</a> ]
+    </li>
+  <% }) %>
 </ul>
+
 <%- include('partials/footer') %>

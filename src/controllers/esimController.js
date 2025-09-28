@@ -65,3 +65,14 @@ export async function showQrCode(req, res) {
     res.render('error', { message: 'Failed to fetch QR code' });
   }
 }
+
+// Kullanıcının satın aldığı eSIM'leri listele
+export async function listUserPurchases(req, res) {
+  try {
+    const purchases = await db.Esim.findAll({ where: { userId: req.session.user.id } });
+    res.render('purchases', { title: 'My Purchases', purchases });
+  } catch (err) {
+    console.error("❌ listUserPurchases error:", err.message);
+    res.render('error', { message: 'Failed to load purchases' });
+  }
+}
