@@ -142,6 +142,8 @@ app.get('/metrics', asyncErrorHandler(async (req, res) => {
     return res.status(403).json({ error: 'Admin access required' });
   }
   
+  // Import cache service dynamically to avoid circular dependency
+  const { default: cacheService } = await import('./services/cacheService.js');
   const metrics = cacheService.get('system:metrics') || [];
   const recentMetrics = metrics.slice(-100); // Last 100 requests
   

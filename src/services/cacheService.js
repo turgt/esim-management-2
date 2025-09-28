@@ -1,32 +1,62 @@
 // ES Module compatible cache service
 let NodeCache;
+let cache;
 
-// Dynamic import for ES module compatibility
-try {
-  const module = await import('node-cache');
-  NodeCache = module.default || module.NodeCache;
-} catch (error) {
-  console.warn('⚠️ NodeCache not available, using fallback');
-  // Fallback to simple in-memory object
-  NodeCache = class {
-    constructor() {
-      this.cache = new Map();
-    }
-    get(key) { return this.cache.get(key); }
-    set(key, value) { this.cache.set(key, value); return true; }
-    del(key) { this.cache.delete(key); return true; }
-    keys() { return Array.from(this.cache.keys()); }
-    getStats() { return { hits: 0, misses: 0, keys: this.cache.size }; }
-    flushAll() { this.cache.clear(); }
-  };
+// Initialize cache service
+async function initializeCache() {
+  try {
+    // Try to import node-cache
+    const nodeCacheModule = await import('node-cache');
+    NodeCache = nodeCacheModule.default;
+    
+    cache = new NodeCache({ 
+      stdTTL: 600, // 10 minutes default
+      checkperiod: 120, // Check for expired keys every 2 minutes
+      useClones: false // Better performance
+    });
+    
+    console.log('✅ NodeCache initialized successfully');
+  } catch (error) {
+    console.warn('⚠️ NodeCache not available, using fallback cache');
+    
+    // Fallback to simple in-memory Map
+    cache = {
+      data: new Map(),
+      get(key) { 
+        const item = this.data.get(key);
+        if (!item) return null;
+        if (item.expiry && Date.now() > item.expiry) {
+          this.data.delete(key);
+          return null;
+        }
+        return item.value;
+      },
+      set(key, value, ttl = 600) { 
+        const expiry = ttl > 0 ? Date.now() + (ttl * 1000) : null;
+        this.data.set(key, { value, expiry });
+        return true;
+      },
+      del(key) { 
+        return this.data.delete(key);
+      },
+      keys() { 
+        return Array.from(this.data.keys());
+      },
+      getStats() { 
+        return { 
+          keys: this.data.size,
+          stats: { hits: 0, misses: 0 }
+        };
+      },
+      flushAll() { 
+        this.data.clear();
+      }
+    };
+  }
 }
 
-// In-memory cache (for Railway deployment without Redis)
-const cache = new NodeCache({ 
-  stdTTL: 600, // 10 minutes default
-  checkperiod: 120, // Check for expired keys every 2 minutes
-  useClones: false // Better performance
-});
+// Initialize cache immediately
+await initializeCache();
 
 // Cache duration constants (in seconds)
 export const CACHE_DURATIONS = {

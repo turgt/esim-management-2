@@ -8,13 +8,13 @@
     "npm": ">=8.0.0"
   },
   "scripts": {
-    "dev": "NODE_ENV=development node --watch src/server.js",
-    "start": "NODE_ENV=production node src/server.js",
+    "dev": "NODE_ENV=development node --experimental-json-modules --watch src/server.js",
+    "start": "NODE_ENV=production node --experimental-json-modules src/server.js",
     "migrate": "sequelize-cli db:migrate",
     "seed": "sequelize-cli db:seed:all",
     "reset-db": "sequelize-cli db:drop && sequelize-cli db:create && npm run migrate && npm run seed",
     "health": "curl -f http://localhost:3000/health || exit 1",
-    "analyze": "node --inspect src/server.js",
+    "analyze": "node --inspect --experimental-json-modules src/server.js",
     "test": "echo 'No tests specified yet' && exit 0"
   },
   "dependencies": {
