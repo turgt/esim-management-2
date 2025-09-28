@@ -1,7 +1,6 @@
 // eSIM Hub Service Worker
 const CACHE_NAME = 'esim-hub-v1';
 const CACHE_URLS = [
-  '/',
   '/public/styles.css',
   '/offers',
   '/offline.html'
