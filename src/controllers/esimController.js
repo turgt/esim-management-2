@@ -91,7 +91,7 @@ export async function showStatus(req, res) {
     }
     
     // 4. QR Code butonunun görünüp görünmeyeceğini belirle
-    const isQrReady = ['completed', 'success', 'active', 'ready'].includes(
+    const isQrReady = ['completed', 'success', 'active', 'ready', 'done'].includes(
       apiStatus.status.toLowerCase()
     );
     
@@ -123,7 +123,7 @@ export async function showStatus(req, res) {
             status: esimRecord.status,
             statusMessage: 'Status from database (API temporarily unavailable)'
           },
-          isQrReady: ['completed', 'success', 'active'].includes(esimRecord.status.toLowerCase()),
+          isQrReady: ['completed', 'success', 'active', 'ready', 'done'].includes(esimRecord.status.toLowerCase()),
           dbStatus: esimRecord.status,
           apiError: true
         });
