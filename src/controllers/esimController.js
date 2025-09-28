@@ -145,7 +145,7 @@ export async function showQrCode(req, res) {
     // İlk olarak status'u kontrol et
     const status = await getPurchase(txId);
     
-    if (!['completed', 'success', 'active', 'ready'].includes(status.status.toLowerCase())) {
+    if (!['completed', 'success', 'active', 'ready', 'done'].includes(status.status.toLowerCase())) {
       return res.render('error', { 
         message: `QR code not ready yet. Current status: ${status.status}` 
       });
