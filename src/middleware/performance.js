@@ -180,6 +180,12 @@ export function requestLogger(req, res, next) {
     const ip = req.ip || req.connection.remoteAddress;
     const userAgent = req.get('User-Agent') || 'Unknown';
     
+    // Skip logging for common 404s that are not concerning
+    const ignorePaths = ['/sw.js', '/favicon.ico', '/robots.txt', '/apple-touch-icon'];
+    if (status === 404 && ignorePaths.some(ignorePath => path.includes(ignorePath))) {
+      return; // Don't log these common 404s
+    }
+    
     // Determine log level based on status code
     let logLevel = 'info';
     if (status >= 500) logLevel = 'error';

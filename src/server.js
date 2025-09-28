@@ -105,6 +105,13 @@ app.use('/public', express.static(path.join(__dirname, '..', 'public'), {
   lastModified: true
 }));
 
+// Service Worker route
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.setHeader('Service-Worker-Allowed', '/');
+  res.sendFile(path.join(__dirname, '..', 'public', 'sw.js'));
+});
+
 // Session configuration
 const PgSession = pgSession(session);
 app.use(session({

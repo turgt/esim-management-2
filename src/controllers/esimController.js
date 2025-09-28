@@ -3,11 +3,10 @@ import { listOffers, purchaseEsim, getPurchase, getPurchaseQrCode } from '../ser
 import db from '../db/models/index.js';
 import cacheService from '../services/cacheService.js';
 
-
-
+// QR ready status constants
 const QR_READY_STATUSES = ['completed', 'success', 'active', 'ready', 'done'];
 
-// Helper function:
+// Helper function to check if QR is ready
 function isQrReady(status) {
   return QR_READY_STATUSES.includes(status.toLowerCase());
 }
@@ -30,8 +29,7 @@ export async function showOffers(req, res) {
     
     res.render('offers', { 
       title: 'Offers', 
-      offers: activeOffers,
-      cached: offers === cacheService.getOffers(country)
+      offers: activeOffers
     });
   } catch (err) {
     console.error("❌ showOffers error:", err.response?.data || err.message);
@@ -39,7 +37,7 @@ export async function showOffers(req, res) {
   }
 }
 
-// Satın alma işlemi - OPTIMIZED
+// Satın alma işlemi
 export async function createPurchase(req, res) {
   const transaction = await db.sequelize.transaction();
   
@@ -47,13 +45,13 @@ export async function createPurchase(req, res) {
     const { offerId } = req.body;
     const userId = req.session.user.id;
     
-    // Use transaction for atomic operations
+    // Get user with eSIMs
     const user = await db.User.findByPk(userId, { 
       include: db.Esim,
       transaction 
     });
 
-    // Check limit
+    // Check eSIM limit
     if (user.esimLimit && user.Esims.length >= user.esimLimit) {
       await transaction.rollback();
       return res.render('error', { message: 'eSIM limit reached' });
@@ -62,7 +60,7 @@ export async function createPurchase(req, res) {
     const transactionId = uuidv4();
     console.log(`🛒 Creating purchase - User: ${user.username}, Offer: ${offerId}, TX: ${transactionId}`);
     
-    // API call
+    // Call Zendit API
     const purchase = await purchaseEsim(offerId, transactionId);
     console.log(`✅ Purchase created with status: ${purchase.status}`);
 
@@ -90,7 +88,7 @@ export async function createPurchase(req, res) {
   }
 }
 
-// Status with smart caching
+// Status sayfası - API'den güncel status + DB güncelleme
 export async function showStatus(req, res) {
   try {
     const txId = req.params.txId;
@@ -150,10 +148,9 @@ export async function showStatus(req, res) {
       }
     }
     
-    // QR readiness check - use helper function
+    // Check if QR is ready
     const qrReady = isQrReady(apiStatus.status);
-    
-    console.log(`📱 QR Ready: ${isQrReady}`);
+    console.log(`📱 QR Ready: ${qrReady}`);
     
     res.render('status', { 
       title: 'Purchase Status', 
@@ -161,14 +158,13 @@ export async function showStatus(req, res) {
       isQrReady: qrReady,
       dbStatus: esimRecord.status,
       statusUpdated: statusUpdated,
-      cached: !forceRefresh && cacheService.getStatus(txId) !== null,
       updatedAt: new Date().toLocaleTimeString()
     });
     
   } catch (err) {
     console.error("❌ showStatus error:", err.response?.data || err.message);
     
-    // Fallback to database
+    // Fallback to database if API fails
     try {
       const esimRecord = await db.Esim.findOne({ 
         where: { transactionId: req.params.txId }
@@ -197,7 +193,7 @@ export async function showStatus(req, res) {
   }
 }
 
-// QR Code with caching and done status support
+// QR Code sayfası
 export async function showQrCode(req, res) {
   try {
     const txId = req.params.txId;
@@ -207,11 +203,13 @@ export async function showQrCode(req, res) {
     let qr = cacheService.getQrCode(txId);
     
     if (!qr) {
-      // Include 'done' status for QR availability  
-      const qrReadyStatuses = ['completed', 'success', 'active', 'ready', 'done'];
-      if (!qrReadyStatuses.includes(status.status.toLowerCase())) {
+      // Verify status first
+      const apiStatus = await getPurchase(txId);
+      console.log(`📡 API Status for QR: ${apiStatus.status}`);
+      
+      if (!isQrReady(apiStatus.status)) {
         return res.render('error', { 
-          message: `QR code not ready yet. Current status: ${status.status}` 
+          message: `QR code not ready yet. Current status: ${apiStatus.status}` 
         });
       }
       
@@ -239,57 +237,16 @@ export async function showQrCode(req, res) {
     res.render('qrcode', { 
       title: 'QR Code', 
       qr,
-      esim: esimRecord,
-      cached: qr === cacheService.getQrCode(txId)
+      esim: esimRecord
     });
+    
   } catch (err) {
     console.error("❌ showQrCode error:", err.response?.data || err.message);
     res.render('error', { message: 'Failed to fetch QR code' });
   }
 }
 
-// Mark QR as downloaded/done (optional endpoint)
-export async function markQrDone(req, res) {
-  try {
-    const txId = req.params.txId;
-    
-    // Find the eSIM record
-    const esimRecord = await db.Esim.findOne({
-      where: { 
-        transactionId: txId,
-        userId: req.session.user.id // Ensure user owns this eSIM
-      }
-    });
-    
-    if (!esimRecord) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'eSIM not found' 
-      });
-    }
-    
-    // Update the record to mark QR as downloaded
-    await esimRecord.update({
-      status: 'done' // or keep original status and add a flag
-    });
-    
-    console.log(`✅ QR marked as downloaded for transaction: ${txId}`);
-    
-    res.json({ 
-      success: true, 
-      message: 'QR code marked as downloaded' 
-    });
-    
-  } catch (err) {
-    console.error("❌ markQrDone error:", err.message);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to mark QR as done' 
-    });
-  }
-}
-
-// Optimized purchases list
+// Kullanıcının satın aldığı eSIM'leri listele
 export async function listUserPurchases(req, res) {
   try {
     const userId = req.session.user.id;
@@ -309,13 +266,13 @@ export async function listUserPurchases(req, res) {
       purchases = await db.Esim.findAll({ 
         where: { userId: userId },
         order: [['createdAt', 'DESC']],
-        limit: 20 // Pagination - show last 20
+        limit: 20 // Show last 20 purchases
       });
       
       cacheService.setUserPurchases(userId, purchases);
     }
     
-    // Background status refresh for recent purchases
+    // Background status refresh for recent purchases (optional)
     if (purchases.length > 0 && purchases.length <= 3) {
       setImmediate(async () => {
         console.log('🔄 Background refresh of recent purchases...');
@@ -338,7 +295,6 @@ export async function listUserPurchases(req, res) {
     res.render('purchases', { 
       title: 'My Purchases', 
       purchases: purchases,
-      cached: !forceRefresh && cacheService.getUserPurchases(userId) !== null,
       lastRefresh: new Date().toLocaleTimeString()
     });
     
