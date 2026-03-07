@@ -1,38 +1,39 @@
 import { v4 as uuidv4 } from 'uuid';
-import { listOffers, purchaseEsim, getPurchase, getPurchaseQrCode } from '../services/zenditClient.js';
+import { listOffers, purchaseEsim, getPurchase, getPurchaseQrCode, getUsage, getEsimPlans, normalizeStatus, isCompletedStatus } from '../services/zenditClient.js';
 import db from '../db/models/index.js';
 import cacheService from '../services/cacheService.js';
+import { getPaginationParams, buildPagination } from '../utils/pagination.js';
+import { logAudit, ACTIONS, getIp } from '../services/auditService.js';
+import logger from '../lib/logger.js';
 
-// QR ready status constants
-const QR_READY_STATUSES = ['completed', 'success', 'active', 'ready', 'done'];
+const log = logger.child({ module: 'esim' });
 
-// Helper function to check if QR is ready
+// Helper function to check if QR is ready (uses normalized status)
 function isQrReady(status) {
-  return QR_READY_STATUSES.includes(status.toLowerCase());
+  return isCompletedStatus(status);
 }
 
 // Teklifleri listele - CACHED
 export async function showOffers(req, res) {
   try {
     const country = process.env.COUNTRY || 'TR';
-    
-    // Check cache first
+
     let offers = cacheService.getOffers(country);
-    
+
     if (!offers) {
-      console.log('🌐 Fetching offers from API...');
+      log.info({ country }, 'Fetching offers from API');
       offers = await listOffers(country);
       cacheService.setOffers(country, offers);
     }
 
     const activeOffers = offers.list.filter(o => o.enabled);
-    
-    res.render('offers', { 
-      title: 'Offers', 
+
+    res.render('offers', {
+      title: 'Offers',
       offers: activeOffers
     });
   } catch (err) {
-    console.error("❌ showOffers error:", err.response?.data || err.message);
+    log.error({ err, apiError: err.response?.data }, 'showOffers error');
     res.render('error', { message: 'Failed to load offers' });
   }
 }
@@ -40,44 +41,58 @@ export async function showOffers(req, res) {
 // Satın alma işlemi
 export async function createPurchase(req, res) {
   const transaction = await db.sequelize.transaction();
-  
+
   try {
     const { offerId } = req.body;
     const userId = req.session.user.id;
-    
-    // Get user with eSIMs
-    const user = await db.User.findByPk(userId, { 
-      include: db.Esim,
-      transaction 
+
+    const user = await db.User.findByPk(userId, {
+      include: [{ model: db.Esim, foreignKey: 'userId' }],
+      transaction
     });
 
-    // Check eSIM limit
     if (user.esimLimit && user.Esims.length >= user.esimLimit) {
       await transaction.rollback();
       return res.render('error', { message: 'eSIM limit reached' });
     }
 
     const transactionId = uuidv4();
-    console.log(`🛒 Creating purchase - User: ${user.username}, Offer: ${offerId}, TX: ${transactionId}`);
-    
-    // Call Zendit API
-    const purchase = await purchaseEsim(offerId, transactionId);
-    console.log(`✅ Purchase created with status: ${purchase.status}`);
+    log.info({ username: user.username, offerId, transactionId }, 'Creating eSIM purchase');
 
-    // Save to database
+    const purchase = await purchaseEsim(offerId, transactionId);
+    log.info({ transactionId, status: purchase.status }, 'Purchase created');
+
+    const confirmation = purchase.confirmation || {};
+
     await db.Esim.create({
       userId: user.id,
       offerId,
       transactionId,
-      status: purchase.status || 'pending'
+      status: normalizeStatus(purchase.status),
+      iccid: confirmation.iccid || null,
+      smdpAddress: confirmation.smdpAddress || null,
+      activationCode: confirmation.activationCode || null,
+      country: purchase.country || process.env.COUNTRY || 'TR',
+      dataGB: purchase.dataGB || null,
+      durationDays: purchase.durationDays || null,
+      brandName: purchase.brandName || null,
+      priceAmount: purchase.price?.fixed ? (purchase.price.fixed / (purchase.price.currencyDivisor || 100)) : null,
+      priceCurrency: purchase.price?.currency || null
     }, { transaction });
 
     await transaction.commit();
-    res.redirect(`/status/${transactionId}`);
-    
+
+    await logAudit(ACTIONS.ESIM_PURCHASE, {
+      userId: user.id, entity: 'Esim', entityId: null,
+      details: { offerId, transactionId },
+      ipAddress: getIp(req)
+    });
+
+    res.redirect(`/status/${transactionId}?purchased=true`);
+
   } catch (err) {
     await transaction.rollback();
-    console.error("❌ createPurchase error:", err.response?.data || err.message);
+    log.error({ err, apiError: err.response?.data }, 'createPurchase error');
     res.render('error', { message: 'Failed to create purchase' });
   }
 }
@@ -86,71 +101,78 @@ export async function createPurchase(req, res) {
 export async function showStatus(req, res) {
   try {
     const txId = req.params.txId;
-    
-    console.log(`🔍 Checking status for transaction: ${txId}`);
-    
-    // Always fetch fresh status from API
-    console.log('🌐 Fetching status from API...');
+
+    log.info({ transactionId: txId }, 'Checking purchase status');
+
     const apiStatus = await getPurchase(txId);
-    
-    // Find database record
-    const esimRecord = await db.Esim.findOne({ 
+
+    const esimRecord = await db.Esim.findOne({
       where: { transactionId: txId },
       include: [{
         model: db.User,
+        as: 'owner',
         attributes: ['id', 'username']
       }]
     });
-    
+
     if (!esimRecord) {
-      console.error(`❌ eSIM record not found for transaction: ${txId}`);
+      log.warn({ transactionId: txId }, 'eSIM record not found');
       return res.render('error', { message: 'eSIM record not found in database' });
     }
-    
-    console.log(`💾 Database Status: ${esimRecord.status}`);
-    console.log(`📡 API Status: ${apiStatus.status}`);
-    
-    // Update database if status changed
+
+    log.debug({ dbStatus: esimRecord.status, apiStatus: apiStatus.status }, 'Status comparison');
+
+    const updateData = {};
+    const normalizedApiStatus = normalizeStatus(apiStatus.status);
+    if (esimRecord.status !== normalizedApiStatus) {
+      updateData.status = normalizedApiStatus;
+    }
+
+    const confirmation = apiStatus.confirmation || {};
+    if (!esimRecord.iccid && confirmation.iccid) {
+      updateData.iccid = confirmation.iccid;
+    }
+    if (!esimRecord.smdpAddress && confirmation.smdpAddress) {
+      updateData.smdpAddress = confirmation.smdpAddress;
+    }
+    if (!esimRecord.activationCode && confirmation.activationCode) {
+      updateData.activationCode = confirmation.activationCode;
+    }
+
     let statusUpdated = false;
-    if (esimRecord.status !== apiStatus.status) {
-      console.log(`🔄 Updating status: ${esimRecord.status} → ${apiStatus.status}`);
-      
+    if (Object.keys(updateData).length > 0) {
       try {
-        await esimRecord.update({
-          status: apiStatus.status
-        });
-        
+        await esimRecord.update(updateData);
         statusUpdated = true;
-        console.log(`✅ Status updated in database successfully`);
+        log.info({ transactionId: txId, updatedFields: Object.keys(updateData) }, 'Record updated in database');
       } catch (updateError) {
-        console.error(`❌ Failed to update database:`, updateError);
+        log.error({ err: updateError, transactionId: txId }, 'Failed to update database');
       }
     }
-    
-    // Check if QR is ready
+
     const qrReady = isQrReady(apiStatus.status);
-    console.log(`📱 QR Ready: ${qrReady}`);
-    
-    res.render('status', { 
-      title: 'Purchase Status', 
+    log.debug({ transactionId: txId, qrReady }, 'QR ready check');
+
+    res.render('status', {
+      title: 'Purchase Status',
       status: apiStatus,
+      esim: esimRecord,
       isQrReady: qrReady,
       dbStatus: esimRecord.status,
       statusUpdated: statusUpdated,
       updatedAt: new Date().toLocaleTimeString()
     });
-    
+
   } catch (err) {
-    console.error("❌ showStatus error:", err.response?.data || err.message);
-    
-    // Fallback to database if API fails
+    log.error({ err, apiError: err.response?.data }, 'showStatus error');
+
     try {
-      const esimRecord = await db.Esim.findOne({ 
+      const esimRecord = await db.Esim.findOne({
         where: { transactionId: req.params.txId }
       });
-      
+
       if (esimRecord) {
-        console.log(`⚠️ API failed, showing database status: ${esimRecord.status}`);
+        log.warn({ transactionId: req.params.txId, dbStatus: esimRecord.status }, 'API failed, showing database status');
         return res.render('status', {
           title: 'Purchase Status',
           status: {
@@ -159,15 +181,16 @@ export async function showStatus(req, res) {
             status: esimRecord.status,
             statusMessage: 'Status from database (API temporarily unavailable)'
           },
+          esim: esimRecord,
           isQrReady: isQrReady(esimRecord.status),
           dbStatus: esimRecord.status,
           apiError: true
         });
       }
     } catch (dbErr) {
-      console.error("❌ Database fallback also failed:", dbErr);
+      log.error({ err: dbErr }, 'Database fallback also failed');
     }
-    
+
     res.render('error', { message: 'Failed to fetch status' });
   }
 }
@@ -176,45 +199,42 @@ export async function showStatus(req, res) {
 export async function showQrCode(req, res) {
   try {
     const txId = req.params.txId;
-    console.log(`📱 Fetching QR code for transaction: ${txId}`);
-    
-    // Always fetch fresh status and QR from API
+    log.info({ transactionId: txId }, 'Fetching QR code');
+
     const apiStatus = await getPurchase(txId);
-    console.log(`📡 API Status for QR: ${apiStatus.status}`);
-    
+    log.debug({ transactionId: txId, status: apiStatus.status }, 'API status for QR');
+
     if (!isQrReady(apiStatus.status)) {
-      return res.render('error', { 
-        message: `QR code not ready yet. Current status: ${apiStatus.status}` 
+      return res.render('error', {
+        message: `QR code not ready yet. Current status: ${apiStatus.status}`
       });
     }
-    
-    console.log('🌐 Fetching QR code from API...');
+
     const qr = await getPurchaseQrCode(txId);
-    
-    // Check if user has permission
+
     const esimRecord = await db.Esim.findOne({
       where: { transactionId: txId },
       include: [{
         model: db.User,
+        as: 'owner',
         attributes: ['id', 'username']
       }]
     });
-    
-    // Verify user owns this eSIM
-    if (!esimRecord || esimRecord.userId !== req.session.user.id) {
-      return res.render('error', { 
-        message: 'You do not have permission to access this QR code' 
+
+    if (!esimRecord || (esimRecord.userId !== req.session.user.id && !req.session.user.isAdmin)) {
+      return res.render('error', {
+        message: 'You do not have permission to access this QR code'
       });
     }
-    
-    res.render('qrcode', { 
-      title: 'QR Code', 
+
+    res.render('qrcode', {
+      title: 'QR Code',
       qr,
       esim: esimRecord
     });
-    
+
   } catch (err) {
-    console.error("❌ showQrCode error:", err.response?.data || err.message);
+    log.error({ err, apiError: err.response?.data }, 'showQrCode error');
     res.render('error', { message: 'Failed to fetch QR code' });
   }
 }
@@ -223,23 +243,57 @@ export async function showQrCode(req, res) {
 export async function listUserPurchases(req, res) {
   try {
     const userId = req.session.user.id;
-    
-    console.log(`📋 Loading purchases for user ${userId}`);
-    
-    // Always fetch fresh from database
-    const purchases = await db.Esim.findAll({ 
+    const { page, limit, offset } = getPaginationParams(req);
+
+    const { count, rows: purchases } = await db.Esim.findAndCountAll({
       where: { userId: userId },
       order: [['createdAt', 'DESC']],
-      limit: 20
+      limit,
+      offset
     });
-    
-    res.render('purchases', { 
-      title: 'My Purchases', 
-      purchases: purchases
+
+    const pagination = buildPagination(page, limit, count, req.query);
+
+    const plansMap = {};
+    const uniqueIccids = [...new Set(purchases.filter(p => p.iccid).map(p => p.iccid))];
+    await Promise.all(uniqueIccids.map(async (iccid) => {
+      try {
+        plansMap[iccid] = await getEsimPlans(iccid);
+      } catch (e) {
+        // silently skip
+      }
+    }));
+
+    res.render('purchases', {
+      title: 'My Purchases',
+      purchases,
+      plansMap,
+      pagination
     });
-    
+
   } catch (err) {
-    console.error("❌ listUserPurchases error:", err.message);
+    log.error({ err }, 'listUserPurchases error');
     res.render('error', { message: 'Failed to load purchases' });
+  }
+}
+
+// Kullanım detayı
+export async function showUsage(req, res) {
+  try {
+    const txId = req.params.txId;
+    const usage = await getUsage(txId);
+
+    const esimRecord = await db.Esim.findOne({
+      where: { transactionId: txId }
+    });
+
+    if (!esimRecord || (esimRecord.userId !== req.session.user.id && !req.session.user.isAdmin)) {
+      return res.render('error', { message: 'Access denied' });
+    }
+
+    res.json({ usage, esim: esimRecord });
+  } catch (err) {
+    log.error({ err, apiError: err.response?.data }, 'showUsage error');
+    res.status(500).json({ error: 'Failed to fetch usage data' });
   }
 }

@@ -1,0 +1,59 @@
+<%- include('partials/header', {title: 'Register', user: null}) %>
+
+    <div class="card p-6">
+      <div class="text-center mb-6">
+        <h1 class="text-xl font-semibold text-[var(--text-primary)]">Create account</h1>
+        <p class="text-sm text-[var(--text-secondary)] mt-1">Get started with eSIM Hub</p>
+      </div>
+
+      <% if (typeof errors !== 'undefined' && errors && errors.length > 0) { %>
+      <div class="alert alert-error mb-4">
+        <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+        <div class="space-y-1">
+          <% errors.forEach(function(err) { %><p><%= err.msg || err %></p><% }) %>
+        </div>
+      </div>
+      <% } %>
+
+      <form method="post" action="/auth/register" class="space-y-4">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div>
+          <label class="input-label">Username</label>
+          <input type="text" name="username" required minlength="3" maxlength="30" placeholder="Choose a username" class="input">
+        </div>
+        <div>
+          <label class="input-label">Email</label>
+          <input type="email" name="email" required placeholder="your@email.com" class="input">
+        </div>
+        <div>
+          <label class="input-label">Display Name <span class="text-[var(--text-tertiary)] font-normal">(optional)</span></label>
+          <input type="text" name="displayName" maxlength="50" placeholder="How should we call you?" class="input">
+        </div>
+        <div>
+          <label class="input-label">Password</label>
+          <input type="password" name="password" id="regPassword" required minlength="8" placeholder="Min 8 characters" class="input" oninput="checkPasswordStrength(this.value)">
+          <div class="password-strength" id="pwStrength">
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+      </form>
+    </div>
+
+    <p class="mt-4 text-center text-sm text-[var(--text-tertiary)]">
+      Already have an account? <a href="/auth/login" class="font-medium text-[var(--brand-primary)]">Sign in</a>
+    </p>
+
+<script>
+function checkPasswordStrength(pw) {
+  var el = document.getElementById('pwStrength');
+  var s = 0;
+  if (pw.length >= 8) s++;
+  if (/[A-Z]/.test(pw)) s++;
+  if (/[0-9]/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  el.className = 'password-strength' + (s > 0 ? ' str-' + s : '');
+}
+</script>
+
+<%- include('partials/footer') %>

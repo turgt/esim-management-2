@@ -1,0 +1,48 @@
+<%- include('../partials/header', {title: 'Assign eSIM', user: locals.user}) %>
+
+<div class="mb-6">
+  <div class="breadcrumb">
+    <a href="/admin/dashboard"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to Dashboard</a>
+  </div>
+  <h1 class="text-page-title">Assign eSIM</h1>
+  <p class="text-subtitle mt-1">Purchase and assign an eSIM plan to a user</p>
+</div>
+
+<% if (typeof error !== 'undefined' && error) { %>
+<div class="alert alert-error mb-6"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i><%= error %></div>
+<% } %>
+<% if (typeof success !== 'undefined' && success) { %>
+<div class="alert alert-success mb-6"><i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i><%= success %></div>
+<% } %>
+
+<div class="max-w-2xl">
+  <div class="card">
+    <div class="card-header">
+      <h2>Assignment Details</h2>
+    </div>
+    <form method="post" action="/admin/assign-esim" class="card-body space-y-4">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div>
+        <label class="input-label">Select User</label>
+        <select name="userId" required class="input">
+          <option value="">Choose a user...</option>
+          <% if (typeof users !== 'undefined') { users.forEach(function(u) { %>
+          <option value="<%= u.id %>"><%= u.username %> (<%= u.Esims ? u.Esims.length : 0 %> eSIMs)</option>
+          <% }) } %>
+        </select>
+      </div>
+      <div>
+        <label class="input-label">Select eSIM Plan</label>
+        <select name="offerId" required class="input">
+          <option value="">Choose a plan...</option>
+          <% if (typeof offers !== 'undefined') { offers.forEach(function(offer) { %>
+          <option value="<%= offer.offerId %>"><%= offer.brand %> - <%= offer.dataGB %> GB / <%= offer.durationDays %> days (<%= offer.price ? (offer.price.fixed / (offer.price.currencyDivisor || 100)).toFixed(2) + ' ' + (offer.price.currency || 'USD') : 'N/A' %>)</option>
+          <% }) } %>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Assign eSIM</button>
+    </form>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

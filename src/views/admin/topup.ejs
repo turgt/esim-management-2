@@ -1,0 +1,148 @@
+<%- include('../partials/header', {title: 'Top-up eSIM', user: locals.user}) %>
+
+<div class="mb-6">
+  <div class="breadcrumb">
+    <a href="/admin/esims"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to All eSIMs</a>
+  </div>
+  <h1 class="text-page-title">Top-up eSIM</h1>
+  <p class="text-subtitle mt-1">Add a new data package to an existing eSIM</p>
+</div>
+
+<% if (typeof error !== 'undefined' && error) { %>
+<div class="alert alert-error mb-6"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i><%= error %></div>
+<% } %>
+<% if (typeof success !== 'undefined' && success) { %>
+<div class="alert alert-success mb-6"><i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i><%= success %></div>
+<% } %>
+
+<div class="max-w-2xl space-y-6">
+  <!-- eSIM Info -->
+  <div class="card">
+    <div class="card-header">
+      <h2>eSIM Information</h2>
+    </div>
+    <div class="card-body detail-grid grid-cols-2">
+      <div class="detail-item">
+        <div class="detail-label">ICCID</div>
+        <div class="detail-value font-mono text-xs flex items-center gap-1">
+          <%= esim.iccid || 'N/A' %>
+          <% if (esim.iccid) { %>
+          <button onclick="copyToClipboard('<%= esim.iccid %>', this)" class="copy-btn"><i data-lucide="copy" class="w-3 h-3"></i></button>
+          <% } %>
+        </div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Owner</div>
+        <div class="detail-value"><%= esim.owner ? esim.owner.username : '-' %></div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Status</div>
+        <div class="detail-value capitalize"><%= esim.status %></div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Country</div>
+        <div class="detail-value"><%= esim.country || '-' %></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Plans (from Zendit API) -->
+  <% if (typeof activePlans !== 'undefined' && activePlans && activePlans.list && activePlans.list.length > 0) { %>
+  <div class="table-container">
+    <div class="card-header">
+      <h2>Active Plans</h2>
+    </div>
+    <table class="table">
+      <thead><tr>
+        <th>Offer</th>
+        <th>Data</th>
+        <th>Status</th>
+        <th>Period</th>
+      </tr></thead>
+      <tbody>
+        <% activePlans.list.forEach(function(plan) { %>
+        <tr>
+          <td class="font-mono text-xs"><%= plan.offerId %></td>
+          <td>
+            <% if (plan.unlimited) { %>
+            <span class="text-sm font-medium">Unlimited</span>
+            <% } else { %>
+            <span class="text-sm font-medium"><%= plan.remainingDataGB != null ? plan.remainingDataGB.toFixed(2) : '-' %></span>
+            <span class="text-xs text-[var(--text-tertiary)]"> / <%= plan.initialDataGB || '-' %> GB</span>
+            <% } %>
+          </td>
+          <td>
+            <% if (plan.status === 'ACTIVE') { %>
+            <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
+            <% } else if (plan.status === 'QUEUED') { %>
+            <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Queued</span>
+            <% } else { %>
+            <span class="badge"><%= plan.status %></span>
+            <% } %>
+          </td>
+          <td class="text-xs text-[var(--text-tertiary)]">
+            <% if (plan.startAt) { %><%= new Date(plan.startAt).toLocaleDateString() %><% } %>
+            <% if (plan.startAt && plan.endAt) { %> — <% } %>
+            <% if (plan.endAt) { %><%= new Date(plan.endAt).toLocaleDateString() %><% } %>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+
+  <!-- Top-up History -->
+  <% if (typeof topups !== 'undefined' && topups && topups.length > 0) { %>
+  <div class="table-container">
+    <div class="card-header">
+      <h2>Top-up History</h2>
+    </div>
+    <table class="table">
+      <thead><tr>
+        <th>Offer</th>
+        <th>Status</th>
+        <th>Date</th>
+      </tr></thead>
+      <tbody>
+        <% topups.forEach(function(t) { %>
+        <tr>
+          <td class="font-mono text-xs"><%= t.offerId %></td>
+          <td class="capitalize"><%= t.status %></td>
+          <td class="text-[var(--text-tertiary)]"><%= new Date(t.createdAt).toLocaleDateString() %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+
+  <!-- Top-up Form -->
+  <% if (esim.iccid) { %>
+  <div class="card">
+    <div class="card-header">
+      <h2>Add Top-up Package</h2>
+    </div>
+    <form method="post" action="/admin/topup/<%= esim.id %>" class="card-body space-y-4">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div>
+        <label class="input-label">Select Package</label>
+        <select name="offerId" required class="input">
+          <option value="">Choose a package...</option>
+          <% if (typeof offers !== 'undefined') { offers.forEach(function(offer) { %>
+          <option value="<%= offer.offerId %>"><%= offer.brand %> - <%= offer.dataGB ? offer.dataGB + ' GB' : 'Unlimited' %> / <%= offer.durationDays %> days</option>
+          <% }) } %>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Apply Top-up</button>
+    </form>
+  </div>
+  <% } else { %>
+  <div class="alert alert-warning">
+    <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0"></i>
+    This eSIM does not have an ICCID yet. Top-up is only available after the eSIM is activated.
+  </div>
+  <% } %>
+</div>
+
+<%- include('../partials/footer') %>

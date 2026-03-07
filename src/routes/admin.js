@@ -1,13 +1,32 @@
 import express from 'express';
 import { ensureAuth, ensureAdmin } from '../middleware/auth.js';
-import { listUsers, createUser } from '../controllers/adminController.js';
+import {
+  showDashboard, listUsers, createUser, editUser,
+  showAssignEsim, assignEsim, showTopup, topupEsim,
+  showAllEsims, showEsimDetail
+} from '../controllers/adminController.js';
+import { adminCreateUserRules, assignEsimRules, topupRules, validate } from '../middleware/validation.js';
 
 const router = express.Router();
 
-// Kullanıcıları listele
-router.get('/users', ensureAuth, ensureAdmin, listUsers);
+// Dashboard
+router.get('/dashboard', ensureAuth, ensureAdmin, showDashboard);
 
-// Yeni kullanıcı ekle
-router.post('/users', ensureAuth, ensureAdmin, createUser);
+// Users
+router.get('/users', ensureAuth, ensureAdmin, listUsers);
+router.post('/users', ensureAuth, ensureAdmin, adminCreateUserRules, validate, createUser);
+router.post('/users/:id/edit', ensureAuth, ensureAdmin, editUser);
+
+// eSIM Management
+router.get('/esims', ensureAuth, ensureAdmin, showAllEsims);
+router.get('/esims/:id', ensureAuth, ensureAdmin, showEsimDetail);
+
+// Assign eSIM
+router.get('/assign-esim', ensureAuth, ensureAdmin, showAssignEsim);
+router.post('/assign-esim', ensureAuth, ensureAdmin, assignEsimRules, validate, assignEsim);
+
+// Top-up
+router.get('/topup/:esimId', ensureAuth, ensureAdmin, showTopup);
+router.post('/topup/:esimId', ensureAuth, ensureAdmin, topupRules, validate, topupEsim);
 
 export default router;

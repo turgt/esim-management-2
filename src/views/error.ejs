@@ -1,92 +1,31 @@
 <%- include('partials/header', {title: 'Error', user: locals.user}) %>
 
-<div class="error-container">
-  <div class="error-card">
-    <div class="error-visual">
-      <div class="error-icon">⚠️</div>
-      <div class="error-code">Oops!</div>
+<% if (typeof user !== 'undefined' && user) { %>
+<div class="flex items-center justify-center" style="min-height: calc(100vh - 16rem);">
+<% } %>
+
+  <div class="w-full max-w-md text-center relative">
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none" aria-hidden="true">
+      <span class="text-[10rem] font-black text-[var(--text-primary)] opacity-[0.03]"><%= typeof title !== 'undefined' && title.match && title.match(/\d{3}/) ? title.match(/\d{3}/)[0] : '!' %></span>
     </div>
-    
-    <div class="error-content">
-      <h1 class="error-title">Something went wrong</h1>
-      <p class="error-message"><%= message %></p>
-      
-      <div class="error-suggestions">
-        <h3 class="suggestions-title">What can you do?</h3>
-        <ul class="suggestions-list">
-          <li class="suggestion-item">
-            <span class="suggestion-icon">🔄</span>
-            <span class="suggestion-text">Try refreshing the page</span>
-          </li>
-          <li class="suggestion-item">
-            <span class="suggestion-icon">👈</span>
-            <span class="suggestion-text">Go back to the previous page</span>
-          </li>
-          <li class="suggestion-item">
-            <span class="suggestion-icon">🏠</span>
-            <span class="suggestion-text">Return to the homepage</span>
-          </li>
-          <li class="suggestion-item">
-            <span class="suggestion-icon">📞</span>
-            <span class="suggestion-text">Contact support if the issue persists</span>
-          </li>
-        </ul>
+
+    <div class="card p-8 relative z-10">
+      <div class="w-14 h-14 bg-red-50 dark:bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="alert-triangle" class="w-7 h-7 text-red-500"></i>
+      </div>
+
+      <h1 class="text-xl font-semibold text-[var(--text-primary)] mb-2"><%= typeof errorTitle !== 'undefined' ? errorTitle : 'Something went wrong' %></h1>
+      <p class="text-sm text-[var(--text-secondary)] mb-6"><%= typeof errorMessage !== 'undefined' ? errorMessage : 'An unexpected error occurred' %></p>
+
+      <div class="flex items-center justify-center gap-3">
+        <button onclick="history.back()" class="btn btn-ghost">Go Back</button>
+        <a href="/" class="btn btn-primary">Go Home</a>
       </div>
     </div>
-    
-    <div class="error-actions">
-      <button onclick="history.back()" class="btn-primary">
-        <span class="btn-icon">👈</span>
-        Go Back
-      </button>
-      
-      <a href="/" class="btn-secondary">
-        <span class="btn-icon">🏠</span>
-        Go Home
-      </a>
-      
-      <button onclick="window.location.reload()" class="btn-outline">
-        <span class="btn-icon">🔄</span>
-        Refresh Page
-      </button>
-    </div>
   </div>
-  
-  <div class="error-help">
-    <p class="help-text">
-      If you continue to experience issues, please contact our support team with the error details above.
-    </p>
-  </div>
-</div>
 
-<script>
-  // Auto-refresh option for certain errors
-  const errorMessage = '<%= message %>';
-  
-  if (errorMessage.toLowerCase().includes('timeout') || 
-      errorMessage.toLowerCase().includes('network') ||
-      errorMessage.toLowerCase().includes('connection')) {
-    
-    let countdown = 10;
-    const refreshBtn = document.querySelector('.btn-outline');
-    const originalText = refreshBtn.innerHTML;
-    
-    const timer = setInterval(() => {
-      refreshBtn.innerHTML = `<span class="btn-icon">🔄</span> Auto-refresh in ${countdown}s`;
-      countdown--;
-      
-      if (countdown < 0) {
-        clearInterval(timer);
-        window.location.reload();
-      }
-    }, 1000);
-    
-    // Cancel auto-refresh if user interacts
-    document.addEventListener('click', () => {
-      clearInterval(timer);
-      refreshBtn.innerHTML = originalText;
-    });
-  }
-</script>
+<% if (typeof user !== 'undefined' && user) { %>
+</div>
+<% } %>
 
 <%- include('partials/footer') %>

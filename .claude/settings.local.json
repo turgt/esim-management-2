@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:zendit.io)",
+      "WebFetch(domain:developers.zendit.io)",
+      "WebFetch(domain:github.com)",
+      "Bash(node:*)",
+      "Bash(docker-compose exec:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(docker-compose restart:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(npm install:*)",
+      "Bash(docker compose:*)",
+      "Bash(curl:*)",
+      "Bash(npm run:*)",
+      "Bash(export:*)"
+    ]
+  }
+}

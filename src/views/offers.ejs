@@ -1,73 +1,98 @@
 <%- include('partials/header', {title: 'Offers', user: locals.user}) %>
 
-<div class="page-header">
-  <h1 class="page-title">Available eSIM Plans</h1>
-  <p class="page-subtitle">Choose from our premium eSIM offers for seamless connectivity</p>
+<div class="mb-6">
+  <h1 class="text-page-title">Available Plans</h1>
+  <p class="text-subtitle mt-1">Choose an eSIM plan for seamless connectivity</p>
 </div>
 
-<div class="offers-grid">
-  <% offers.forEach(offer => { %>
-    <div class="offer-card">
-      <div class="offer-header">
-        <div class="offer-brand">
-          <h3 class="brand-name"><%= offer.brandName %></h3>
-          <span class="offer-type"><%= offer.shortNotes %></span>
-        </div>
-        <div class="offer-price">
-          <span class="price-amount"><%= (offer.price.fixed / offer.price.currencyDivisor).toFixed(2) %></span>
-          <span class="price-currency"><%= offer.price.currency %></span>
-        </div>
+<% if (typeof error !== 'undefined' && error) { %>
+<div class="alert alert-error mb-6">
+  <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+  <%= error %>
+</div>
+<% } %>
+
+<% if (typeof offers !== 'undefined' && offers && offers.length > 0) { %>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+  <% offers.forEach(function(offer, idx) { %>
+  <%
+    var price = offer.price && offer.price.fixed ? (offer.price.fixed / (offer.price.currencyDivisor || 100)).toFixed(2) : null;
+    var currency = offer.price ? (offer.price.currency || 'USD') : 'USD';
+    var dataLabel = offer.dataGB ? offer.dataGB + ' GB' : 'Unlimited';
+    var durationLabel = offer.durationDays ? offer.durationDays + ' days' : '';
+    var regionShort = '';
+    if (offer.regions && offer.regions.length > 0) {
+      regionShort = offer.regions[0];
+      if (regionShort.length > 20) regionShort = offer.country || regionShort.substring(0, 18) + '...';
+    } else if (offer.country) {
+      regionShort = offer.country;
+    }
+  %>
+  <button type="button" class="card text-left transition-colors hover:border-[var(--brand-primary)] cursor-pointer" onclick="confirmPurchase('<%= offer.offerId %>', '<%= (offer.brand || 'eSIM').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>')">
+    <div class="p-4">
+      <!-- Duration (primary differentiator) -->
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-sm font-semibold text-[var(--text-primary)]"><%= durationLabel || '-' %></span>
+        <% if (regionShort) { %>
+        <span class="text-xs text-[var(--text-tertiary)]"><%= regionShort %></span>
+        <% } %>
       </div>
-      
-      <div class="offer-details">
-        <p class="offer-description"><%= offer.notes %></p>
-        
-        <div class="offer-specs">
-          <% if (offer.dataGB) { %>
-            <div class="spec-item">
-              <span class="spec-icon">📊</span>
-              <span class="spec-label">Data:</span>
-              <span class="spec-value"><%= offer.dataGB %> GB</span>
-            </div>
-          <% } %>
-          
-          <% if (offer.durationDays) { %>
-            <div class="spec-item">
-              <span class="spec-icon">📅</span>
-              <span class="spec-label">Duration:</span>
-              <span class="spec-value"><%= offer.durationDays %> days</span>
-            </div>
-          <% } %>
-          
-          <% if (offer.country) { %>
-            <div class="spec-item">
-              <span class="spec-icon">🌍</span>
-              <span class="spec-label">Region:</span>
-              <span class="spec-value"><%= offer.country %></span>
-            </div>
-          <% } %>
-        </div>
-      </div>
-      
-      <div class="offer-actions">
-        <form method="post" action="/purchases" class="purchase-form">
-          <input type="hidden" name="offerId" value="<%= offer.offerId %>">
-          <button type="submit" class="btn-primary">
-            <span class="btn-icon">🛒</span>
-            Purchase Plan
-          </button>
-        </form>
-      </div>
+
+      <!-- Data -->
+      <p class="text-xs text-[var(--text-secondary)] mb-3"><%= dataLabel %></p>
+
+      <!-- Price -->
+      <% if (price) { %>
+      <span class="text-lg font-bold text-[var(--brand-primary)]">$<%= price %></span>
+      <span class="text-xs text-[var(--text-tertiary)] ml-0.5"><%= currency %></span>
+      <% } %>
     </div>
+  </button>
   <% }) %>
 </div>
-
-<% if (offers.length === 0) { %>
-  <div class="empty-state">
-    <div class="empty-icon">📭</div>
-    <h3 class="empty-title">No offers available</h3>
-    <p class="empty-description">Please check back later for new eSIM plans</p>
+<% } else { %>
+<div class="empty-state">
+  <div class="empty-icon">
+    <i data-lucide="inbox" class="w-6 h-6"></i>
   </div>
+  <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">No plans available</h3>
+  <p class="text-sm text-[var(--text-tertiary)]">Check back later or contact support for assistance.</p>
+</div>
 <% } %>
+
+<!-- Purchase Confirmation Modal -->
+<div id="purchaseModal" class="modal-backdrop hidden" style="display:none">
+  <div class="confirm-modal">
+    <h3 class="text-base font-semibold text-[var(--text-primary)] mb-2">Confirm Purchase</h3>
+    <p class="text-sm text-[var(--text-secondary)] mb-6">You're about to purchase <strong id="modalPlanName"></strong> for <strong id="modalPlanPrice"></strong>. Continue?</p>
+    <form id="purchaseForm" method="post" action="/purchases">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="offerId" id="modalOfferId" value="">
+      <div class="flex gap-3">
+        <button type="button" class="btn btn-secondary flex-1" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary flex-1">Confirm Purchase</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function confirmPurchase(offerId, planName, price, currency) {
+  document.getElementById('modalOfferId').value = offerId;
+  document.getElementById('modalPlanName').textContent = planName;
+  document.getElementById('modalPlanPrice').textContent = price + ' ' + currency;
+  var modal = document.getElementById('purchaseModal');
+  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
+}
+function closeModal() {
+  var modal = document.getElementById('purchaseModal');
+  modal.classList.add('hidden');
+  modal.style.display = 'none';
+}
+document.getElementById('purchaseModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
 
 <%- include('partials/footer') %>

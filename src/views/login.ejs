@@ -1,51 +1,55 @@
-<%- include('partials/header', {title: 'Login', user: locals.user}) %>
+<%- include('partials/header', {title: 'Login', user: null}) %>
 
-<div class="auth-container">
-  <div class="auth-card">
-    <div class="auth-header">
-      <h1 class="auth-title">Welcome back</h1>
-      <p class="auth-subtitle">Sign in to your eSIM Hub account</p>
-    </div>
-
-    <form method="post" action="/auth/login" class="auth-form">
-      <div class="form-group">
-        <label for="username" class="form-label">Username</label>
-        <input 
-          type="text" 
-          id="username"
-          name="username" 
-          class="form-input"
-          placeholder="Enter your username"
-          required
-          autocomplete="username"
-        >
+    <div class="card p-6">
+      <div class="text-center mb-6">
+        <h1 class="text-xl font-semibold text-[var(--text-primary)]">Welcome back</h1>
+        <p class="text-sm text-[var(--text-secondary)] mt-1">Sign in to your account</p>
       </div>
 
-      <div class="form-group">
-        <label for="password" class="form-label">Password</label>
-        <input 
-          type="password" 
-          id="password"
-          name="password" 
-          class="form-input"
-          placeholder="Enter your password"
-          required
-          autocomplete="current-password"
-        >
+      <% if (typeof success !== 'undefined' && success) { %>
+      <div class="alert alert-success mb-4">
+        <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i>
+        <%= success %>
       </div>
+      <% } %>
 
-      <button type="submit" class="btn-primary btn-full">
-        Sign In
-      </button>
-    </form>
-
-    <% if (typeof error !== 'undefined' && error) { %>
-      <div class="alert alert-error">
-        <span class="alert-icon">⚠️</span>
+      <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-error mb-4">
+        <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
         <%= error %>
       </div>
-    <% } %>
-  </div>
-</div>
+      <% } %>
+
+      <% if (typeof errors !== 'undefined' && errors && errors.length > 0) { %>
+      <div class="alert alert-error mb-4">
+        <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+        <div class="space-y-1">
+          <% errors.forEach(function(err) { %>
+          <p><%= err.msg || err %></p>
+          <% }) %>
+        </div>
+      </div>
+      <% } %>
+
+      <form method="post" action="/auth/login" class="space-y-4">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div>
+          <label class="input-label">Username or Email</label>
+          <input type="text" name="username" required autocomplete="username" placeholder="Enter your username or email" class="input">
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="input-label mb-0">Password</label>
+            <a href="/auth/forgot-password" class="text-xs text-[var(--brand-primary)]">Forgot password?</a>
+          </div>
+          <input type="password" name="password" required autocomplete="current-password" placeholder="Enter your password" class="input">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+      </form>
+    </div>
+
+    <p class="mt-4 text-center text-sm text-[var(--text-tertiary)]">
+      Don't have an account? <a href="/auth/register" class="font-medium text-[var(--brand-primary)]">Create account</a>
+    </p>
 
 <%- include('partials/footer') %>

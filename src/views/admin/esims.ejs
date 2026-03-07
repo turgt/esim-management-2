@@ -1,0 +1,108 @@
+<%- include('../partials/header', {title: 'All eSIMs', user: locals.user}) %>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h1 class="text-page-title">All eSIMs</h1>
+    <p class="text-subtitle mt-1">Manage all eSIM purchases across the platform</p>
+  </div>
+  <a href="/admin/assign-esim" class="btn btn-primary">
+    <i data-lucide="plus" class="w-4 h-4"></i>
+    Assign New
+  </a>
+</div>
+
+<!-- Search & Filter Pills -->
+<div class="mb-5 space-y-3">
+  <form method="get" action="/admin/esims" class="flex flex-col sm:flex-row gap-3">
+    <div class="flex-1 input-icon-wrapper">
+      <i data-lucide="search" class="input-icon w-4 h-4"></i>
+      <input type="text" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>" placeholder="Search by ICCID, Transaction ID, or Offer..." class="input">
+    </div>
+    <input type="hidden" name="status" id="statusInput" value="<%= typeof statusFilter !== 'undefined' ? statusFilter : '' %>">
+    <button type="submit" class="btn btn-secondary">Search</button>
+    <% if ((typeof search !== 'undefined' && search) || (typeof statusFilter !== 'undefined' && statusFilter)) { %>
+    <a href="/admin/esims" class="btn btn-ghost">Clear</a>
+    <% } %>
+  </form>
+  <div class="flex flex-wrap gap-2">
+    <a href="/admin/esims<%= typeof search !== 'undefined' && search ? '?search=' + search : '' %>" class="filter-pill <%= typeof statusFilter === 'undefined' || !statusFilter ? 'active' : '' %>">All</a>
+    <a href="/admin/esims?status=completed<%= typeof search !== 'undefined' && search ? '&search=' + search : '' %>" class="filter-pill <%= typeof statusFilter !== 'undefined' && statusFilter === 'completed' ? 'active' : '' %>">
+      <span class="badge-dot bg-emerald-500"></span>Active
+    </a>
+    <a href="/admin/esims?status=pending<%= typeof search !== 'undefined' && search ? '&search=' + search : '' %>" class="filter-pill <%= typeof statusFilter !== 'undefined' && statusFilter === 'pending' ? 'active' : '' %>">
+      <span class="badge-dot bg-amber-500"></span>Pending
+    </a>
+    <a href="/admin/esims?status=processing<%= typeof search !== 'undefined' && search ? '&search=' + search : '' %>" class="filter-pill <%= typeof statusFilter !== 'undefined' && statusFilter === 'processing' ? 'active' : '' %>">
+      <span class="badge-dot bg-blue-500"></span>Processing
+    </a>
+    <a href="/admin/esims?status=failed<%= typeof search !== 'undefined' && search ? '&search=' + search : '' %>" class="filter-pill <%= typeof statusFilter !== 'undefined' && statusFilter === 'failed' ? 'active' : '' %>">
+      <span class="badge-dot bg-red-500"></span>Failed
+    </a>
+  </div>
+</div>
+
+<div class="table-container">
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr>
+        <th>#</th>
+        <th>User</th>
+        <th>ICCID</th>
+        <th>Status</th>
+        <th>Country</th>
+        <th>Date</th>
+        <th>Actions</th>
+      </tr></thead>
+      <tbody>
+        <% if (typeof esims !== 'undefined' && esims.length > 0) { %>
+        <% esims.forEach(function(esim) { %>
+        <tr>
+          <td class="text-[var(--text-tertiary)] font-mono text-xs">#<%= esim.id %></td>
+          <td class="font-medium text-[var(--text-primary)]"><%= esim.owner ? esim.owner.username : '-' %></td>
+          <td>
+            <% if (esim.iccid) { %>
+            <div class="flex items-center gap-1">
+              <span class="font-mono text-xs text-[var(--text-secondary)]"><%= esim.iccid.substring(0, 12) %>...</span>
+              <button onclick="copyToClipboard('<%= esim.iccid %>', this)" class="copy-btn" title="Copy ICCID">
+                <i data-lucide="copy" class="w-3 h-3"></i>
+              </button>
+            </div>
+            <% } else { %>
+            <span class="text-[var(--text-tertiary)]">-</span>
+            <% } %>
+          </td>
+          <td>
+            <% if (esim.status === 'completed') { %>
+            <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
+            <% } else if (esim.status === 'pending') { %>
+            <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Pending</span>
+            <% } else { %>
+            <span class="badge badge-danger"><span class="badge-dot bg-red-500"></span><%= esim.status %></span>
+            <% } %>
+          </td>
+          <td class="text-[var(--text-secondary)]"><%= esim.country || '-' %></td>
+          <td class="text-xs text-[var(--text-tertiary)]"><%= new Date(esim.createdAt).toLocaleDateString() %></td>
+          <td>
+            <div class="flex items-center gap-2">
+              <a href="/admin/esims/<%= esim.id %>" class="btn btn-sm btn-ghost text-[var(--brand-primary)]">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i> Detail
+              </a>
+              <% if (esim.iccid) { %>
+              <a href="/admin/topup/<%= esim.id %>" class="btn btn-sm btn-ghost text-emerald-600 dark:text-emerald-400">
+                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Top-up
+              </a>
+              <% } %>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+        <% } else { %>
+        <tr><td colspan="7" class="text-center py-12 text-sm text-[var(--text-tertiary)]">No eSIMs found</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+  <%- include('../partials/pagination') %>
+</div>
+
+<%- include('../partials/footer') %>

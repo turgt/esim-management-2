@@ -1,277 +1,185 @@
-<script>
-  // Auto-refresh for pending statuses
-  document.addEventListener('DOMContentLoaded', function() {
-    const currentStatus = '<%= status.status %>'.toLowerCase();
-    const isPending = ['pending', 'processing', 'installing'].includes(currentStatus);
-    
-    console.log('📊 Current status:', currentStatus);
-    console.log('⏳ Is pending:', isPending);
-    
-    // Manual refresh button handler - Her zaman çalışmalı
-    const refreshButtons = document.querySelectorAll('[data-action="refresh"], .btn-secondary');
-    
-    refreshButtons.forEach(btn => {
-      if (btn.textContent.includes('Refresh')) {
-        console.log('🔄 Setting up refresh button:', btn);
-        
-        btn.addEventListener('click', function(e) {
-          e.preventDefault();
-          
-          console.log('🔄 Refresh button clicked');
-          
-          // Button'u disable et ve loading state göster
-          this.disabled = true;
-          this.style.opacity = '0.6';
-          this.style.cursor = 'not-allowed';
-          
-          const originalHTML = this.innerHTML;
-          this.innerHTML = '<span class="btn-icon">⏳</span> Refreshing...';
-          
-          // Kısa delay sonra sayfayı yenile
-          setTimeout(() => {
-            window.location.reload();
-          }, 500);
-        });
-      }
-    });
-    
-    if (isPending) {
-      console.log('📡 Status is pending, setting up auto-refresh...');
-      
-      let refreshCount = 0;
-      const maxRefreshes = 10; // Maximum 10 refreshes (5 minutes)
-      
-      const refreshTimer = setInterval(() => {
-        refreshCount++;
-        
-        if (refreshCount >= maxRefreshes) {
-          clearInterval(refreshTimer);
-          console.log('⏰ Auto-refresh stopped after maximum attempts');
-          
-          // Manual refresh'e vurgu yap
-          const manualRefreshBtn = document.querySelector('.btn-secondary');
-          if (manualRefreshBtn) {
-            manualRefreshBtn.style.background = '#fbbf24';
-            manualRefreshBtn.style.color = '#92400e';
-            manualRefreshBtn.style.border = '1px solid #f59e0b';
-            manualRefreshBtn.innerHTML = '<span class="btn-icon">🔄</span> Manual Refresh Required';
-          }
-          return;
-        }
-        
-        console.log(`🔄 Auto-refreshing... (${refreshCount}/${maxRefreshes})`);
-        window.location.reload();
-        
-      }, 30000); // Refresh every 30 seconds
-      
-      // Auto-refresh indicator ekle
-      const statusActions = document.querySelector('.status-actions');
-      if (statusActions) {
-        const indicator = document.createElement('div');
-        indicator.className = 'auto-refresh-indicator';
-        indicator.style.cssText = `
-          text-align: center;
-          margin-top: 16px;
-          padding: 12px;
-          background: #fef3c7;
-          color: #92400e;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 500;
-          border: 1px solid #fde68a;
-        `;
-        
-        const updateIndicator = () => {
-          indicator.innerHTML = `
-            <span style="animation: pulse 2s infinite;">⏳</span>
-            Auto-refreshing every 30 seconds... (${refreshCount}/${maxRefreshes})
-            <br><small>or click "Refresh Status" for manual update</small>
-          `;
-        };
-        
-        updateIndicator();
-        statusActions.after(indicator);
-        
-        // Update counter every second
-        setInterval(updateIndicator, 1000);
-      }
-    }
-  });
-  
-  // Alternative: Global refresh function
-  window.refreshStatus = function() {
-    console.log('🔄 Global refresh function called');
-    
-    const btn = document.querySelector('[data-action="refresh"]');
-    if (btn) {
-      btn.disabled = true;
-      btn.style.opacity = '0.6';
-      btn.innerHTML = '<span class="btn-icon">⏳</span> Refreshing...';
-    }
-    
-    setTimeout(() => {
-      window.location.reload();
-    }, 300);
-  };
-  
-</script><%- include('partials/header', {title: 'Purchase Status', user: locals.user}) %>
+<%- include('partials/header', {title: 'Purchase Status', user: locals.user}) %>
 
-<div class="page-header">
-  <h1 class="page-title">Purchase Status</h1>
-  <p class="page-subtitle">Track your eSIM activation progress</p>
+<div class="mb-6">
+  <div class="breadcrumb">
+    <a href="/purchases"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to My eSIMs</a>
+  </div>
+  <h1 class="text-page-title">Purchase Status</h1>
 </div>
 
-<div class="status-container">
-  <!-- Main Status Card -->
-  <div class="status-main-card">
-    <div class="status-header">
-      <div class="status-icon-large">
-        <% if (status.status === 'completed') { %>
-          <span class="status-emoji success">✅</span>
-        <% } else if (status.status === 'pending') { %>
-          <span class="status-emoji pending">⏳</span>
-        <% } else if (status.status === 'failed') { %>
-          <span class="status-emoji failed">❌</span>
-        <% } else { %>
-          <span class="status-emoji processing">🔄</span>
-        <% } %>
+<div class="max-w-2xl space-y-5">
+  <!-- Status Banner -->
+  <div class="card overflow-hidden">
+    <% if (status.status === 'DONE' || status.status === 'completed') { %>
+    <div class="px-5 py-4 flex items-center gap-3 bg-emerald-50 dark:bg-emerald-500/10 border-b border-emerald-200 dark:border-emerald-500/20">
+      <div class="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+        <i data-lucide="check" class="w-4 h-4 text-white"></i>
       </div>
-      <div class="status-info">
-        <h2 class="status-title">
-          <% if (status.status === 'completed') { %>
-            eSIM Ready to Use
-          <% } else if (status.status === 'pending') { %>
-            Processing Your eSIM
-          <% } else if (status.status === 'failed') { %>
-            Activation Failed
-          <% } else { %>
-            <%= status.status %>
-          <% } %>
-        </h2>
-        <p class="status-description">
-          <% if (status.status === 'completed') { %>
-            Your eSIM has been successfully activated and is ready to use
-          <% } else if (status.status === 'pending') { %>
-            Your eSIM is being prepared. This usually takes a few minutes
-          <% } else if (status.status === 'failed') { %>
-            There was an issue activating your eSIM. Please contact support
-          <% } else { %>
-            Current status: <%= status.status %>
-          <% } %>
-        </p>
+      <div>
+        <p class="text-sm font-semibold text-emerald-700 dark:text-emerald-400">eSIM Ready</p>
+        <p class="text-xs text-emerald-600 dark:text-emerald-500">Your eSIM has been activated and is ready to use</p>
       </div>
     </div>
-
-    <div class="status-details">
-      <div class="detail-grid">
-        <div class="detail-card">
-          <span class="detail-icon">🆔</span>
-          <div class="detail-content">
-            <span class="detail-label">Transaction ID</span>
-            <span class="detail-value"><%= status.transactionId %></span>
-          </div>
-        </div>
-
-        <div class="detail-card">
-          <span class="detail-icon">📦</span>
-          <div class="detail-content">
-            <span class="detail-label">Offer ID</span>
-            <span class="detail-value"><%= status.offerId %></span>
-          </div>
-        </div>
-
-        <div class="detail-card">
-          <span class="detail-icon">🏢</span>
-          <div class="detail-content">
-            <span class="detail-label">Provider</span>
-            <span class="detail-value"><%= status.brandName %></span>
-          </div>
-        </div>
-
-        <div class="detail-card">
-          <span class="detail-icon">🌍</span>
-          <div class="detail-content">
-            <span class="detail-label">Country</span>
-            <span class="detail-value"><%= status.country %></span>
-          </div>
-        </div>
+    <% } else if (status.status === 'PENDING' || status.status === 'pending') { %>
+    <div class="px-5 py-4 flex items-center gap-3 bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/20">
+      <div class="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
+        <i data-lucide="loader" class="w-4 h-4 text-white animate-spin"></i>
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-amber-700 dark:text-amber-400">Processing</p>
+        <p class="text-xs text-amber-600 dark:text-amber-500">Your eSIM is being set up, this usually takes a few minutes</p>
       </div>
     </div>
-  </div>
+    <% } else if (status.status === 'FAILED' || status.status === 'failed') { %>
+    <div class="px-5 py-4 flex items-center gap-3 bg-red-50 dark:bg-red-500/10 border-b border-red-200 dark:border-red-500/20">
+      <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+        <i data-lucide="x" class="w-4 h-4 text-white"></i>
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-red-700 dark:text-red-400">Activation Failed</p>
+        <p class="text-xs text-red-600 dark:text-red-500">Please contact support for assistance</p>
+      </div>
+    </div>
+    <% } else { %>
+    <div class="px-5 py-4 flex items-center gap-3 bg-blue-50 dark:bg-blue-500/10 border-b border-blue-200 dark:border-blue-500/20">
+      <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+        <i data-lucide="loader" class="w-4 h-4 text-white animate-spin"></i>
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-blue-700 dark:text-blue-400"><%= status.status %></p>
+        <p class="text-xs text-blue-600 dark:text-blue-500">Your eSIM is being prepared</p>
+      </div>
+    </div>
+    <% } %>
 
-  <!-- Plan Details -->
-  <div class="plan-details-card">
-    <h3 class="card-title">Plan Details</h3>
-    <div class="plan-specs">
-      <div class="spec-row">
-        <span class="spec-icon">📅</span>
-        <span class="spec-label">Duration:</span>
-        <span class="spec-value"><%= status.durationDays %> days</span>
+    <!-- Details Grid -->
+    <div class="p-5 grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
+      <div>
+        <p class="text-xs text-[var(--text-tertiary)] mb-0.5">Transaction ID</p>
+        <p class="font-mono text-xs text-[var(--text-primary)] truncate"><%= status.transactionId %></p>
       </div>
-      
-      <div class="spec-row">
-        <span class="spec-icon">📊</span>
-        <span class="spec-label">Data:</span>
-        <span class="spec-value">
-          <%= status.dataUnlimited ? 'Unlimited' : status.dataGB + ' GB' %>
-        </span>
+      <div>
+        <p class="text-xs text-[var(--text-tertiary)] mb-0.5">Offer</p>
+        <p class="text-[var(--text-primary)] truncate"><%= status.offerId %></p>
       </div>
+      <% if (status.brandName || (esim && esim.brandName)) { %>
+      <div>
+        <p class="text-xs text-[var(--text-tertiary)] mb-0.5">Provider</p>
+        <p class="text-[var(--text-primary)]"><%= status.brandName || esim.brandName || '-' %></p>
+      </div>
+      <% } %>
+      <% if (status.country || (esim && esim.country)) { %>
+      <div>
+        <p class="text-xs text-[var(--text-tertiary)] mb-0.5">Region</p>
+        <p class="text-[var(--text-primary)]"><%= status.country || esim.country || '-' %></p>
+      </div>
+      <% } %>
+      <% if (status.durationDays || (esim && esim.durationDays)) { %>
+      <div>
+        <p class="text-xs text-[var(--text-tertiary)] mb-0.5">Duration</p>
+        <p class="font-semibold text-[var(--text-primary)]"><%= status.durationDays || esim.durationDays %> days</p>
+      </div>
+      <% } %>
+      <div>
+        <p class="text-xs text-[var(--text-tertiary)] mb-0.5">Data</p>
+        <p class="font-semibold text-[var(--text-primary)]"><%= status.dataUnlimited ? 'Unlimited' : (status.dataGB || (esim && esim.dataGB) ? (status.dataGB || esim.dataGB) + ' GB' : '-') %></p>
+      </div>
+      <% if (esim && esim.iccid) { %>
+      <div class="col-span-2">
+        <p class="text-xs text-[var(--text-tertiary)] mb-0.5">ICCID</p>
+        <div class="flex items-center gap-1.5">
+          <p class="font-mono text-xs text-[var(--text-primary)]"><%= esim.iccid %></p>
+          <button onclick="copyToClipboard('<%= esim.iccid %>', this)" class="copy-btn" title="Copy ICCID">
+            <i data-lucide="copy" class="w-3 h-3"></i>
+          </button>
+        </div>
+      </div>
+      <% } %>
     </div>
   </div>
 
   <!-- Activity Log -->
   <% if (status.log && status.log.length > 0) { %>
-    <div class="activity-log-card">
-      <h3 class="card-title">Activity Log</h3>
-      <div class="activity-timeline">
-        <% status.log.forEach((entry, index) => { %>
-          <div class="timeline-item <%= index === 0 ? 'timeline-current' : '' %>">
-            <div class="timeline-marker">
-              <% if (entry.status === 'completed') { %>
-                <span class="marker-icon success">✅</span>
-              <% } else if (entry.status === 'pending') { %>
-                <span class="marker-icon pending">⏳</span>
-              <% } else if (entry.status === 'failed') { %>
-                <span class="marker-icon failed">❌</span>
-              <% } else { %>
-                <span class="marker-icon">🔄</span>
-              <% } %>
+  <div class="card">
+    <div class="card-header">
+      <h3>Activity Log</h3>
+    </div>
+    <div class="card-body">
+      <div class="relative">
+        <% status.log.forEach(function(entry, index) { %>
+        <div class="flex gap-3 <%= index < status.log.length - 1 ? 'pb-4' : '' %>">
+          <div class="flex flex-col items-center">
+            <%
+              var isDone = ['DONE','ACCEPTED','completed'].includes(entry.status);
+              var isPending = ['PENDING','pending'].includes(entry.status);
+              var isProgress = ['AUTHORIZED','IN_PROGRESS','processing'].includes(entry.status);
+              var isFailed = ['FAILED','CANCELLED','REJECTED','ERROR','failed'].includes(entry.status);
+            %>
+            <% if (isDone) { %>
+            <div class="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="check" class="w-2.5 h-2.5 text-white"></i>
             </div>
-            <div class="timeline-content">
-              <div class="timeline-status"><%= entry.status %></div>
-              <div class="timeline-message"><%= entry.statusMessage %></div>
-              <div class="timeline-time"><%= entry.dateTime %></div>
+            <% } else if (isPending) { %>
+            <div class="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
+              <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
             </div>
+            <% } else if (isProgress) { %>
+            <div class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+              <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            </div>
+            <% } else if (isFailed) { %>
+            <div class="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="x" class="w-2.5 h-2.5 text-white"></i>
+            </div>
+            <% } else { %>
+            <div class="w-5 h-5 rounded-full bg-[var(--surface-2)] border border-[var(--border-default)] flex items-center justify-center flex-shrink-0">
+              <div class="w-1.5 h-1.5 rounded-full bg-[var(--text-tertiary)]"></div>
+            </div>
+            <% } %>
+            <% if (index < status.log.length - 1) { %>
+            <div class="w-px flex-1 bg-[var(--border-default)] min-h-[12px]"></div>
+            <% } %>
           </div>
+          <div class="min-w-0 -mt-0.5">
+            <p class="text-sm font-medium text-[var(--text-primary)]"><%= entry.status %></p>
+            <p class="text-xs text-[var(--text-secondary)]"><%= entry.statusMessage %></p>
+            <p class="text-xs text-[var(--text-tertiary)] mt-0.5"><%= new Date(entry.dateTime).toLocaleString() %></p>
+          </div>
+        </div>
         <% }) %>
       </div>
     </div>
+  </div>
   <% } %>
 
   <!-- Actions -->
-  <div class="status-actions">
+  <div class="flex flex-col sm:flex-row gap-3">
     <% if (isQrReady) { %>
-      <a href="/qrcode/<%= status.transactionId %>" class="btn-primary btn-large">
-        <span class="btn-icon">📱</span>
-        Download QR Code
-      </a>
-    <% } else { %>
-      <button class="btn-disabled btn-large" disabled title="QR code will be available when eSIM is ready">
-        <span class="btn-icon">⏳</span>
-        QR Code (Not Ready)
-      </button>
+    <a href="/qrcode/<%= status.transactionId %>" class="flex-1 btn btn-primary">Download QR Code</a>
     <% } %>
-    
-    <button onclick="location.reload()" class="btn-secondary btn-large" data-action="refresh">
-      <span class="btn-icon">🔄</span>
-      Refresh Status
-    </button>
-    
-    <a href="/purchases" class="btn-outline btn-large">
-      <span class="btn-icon">👈</span>
-      Back to My eSIMs
-    </a>
+    <button onclick="location.reload()" class="flex-1 btn btn-secondary">Refresh Status</button>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('purchased') === 'true') {
+    showToast('eSIM purchased successfully!', 'success');
+    history.replaceState(null, '', window.location.pathname);
+  }
+
+  var currentStatus = '<%= status.status %>';
+  var pendingStates = ['pending', 'processing', 'installing', 'PENDING', 'AUTHORIZED', 'IN_PROGRESS'];
+  if (pendingStates.includes(currentStatus)) {
+    var count = 0;
+    var timer = setInterval(function() {
+      count++;
+      if (count >= 10) { clearInterval(timer); return; }
+      window.location.reload();
+    }, 30000);
+  }
+});
+</script>
 
 <%- include('partials/footer') %>

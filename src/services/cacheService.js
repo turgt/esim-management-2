@@ -1,3 +1,7 @@
+import logger from '../lib/logger.js';
+
+const log = logger.child({ module: 'cache' });
+
 // ES Module compatible cache service
 let NodeCache;
 let cache;
@@ -5,24 +9,22 @@ let cache;
 // Initialize cache service
 async function initializeCache() {
   try {
-    // Try to import node-cache
     const nodeCacheModule = await import('node-cache');
     NodeCache = nodeCacheModule.default;
-    
-    cache = new NodeCache({ 
-      stdTTL: 600, // 10 minutes default
-      checkperiod: 120, // Check for expired keys every 2 minutes
-      useClones: false // Better performance
+
+    cache = new NodeCache({
+      stdTTL: 600,
+      checkperiod: 120,
+      useClones: false
     });
-    
-    console.log('✅ NodeCache initialized successfully');
+
+    log.info('NodeCache initialized successfully');
   } catch (error) {
-    console.warn('⚠️ NodeCache not available, using fallback cache');
-    
-    // Fallback to simple in-memory Map
+    log.warn('NodeCache not available, using fallback cache');
+
     cache = {
       data: new Map(),
-      get(key) { 
+      get(key) {
         const item = this.data.get(key);
         if (!item) return null;
         if (item.expiry && Date.now() > item.expiry) {
@@ -31,65 +33,59 @@ async function initializeCache() {
         }
         return item.value;
       },
-      set(key, value, ttl = 600) { 
+      set(key, value, ttl = 600) {
         const expiry = ttl > 0 ? Date.now() + (ttl * 1000) : null;
         this.data.set(key, { value, expiry });
         return true;
       },
-      del(key) { 
+      del(key) {
         return this.data.delete(key);
       },
-      keys() { 
+      keys() {
         return Array.from(this.data.keys());
       },
-      getStats() { 
-        return { 
+      getStats() {
+        return {
           keys: this.data.size,
           stats: { hits: 0, misses: 0 }
         };
       },
-      flushAll() { 
+      flushAll() {
         this.data.clear();
       }
     };
   }
 }
 
-// Initialize cache immediately
 await initializeCache();
 
-// Cache duration constants (in seconds)
 export const CACHE_DURATIONS = {
-  OFFERS: 300,        // 5 minutes - offers don't change often
-  //STATUS: 30,         // 30 seconds - status updates frequently
-  //QR_CODE: 3600,      // 1 hour - QR codes are static once generated
-  //USER_PURCHASES: 60  // 1 minute - user purchases list
+  OFFERS: 300,
 };
 
 class CacheService {
-  // Generic cache methods
   get(key) {
     try {
       const value = cache.get(key);
       if (value) {
-        console.log(`🎯 Cache HIT for key: ${key}`);
+        log.debug({ key }, 'Cache hit');
         return value;
       }
-      console.log(`❌ Cache MISS for key: ${key}`);
+      log.debug({ key }, 'Cache miss');
       return null;
     } catch (error) {
-      console.error('Cache get error:', error);
+      log.error({ err: error, key }, 'Cache get error');
       return null;
     }
   }
 
-  set(key, value, ttl = CACHE_DURATIONS.STATUS) {
+  set(key, value, ttl = 600) {
     try {
       cache.set(key, value, ttl);
-      console.log(`💾 Cache SET for key: ${key} (TTL: ${ttl}s)`);
+      log.debug({ key, ttl }, 'Cache set');
       return true;
     } catch (error) {
-      console.error('Cache set error:', error);
+      log.error({ err: error, key }, 'Cache set error');
       return false;
     }
   }
@@ -97,15 +93,14 @@ class CacheService {
   del(key) {
     try {
       cache.del(key);
-      console.log(`🗑️ Cache DELETE for key: ${key}`);
+      log.debug({ key }, 'Cache delete');
       return true;
     } catch (error) {
-      console.error('Cache delete error:', error);
+      log.error({ err: error, key }, 'Cache delete error');
       return false;
     }
   }
 
-  // Specific cache methods
   getOffers(country) {
     return this.get(`offers:${country}`);
   }
@@ -114,42 +109,11 @@ class CacheService {
     return this.set(`offers:${country}`, offers, CACHE_DURATIONS.OFFERS);
   }
 
-  //getStatus(transactionId) {
-  //  return this.get(`status:${transactionId}`);
-  //}
-
-  //setStatus(transactionId, status) {
-  //  return this.set(`status:${transactionId}`, status, CACHE_DURATIONS.STATUS);
- // }
-
-  //getQrCode(transactionId) {
-  //  return this.get(`qr:${transactionId}`);
- // }
-
-  //setQrCode(transactionId, qrData) {
-  //  return this.set(`qr:${transactionId}`, qrData, CACHE_DURATIONS.QR_CODE);
-  //}
-
-  //getUserPurchases(userId) {
-  //  return this.get(`purchases:${userId}`);
-  //}
-
-  //setUserPurchases(userId, purchases) {
-  //  return this.set(`purchases:${userId}`, purchases, CACHE_DURATIONS.USER_PURCHASES);
-  //}
-
-  // Invalidate related caches
   invalidateUser(userId) {
     this.del(`purchases:${userId}`);
-    console.log(`🧹 Invalidated user cache for: ${userId}`);
+    log.debug({ userId }, 'Invalidated user cache');
   }
 
-  //invalidateStatus(transactionId) {
-  //  this.del(`status:${transactionId}`);
-  //  console.log(`🧹 Invalidated status cache for: ${transactionId}`);
-  //}
-
-  // Cache statistics
   getStats() {
     return {
       keys: cache.keys().length,
@@ -157,10 +121,9 @@ class CacheService {
     };
   }
 
-  // Clear all cache (admin function)
   flush() {
     cache.flushAll();
-    console.log('🧹 Cache flushed completely');
+    log.info('Cache flushed completely');
   }
 }
 

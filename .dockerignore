@@ -1,0 +1,11 @@
+node_modules
+.git
+.claude
+.env
+.env.*
+!.env.example
+*.log
+tests
+docker-compose*.yml
+railway.toml
+*.md

@@ -1,0 +1,25 @@
+<% if (typeof pagination !== 'undefined' && pagination && pagination.totalPages > 1) { %>
+<div class="flex items-center justify-between mt-6 px-5 py-4 border-t border-[var(--border-subtle)]">
+  <p class="text-sm text-[var(--text-tertiary)]">
+    Showing <span class="font-medium text-[var(--text-primary)]"><%= pagination.from %></span> to <span class="font-medium text-[var(--text-primary)]"><%= pagination.to %></span> of <span class="font-medium text-[var(--text-primary)]"><%= pagination.total %></span>
+  </p>
+  <div class="flex items-center gap-1">
+    <% if (pagination.currentPage > 1) { %>
+    <a href="?page=<%= pagination.currentPage - 1 %><%= typeof pagination.queryString !== 'undefined' ? pagination.queryString : '' %>" class="p-2 rounded-lg text-[var(--text-tertiary)] hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)] transition-colors">
+      <i data-lucide="chevron-left" class="w-4 h-4"></i>
+    </a>
+    <% } %>
+    <% for (var i = Math.max(1, pagination.currentPage - 2); i <= Math.min(pagination.totalPages, pagination.currentPage + 2); i++) { %>
+    <a href="?page=<%= i %><%= typeof pagination.queryString !== 'undefined' ? pagination.queryString : '' %>"
+       class="w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-colors <%= i === pagination.currentPage ? 'bg-[var(--brand-primary)] text-white' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-2)]' %>">
+      <%= i %>
+    </a>
+    <% } %>
+    <% if (pagination.currentPage < pagination.totalPages) { %>
+    <a href="?page=<%= pagination.currentPage + 1 %><%= typeof pagination.queryString !== 'undefined' ? pagination.queryString : '' %>" class="p-2 rounded-lg text-[var(--text-tertiary)] hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)] transition-colors">
+      <i data-lucide="chevron-right" class="w-4 h-4"></i>
+    </a>
+    <% } %>
+  </div>
+</div>
+<% } %>

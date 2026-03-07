@@ -1,0 +1,139 @@
+<%- include('../partials/header', {title: 'Admin Dashboard', user: locals.user}) %>
+
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <p class="text-sm text-[var(--text-tertiary)] mb-1">Welcome back, <span class="font-medium text-[var(--text-primary)]"><%= user.displayName || user.username %></span></p>
+    <h1 class="text-page-title">Dashboard</h1>
+  </div>
+  <a href="/admin/assign-esim" class="hidden sm:inline-flex btn btn-primary">
+    <i data-lucide="plus" class="w-4 h-4"></i>
+    Assign eSIM
+  </a>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+  <div class="stat-card">
+    <p class="stat-label">Zendit Balance</p>
+    <p class="stat-value text-[var(--brand-primary)]"><%= typeof balance !== 'undefined' && balance ? '$' + (balance.availableBalance / (balance.currencyDivisor || 100)).toFixed(2) : '-' %></p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-label">Total Users</p>
+    <p class="stat-value"><%= typeof stats !== 'undefined' ? stats.totalUsers : 0 %></p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-label">Total eSIMs</p>
+    <p class="stat-value"><%= typeof stats !== 'undefined' ? stats.totalEsims : 0 %></p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-label">Active eSIMs</p>
+    <p class="stat-value text-emerald-600 dark:text-emerald-400"><%= typeof stats !== 'undefined' ? stats.activeEsims : 0 %></p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-label">Pending</p>
+    <p class="stat-value text-amber-600 dark:text-amber-400"><%= typeof stats !== 'undefined' ? stats.pendingEsims : 0 %></p>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="flex flex-wrap gap-3 mb-6">
+  <a href="/admin/assign-esim" class="btn btn-secondary">Assign eSIM</a>
+  <a href="/admin/users" class="btn btn-secondary">Manage Users</a>
+  <a href="/admin/esims" class="btn btn-secondary">All eSIMs</a>
+</div>
+
+<!-- Tables -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Recent eSIMs -->
+  <div class="table-container">
+    <div class="card-header">
+      <h3>Recent eSIM Purchases</h3>
+      <a href="/admin/esims" class="text-xs font-medium text-[var(--brand-primary)]">View all</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr>
+          <th>User</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr></thead>
+        <tbody>
+          <% if (typeof recentEsims !== 'undefined' && recentEsims.length > 0) { %>
+          <% recentEsims.forEach(function(esim) { %>
+          <tr>
+            <td>
+              <p class="font-medium text-[var(--text-primary)]"><%= esim.owner ? esim.owner.username : '-' %></p>
+              <p class="text-xs text-[var(--text-tertiary)] font-mono truncate max-w-[120px]"><%= esim.offerId %></p>
+            </td>
+            <td>
+              <% if (esim.status === 'completed') { %>
+              <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
+              <% } else if (esim.status === 'pending') { %>
+              <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Pending</span>
+              <% } else { %>
+              <span class="badge badge-danger"><span class="badge-dot bg-red-500"></span><%= esim.status %></span>
+              <% } %>
+            </td>
+            <td class="text-xs text-[var(--text-tertiary)]"><%= new Date(esim.createdAt).toLocaleDateString() %></td>
+          </tr>
+          <% }) %>
+          <% } else { %>
+          <tr><td colspan="3" class="text-center py-8 text-sm text-[var(--text-tertiary)]">No eSIM purchases yet</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Users -->
+  <div class="table-container">
+    <div class="card-header">
+      <h3>Recent Users</h3>
+      <a href="/admin/users" class="text-xs font-medium text-[var(--brand-primary)]">View all</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead><tr>
+          <th>User</th>
+          <th>Role</th>
+          <th>Status</th>
+        </tr></thead>
+        <tbody>
+          <% if (typeof recentUsers !== 'undefined' && recentUsers.length > 0) { %>
+          <% recentUsers.forEach(function(u) { %>
+          <tr>
+            <td>
+              <div class="flex items-center gap-2.5">
+                <div class="avatar avatar-sm bg-[var(--brand-primary)]"><%= u.username.charAt(0).toUpperCase() %></div>
+                <div>
+                  <p class="font-medium text-[var(--text-primary)]"><%= u.username %></p>
+                  <p class="text-xs text-[var(--text-tertiary)]"><%= u.email || '-' %></p>
+                </div>
+              </div>
+            </td>
+            <td>
+              <% if (u.isAdmin) { %>
+              <span class="badge badge-warning">Admin</span>
+              <% } else { %>
+              <span class="badge badge-neutral">User</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (u.isActive !== false) { %>
+              <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
+              <% } else { %>
+              <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span>Inactive</span>
+              <% } %>
+            </td>
+          </tr>
+          <% }) %>
+          <% } else { %>
+          <tr><td colspan="3" class="text-center py-8 text-sm text-[var(--text-tertiary)]">No users yet</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

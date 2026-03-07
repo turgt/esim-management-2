@@ -4,6 +4,9 @@ import fs from 'fs';
 import path from 'path';
 import Sequelize from 'sequelize';
 import { fileURLToPath } from 'url';
+import logger from '../../lib/logger.js';
+
+const log = logger.child({ module: 'database' });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,19 +19,19 @@ const configFile = JSON.parse(configData);
 const env = process.env.NODE_ENV || 'development';
 const config = configFile[env];
 
-console.log(`🔧 Database config loaded for environment: ${env}`);
+log.info({ env }, 'Database config loaded');
 
 // Create Sequelize instance
 let sequelize;
 if (config.use_env_variable) {
   sequelize = new Sequelize(process.env[config.use_env_variable], {
     ...config,
-    logging: config.logging !== false ? console.log : false
+    logging: config.logging !== false ? (msg) => log.debug(msg) : false
   });
 } else {
   sequelize = new Sequelize(config.database, config.username, config.password, {
     ...config,
-    logging: config.logging !== false ? console.log : false
+    logging: config.logging !== false ? (msg) => log.debug(msg) : false
   });
 }
 
@@ -45,7 +48,7 @@ const modelFiles = fs.readdirSync(__dirname)
     );
   });
 
-console.log(`📁 Loading ${modelFiles.length} model files:`, modelFiles);
+log.debug({ count: modelFiles.length, files: modelFiles }, 'Loading model files');
 
 // Import models dynamically
 for (const file of modelFiles) {
@@ -54,9 +57,9 @@ for (const file of modelFiles) {
     const module = await import(`file://${modelPath}`);
     const model = module.default(sequelize, Sequelize.DataTypes);
     db[model.name] = model;
-    console.log(`✅ Model loaded: ${model.name}`);
+    log.debug({ model: model.name }, 'Model loaded');
   } catch (error) {
-    console.error(`❌ Error loading model ${file}:`, error.message);
+    log.error({ file, err: error }, 'Error loading model');
   }
 }
 
@@ -64,7 +67,7 @@ for (const file of modelFiles) {
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
-    console.log(`🔗 Associations set for: ${modelName}`);
+    log.debug({ model: modelName }, 'Associations set');
   }
 });
 
@@ -74,9 +77,9 @@ db.Sequelize = Sequelize;
 // Test database connection
 try {
   await sequelize.authenticate();
-  console.log('✅ Database connection established successfully');
+  log.info('Database connection established successfully');
 } catch (error) {
-  console.error('❌ Unable to connect to database:', error.message);
+  log.fatal({ err: error }, 'Unable to connect to database');
 }
 
 export default db;

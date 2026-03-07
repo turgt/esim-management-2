@@ -2,15 +2,27 @@
 import { Model } from 'sequelize';
 export default (sequelize, DataTypes) => {
   class User extends Model {
-    static associate(models){
-      User.hasMany(models.Esim,{foreignKey:'userId'});
+    static associate(models) {
+      User.hasMany(models.Esim, { foreignKey: 'userId' });
+      User.hasMany(models.Payment, { foreignKey: 'userId' });
     }
   }
   User.init({
-    username:{type:DataTypes.STRING,unique:true,allowNull:false},
-    passwordHash:{type:DataTypes.STRING,allowNull:false},
-    isAdmin:{type:DataTypes.BOOLEAN,defaultValue:false},
-    esimLimit:{type:DataTypes.INTEGER,allowNull:true}
-  },{sequelize,modelName:'User'});
+    username: { type: DataTypes.STRING, unique: true, allowNull: false },
+    passwordHash: { type: DataTypes.STRING, allowNull: false },
+    email: { type: DataTypes.STRING, unique: true, allowNull: true },
+    emailVerified: { type: DataTypes.BOOLEAN, defaultValue: false },
+    emailVerificationToken: { type: DataTypes.STRING, allowNull: true },
+    emailVerificationExpires: { type: DataTypes.DATE, allowNull: true },
+    passwordResetToken: { type: DataTypes.STRING, allowNull: true },
+    passwordResetExpires: { type: DataTypes.DATE, allowNull: true },
+    displayName: { type: DataTypes.STRING, allowNull: true },
+    phone: { type: DataTypes.STRING, allowNull: true },
+    isAdmin: { type: DataTypes.BOOLEAN, defaultValue: false },
+    isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
+    esimLimit: { type: DataTypes.INTEGER, allowNull: true },
+    lastLoginAt: { type: DataTypes.DATE, allowNull: true },
+    theme: { type: DataTypes.STRING, defaultValue: 'light' }
+  }, { sequelize, modelName: 'User' });
   return User;
 };
