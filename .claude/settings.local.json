@@ -14,7 +14,11 @@
       "Bash(docker compose:*)",
       "Bash(curl:*)",
       "Bash(npm run:*)",
-      "Bash(export:*)"
+      "Bash(export:*)",
+      "Bash(grep:*)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(npx playwright:*)"
     ]
   }
 }

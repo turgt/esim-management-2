@@ -1,13 +1,20 @@
 <%- include('partials/header', {title: 'Profile', user: locals.user}) %>
 
-<div class="mb-6">
-  <h1 class="text-page-title"><%= user.displayName || user.username %></h1>
-  <p class="text-subtitle">@<%= user.username %></p>
+<div class="mb-8">
+  <div class="flex items-center gap-4">
+    <div class="avatar avatar-lg" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">
+      <%= (user.displayName || user.username).charAt(0).toUpperCase() %>
+    </div>
+    <div>
+      <h1 class="text-page-title"><%= user.displayName || user.username %></h1>
+      <p class="text-subtitle">@<%= user.username %></p>
+    </div>
+  </div>
 </div>
 
 <% if (typeof user !== 'undefined' && user && user.mustChangePassword) { %>
 <div class="alert alert-error mb-6">
-  <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+  <i data-lucide="shield-alert" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
   <div>
     <p class="font-semibold text-sm">Security Warning: Default Password Detected</p>
     <p class="mt-1 text-sm opacity-80">You are using the default password. Please change it immediately.</p>
@@ -42,30 +49,33 @@
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="input-label">Username</label>
-            <input type="text" value="<%= user.username %>" disabled class="input opacity-60 cursor-not-allowed">
+            <label for="prof-username" class="input-label">Username</label>
+            <input type="text" id="prof-username" value="<%= user.username %>" disabled class="input">
           </div>
           <div>
-            <label class="input-label">Display Name</label>
-            <input type="text" name="displayName" value="<%= user.displayName || '' %>" maxlength="50" placeholder="Your display name" class="input">
+            <label for="prof-displayname" class="input-label">Display Name</label>
+            <input type="text" id="prof-displayname" name="displayName" value="<%= user.displayName || '' %>" maxlength="50" placeholder="Your display name" class="input">
           </div>
           <div>
-            <label class="input-label">Email</label>
-            <input type="email" name="email" value="<%= user.email || '' %>" placeholder="your@email.com" class="input">
+            <label for="prof-email" class="input-label">Email</label>
+            <input type="email" id="prof-email" name="email" value="<%= user.email || '' %>" placeholder="your@email.com" class="input">
           </div>
           <div>
-            <label class="input-label">Phone</label>
-            <input type="text" name="phone" value="<%= user.phone || '' %>" placeholder="+90 555 123 4567" class="input">
+            <label for="prof-phone" class="input-label">Phone</label>
+            <input type="text" id="prof-phone" name="phone" value="<%= user.phone || '' %>" placeholder="+90 555 123 4567" class="input">
           </div>
         </div>
         <div>
-          <label class="input-label">Theme</label>
-          <select name="theme" class="input">
+          <label for="prof-theme" class="input-label">Theme</label>
+          <select id="prof-theme" name="theme" class="input">
             <option value="light" <%= user.theme === 'light' ? 'selected' : '' %>>Light</option>
             <option value="dark" <%= user.theme === 'dark' ? 'selected' : '' %>>Dark</option>
           </select>
         </div>
-        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="save" class="w-4 h-4"></i>
+          Save Changes
+        </button>
       </form>
     </div>
 
@@ -77,20 +87,23 @@
       <form method="post" action="/profile/password" class="card-body space-y-4">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div>
-          <label class="input-label">Current Password</label>
-          <input type="password" name="currentPassword" required class="input">
+          <label for="prof-curpw" class="input-label">Current Password</label>
+          <input type="password" id="prof-curpw" name="currentPassword" required class="input">
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="input-label">New Password</label>
-            <input type="password" name="newPassword" required minlength="8" class="input">
+            <label for="prof-newpw" class="input-label">New Password</label>
+            <input type="password" id="prof-newpw" name="newPassword" required minlength="8" class="input">
           </div>
           <div>
-            <label class="input-label">Confirm Password</label>
-            <input type="password" name="confirmPassword" required minlength="8" class="input">
+            <label for="prof-confirmpw" class="input-label">Confirm Password</label>
+            <input type="password" id="prof-confirmpw" name="confirmPassword" required minlength="8" class="input">
           </div>
         </div>
-        <button type="submit" class="btn btn-secondary">Update Password</button>
+        <button type="submit" class="btn btn-secondary">
+          <i data-lucide="key" class="w-4 h-4"></i>
+          Update Password
+        </button>
       </form>
     </div>
   </div>
@@ -108,7 +121,7 @@
         <% if (typeof esims !== 'undefined' && esims && esims.length > 0) { %>
         <div class="space-y-2">
           <% esims.forEach(function(esim) { %>
-          <a href="/status/<%= esim.transactionId %>" class="block p-3 rounded-lg bg-[var(--surface-1)] hover:bg-[var(--surface-2)] transition-colors">
+          <a href="/status/<%= esim.transactionId %>" class="block p-3 rounded-lg bg-[var(--surface-1)] border border-[var(--border-subtle)] hover:border-[var(--brand-primary)] hover:shadow-sm cursor-pointer">
             <div class="flex items-center justify-between mb-1">
               <span class="text-sm font-medium text-[var(--text-primary)] truncate"><%= esim.brandName || esim.offerId %></span>
               <% if (esim.status === 'completed') { %>
@@ -116,7 +129,7 @@
               <% } else if (esim.status === 'pending') { %>
               <span class="badge-dot bg-amber-500 animate-pulse-dot"></span>
               <% } else { %>
-              <span class="badge-dot bg-red-500"></span>
+              <span class="badge-dot bg-rose-500"></span>
               <% } %>
             </div>
             <% if (esim.iccid) { %>
@@ -126,9 +139,12 @@
           <% }) %>
         </div>
         <% } else { %>
-        <div class="text-center py-6">
+        <div class="text-center py-8">
+          <div class="empty-icon mx-auto mb-3" style="width:2.5rem;height:2.5rem;border-radius:0.625rem;">
+            <i data-lucide="smartphone" class="w-5 h-5"></i>
+          </div>
           <p class="text-sm text-[var(--text-tertiary)] mb-2">No eSIMs yet</p>
-          <a href="/offers" class="text-sm font-medium text-[var(--brand-primary)]">Browse Plans</a>
+          <a href="/offers" class="text-sm font-semibold text-[var(--brand-primary)] hover:underline">Browse Plans</a>
         </div>
         <% } %>
       </div>

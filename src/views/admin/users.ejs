@@ -1,6 +1,6 @@
 <%- include('../partials/header', {title: 'Admin Panel', user: locals.user}) %>
 
-<div class="mb-6">
+<div class="mb-8">
   <h1 class="text-page-title">User Management</h1>
   <p class="text-subtitle mt-1">Manage users and monitor eSIM usage</p>
 </div>
@@ -24,7 +24,10 @@
       <input type="email" name="email" placeholder="Email" class="input">
       <input type="password" name="password" required placeholder="Password" class="input">
       <input type="number" name="esimLimit" value="5" min="0" placeholder="eSIM Limit" class="input">
-      <button type="submit" class="btn btn-primary">Create</button>
+      <button type="submit" class="btn btn-primary">
+        <i data-lucide="user-plus" class="w-4 h-4"></i>
+        Create
+      </button>
     </div>
   </form>
 </div>
@@ -32,20 +35,40 @@
 <!-- Stats -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
   <div class="stat-card">
-    <div class="stat-label">Total Users</div>
-    <div class="stat-value"><%= users.length %></div>
+    <div class="stat-icon bg-slate-100 dark:bg-slate-500/10">
+      <i data-lucide="users" class="w-5 h-5 text-slate-600 dark:text-slate-400"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-label">Total Users</div>
+      <div class="stat-value"><%= users.length %></div>
+    </div>
   </div>
   <div class="stat-card">
-    <div class="stat-label">Admins</div>
-    <div class="stat-value text-amber-600 dark:text-amber-400"><%= users.filter(u => u.isAdmin).length %></div>
+    <div class="stat-icon bg-amber-50 dark:bg-amber-500/10">
+      <i data-lucide="shield" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-label">Admins</div>
+      <div class="stat-value text-amber-600 dark:text-amber-400"><%= users.filter(u => u.isAdmin).length %></div>
+    </div>
   </div>
   <div class="stat-card">
-    <div class="stat-label">Total eSIMs</div>
-    <div class="stat-value"><%= users.reduce((sum, u) => sum + (u.Esims ? u.Esims.length : 0), 0) %></div>
+    <div class="stat-icon bg-sky-50 dark:bg-sky-500/10">
+      <i data-lucide="smartphone" class="w-5 h-5 text-sky-600 dark:text-sky-400"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-label">Total eSIMs</div>
+      <div class="stat-value"><%= users.reduce((sum, u) => sum + (u.Esims ? u.Esims.length : 0), 0) %></div>
+    </div>
   </div>
   <div class="stat-card">
-    <div class="stat-label">Active</div>
-    <div class="stat-value text-emerald-600 dark:text-emerald-400"><%= users.filter(u => u.isActive !== false).length %></div>
+    <div class="stat-icon bg-emerald-50 dark:bg-emerald-500/10">
+      <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-label">Active</div>
+      <div class="stat-value text-emerald-600 dark:text-emerald-400"><%= users.filter(u => u.isActive !== false).length %></div>
+    </div>
   </div>
 </div>
 
@@ -63,8 +86,8 @@
   </form>
 </div>
 
-<!-- Users Table -->
-<div class="table-container">
+<!-- Users Table (desktop) -->
+<div class="table-container hidden md:block">
   <div class="overflow-x-auto">
     <table class="table">
       <thead><tr>
@@ -80,7 +103,7 @@
         <tr>
           <td>
             <div class="flex items-center gap-2.5">
-              <div class="avatar avatar-sm bg-[var(--brand-primary)]"><%= u.username.charAt(0).toUpperCase() %></div>
+              <div class="avatar avatar-sm" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);"><%= u.username.charAt(0).toUpperCase() %></div>
               <div>
                 <p class="font-medium text-[var(--text-primary)]"><%= u.username %></p>
                 <p class="text-xs text-[var(--text-tertiary)] font-mono">#<%= u.id %></p>
@@ -96,8 +119,8 @@
             <% } %>
           </td>
           <td>
-            <span class="font-medium text-[var(--text-primary)]"><%= u.Esims ? u.Esims.length : 0 %></span>
-            <span class="text-[var(--text-tertiary)]">/ <%= u.esimLimit === 0 ? '∞' : u.esimLimit %></span>
+            <span class="font-semibold text-[var(--text-primary)]"><%= u.Esims ? u.Esims.length : 0 %></span>
+            <span class="text-[var(--text-tertiary)]">/ <%= u.esimLimit === 0 ? '&infin;' : u.esimLimit %></span>
           </td>
           <td>
             <% if (u.isActive !== false) { %>
@@ -122,6 +145,52 @@
       </tbody>
     </table>
   </div>
+  <%- include('../partials/pagination') %>
+</div>
+
+<!-- Users Cards (mobile) -->
+<div class="md:hidden space-y-3">
+  <% users.forEach(function(u) { %>
+  <div class="card">
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="avatar avatar-sm" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);"><%= u.username.charAt(0).toUpperCase() %></div>
+          <div>
+            <p class="font-semibold text-[var(--text-primary)]"><%= u.username %></p>
+            <p class="text-xs text-[var(--text-tertiary)]"><%= u.email || '-' %></p>
+          </div>
+        </div>
+        <% if (u.isAdmin) { %>
+        <span class="badge badge-warning">Admin</span>
+        <% } else { %>
+        <span class="badge badge-neutral">User</span>
+        <% } %>
+      </div>
+      <div class="flex items-center gap-4 text-sm mb-3">
+        <span class="flex items-center gap-1.5 text-[var(--text-secondary)]">
+          <i data-lucide="smartphone" class="w-3.5 h-3.5 text-[var(--text-tertiary)]"></i>
+          <span class="font-semibold text-[var(--text-primary)]"><%= u.Esims ? u.Esims.length : 0 %></span>
+          <span class="text-[var(--text-tertiary)]">/ <%= u.esimLimit === 0 ? '&infin;' : u.esimLimit %></span>
+        </span>
+        <% if (u.isActive !== false) { %>
+        <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
+        <% } else { %>
+        <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span>Inactive</span>
+        <% } %>
+      </div>
+      <form method="post" action="/admin/users/<%= u.id %>/edit" class="flex items-center gap-2 pt-3 border-t border-[var(--border-subtle)]">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <select name="isActive" class="input text-xs !py-1.5 !px-2 !rounded-lg flex-1">
+          <option value="true" <%= u.isActive !== false ? 'selected' : '' %>>Active</option>
+          <option value="false" <%= u.isActive === false ? 'selected' : '' %>>Inactive</option>
+        </select>
+        <input type="number" name="esimLimit" value="<%= u.esimLimit %>" min="0" class="input text-xs !py-1.5 !px-2 !rounded-lg !w-16" placeholder="Limit">
+        <button type="submit" class="btn btn-sm btn-primary">Save</button>
+      </form>
+    </div>
+  </div>
+  <% }) %>
   <%- include('../partials/pagination') %>
 </div>
 

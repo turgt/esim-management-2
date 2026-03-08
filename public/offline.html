@@ -12,69 +12,84 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            color: #1e293b;
+            background: #f8fafc;
+            color: #0f172a;
         }
-        
         .offline-container {
             text-align: center;
-            padding: 40px;
+            padding: 48px 40px;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            border: 1px solid #e2e8f0;
             max-width: 400px;
+            width: 90%;
         }
-        
         .offline-icon {
-            font-size: 64px;
-            margin-bottom: 24px;
+            width: 64px;
+            height: 64px;
+            border-radius: 1rem;
+            background: #eef2ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
         }
-        
+        .offline-icon svg {
+            width: 32px;
+            height: 32px;
+            color: #4f46e5;
+        }
         .offline-title {
-            font-size: 24px;
+            font-size: 1.375rem;
             font-weight: 700;
-            margin-bottom: 16px;
+            margin: 0 0 12px;
+            letter-spacing: -0.01em;
         }
-        
         .offline-message {
-            color: #64748b;
-            margin-bottom: 32px;
+            color: #475569;
+            margin: 0 0 32px;
             line-height: 1.6;
+            font-size: 0.9375rem;
         }
-        
         .retry-btn {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            background: #4f46e5;
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 12px 28px;
+            border-radius: 0.5rem;
             font-weight: 600;
+            font-size: 0.9375rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(79,70,229,0.25);
+            transition: all 0.15s;
         }
-        
         .retry-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+            background: #4338ca;
+            box-shadow: 0 6px 20px rgba(79,70,229,0.35);
+        }
+        .retry-btn:active {
+            transform: scale(0.98);
         }
     </style>
 </head>
 <body>
     <div class="offline-container">
-        <div class="offline-icon">📡</div>
+        <div class="offline-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12 7 4l5 8"/><path d="m7 20 5-8 5 8"/><path d="m17 4 5 8-5 8"/></svg>
+        </div>
         <h1 class="offline-title">You're Offline</h1>
         <p class="offline-message">
-            It looks like you're not connected to the internet. 
+            It looks like you're not connected to the internet.
             Please check your connection and try again.
         </p>
         <button class="retry-btn" onclick="window.location.reload()">
             Try Again
         </button>
     </div>
-    
+
     <script>
-        // Auto-retry when connection is restored
-        window.addEventListener('online', () => {
+        window.addEventListener('online', function() {
             window.location.reload();
         });
     </script>

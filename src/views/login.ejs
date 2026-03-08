@@ -1,27 +1,27 @@
 <%- include('partials/header', {title: 'Login', user: null}) %>
 
-    <div class="card p-6">
+    <div class="card p-7">
       <div class="text-center mb-6">
-        <h1 class="text-xl font-semibold text-[var(--text-primary)]">Welcome back</h1>
-        <p class="text-sm text-[var(--text-secondary)] mt-1">Sign in to your account</p>
+        <h1 class="text-xl font-bold text-[var(--text-primary)]">Welcome back</h1>
+        <p class="text-sm text-[var(--text-secondary)] mt-1.5">Sign in to manage your eSIMs</p>
       </div>
 
       <% if (typeof success !== 'undefined' && success) { %>
-      <div class="alert alert-success mb-4">
+      <div class="alert alert-success mb-5">
         <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i>
         <%= success %>
       </div>
       <% } %>
 
       <% if (typeof error !== 'undefined' && error) { %>
-      <div class="alert alert-error mb-4">
+      <div class="alert alert-error mb-5">
         <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
         <%= error %>
       </div>
       <% } %>
 
       <% if (typeof errors !== 'undefined' && errors && errors.length > 0) { %>
-      <div class="alert alert-error mb-4">
+      <div class="alert alert-error mb-5">
         <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
         <div class="space-y-1">
           <% errors.forEach(function(err) { %>
@@ -34,22 +34,28 @@
       <form method="post" action="/auth/login" class="space-y-4">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div>
-          <label class="input-label">Username or Email</label>
-          <input type="text" name="username" required autocomplete="username" placeholder="Enter your username or email" class="input">
+          <label for="username" class="input-label">Username or Email</label>
+          <div class="input-icon-wrapper">
+            <i data-lucide="user" class="input-icon w-4 h-4"></i>
+            <input type="text" id="username" name="username" required autocomplete="username" placeholder="Enter your username or email" class="input">
+          </div>
         </div>
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label class="input-label mb-0">Password</label>
-            <a href="/auth/forgot-password" class="text-xs text-[var(--brand-primary)]">Forgot password?</a>
+            <label for="password" class="input-label mb-0">Password</label>
+            <a href="/auth/forgot-password" class="text-xs font-medium text-[var(--brand-primary)] hover:underline">Forgot password?</a>
           </div>
-          <input type="password" name="password" required autocomplete="current-password" placeholder="Enter your password" class="input">
+          <div class="input-icon-wrapper">
+            <i data-lucide="lock" class="input-icon w-4 h-4"></i>
+            <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Enter your password" class="input">
+          </div>
         </div>
-        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Sign In</button>
       </form>
     </div>
 
-    <p class="mt-4 text-center text-sm text-[var(--text-tertiary)]">
-      Don't have an account? <a href="/auth/register" class="font-medium text-[var(--brand-primary)]">Create account</a>
+    <p class="mt-5 text-center text-sm text-[var(--text-tertiary)]">
+      Don't have an account? <a href="/auth/register" class="font-semibold text-[var(--brand-primary)] hover:underline">Create account</a>
     </p>
 
 <%- include('partials/footer') %>

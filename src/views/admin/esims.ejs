@@ -1,6 +1,6 @@
 <%- include('../partials/header', {title: 'All eSIMs', user: locals.user}) %>
 
-<div class="mb-6 flex items-center justify-between">
+<div class="mb-8 flex items-center justify-between">
   <div>
     <h1 class="text-page-title">All eSIMs</h1>
     <p class="text-subtitle mt-1">Manage all eSIM purchases across the platform</p>
@@ -33,15 +33,16 @@
       <span class="badge-dot bg-amber-500"></span>Pending
     </a>
     <a href="/admin/esims?status=processing<%= typeof search !== 'undefined' && search ? '&search=' + search : '' %>" class="filter-pill <%= typeof statusFilter !== 'undefined' && statusFilter === 'processing' ? 'active' : '' %>">
-      <span class="badge-dot bg-blue-500"></span>Processing
+      <span class="badge-dot bg-indigo-500"></span>Processing
     </a>
     <a href="/admin/esims?status=failed<%= typeof search !== 'undefined' && search ? '&search=' + search : '' %>" class="filter-pill <%= typeof statusFilter !== 'undefined' && statusFilter === 'failed' ? 'active' : '' %>">
-      <span class="badge-dot bg-red-500"></span>Failed
+      <span class="badge-dot bg-rose-500"></span>Failed
     </a>
   </div>
 </div>
 
-<div class="table-container">
+<!-- eSIMs Table (desktop) -->
+<div class="table-container hidden md:block">
   <div class="overflow-x-auto">
     <table class="table">
       <thead><tr>
@@ -77,7 +78,7 @@
             <% } else if (esim.status === 'pending') { %>
             <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Pending</span>
             <% } else { %>
-            <span class="badge badge-danger"><span class="badge-dot bg-red-500"></span><%= esim.status %></span>
+            <span class="badge badge-danger"><span class="badge-dot bg-rose-500"></span><%= esim.status %></span>
             <% } %>
           </td>
           <td class="text-[var(--text-secondary)]"><%= esim.country || '-' %></td>
@@ -102,6 +103,61 @@
       </tbody>
     </table>
   </div>
+  <%- include('../partials/pagination') %>
+</div>
+
+<!-- eSIMs Cards (mobile) -->
+<div class="md:hidden space-y-3">
+  <% if (typeof esims !== 'undefined' && esims.length > 0) { %>
+  <% esims.forEach(function(esim) { %>
+  <div class="card">
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-[var(--text-tertiary)] font-mono">#<%= esim.id %></span>
+          <span class="font-semibold text-[var(--text-primary)]"><%= esim.owner ? esim.owner.username : '-' %></span>
+        </div>
+        <% if (esim.status === 'completed') { %>
+        <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
+        <% } else if (esim.status === 'pending') { %>
+        <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Pending</span>
+        <% } else { %>
+        <span class="badge badge-danger"><span class="badge-dot bg-rose-500"></span><%= esim.status %></span>
+        <% } %>
+      </div>
+      <% if (esim.iccid) { %>
+      <div class="flex items-center gap-1 mb-2">
+        <span class="font-mono text-xs text-[var(--text-secondary)]"><%= esim.iccid %></span>
+        <button onclick="copyToClipboard('<%= esim.iccid %>', this)" class="copy-btn" title="Copy ICCID">
+          <i data-lucide="copy" class="w-3 h-3"></i>
+        </button>
+      </div>
+      <% } %>
+      <div class="flex items-center gap-3 text-xs text-[var(--text-tertiary)] mb-3">
+        <% if (esim.country) { %>
+        <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> <%= esim.country %></span>
+        <% } %>
+        <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> <%= new Date(esim.createdAt).toLocaleDateString() %></span>
+      </div>
+      <div class="flex items-center gap-2 pt-3 border-t border-[var(--border-subtle)]">
+        <a href="/admin/esims/<%= esim.id %>" class="btn btn-sm btn-secondary flex-1">
+          <i data-lucide="eye" class="w-3.5 h-3.5"></i> Detail
+        </a>
+        <% if (esim.iccid) { %>
+        <a href="/admin/topup/<%= esim.id %>" class="btn btn-sm btn-secondary flex-1">
+          <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Top-up
+        </a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  <% }) %>
+  <% } else { %>
+  <div class="empty-state">
+    <div class="empty-icon"><i data-lucide="layers" class="w-6 h-6"></i></div>
+    <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">No eSIMs found</h3>
+  </div>
+  <% } %>
   <%- include('../partials/pagination') %>
 </div>
 

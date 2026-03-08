@@ -65,9 +65,9 @@
           <td class="font-mono text-xs"><%= plan.offerId %></td>
           <td>
             <% if (plan.unlimited) { %>
-            <span class="text-sm font-medium">Unlimited</span>
+            <span class="text-sm font-semibold">Unlimited</span>
             <% } else { %>
-            <span class="text-sm font-medium"><%= plan.remainingDataGB != null ? plan.remainingDataGB.toFixed(2) : '-' %></span>
+            <span class="text-sm font-semibold"><%= plan.remainingDataGB != null ? plan.remainingDataGB.toFixed(2) : '-' %></span>
             <span class="text-xs text-[var(--text-tertiary)]"> / <%= plan.initialDataGB || '-' %> GB</span>
             <% } %>
           </td>
@@ -126,15 +126,18 @@
     <form method="post" action="/admin/topup/<%= esim.id %>" class="card-body space-y-4">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div>
-        <label class="input-label">Select Package</label>
-        <select name="offerId" required class="input">
+        <label for="topup-offer" class="input-label">Select Package</label>
+        <select id="topup-offer" name="offerId" required class="input">
           <option value="">Choose a package...</option>
           <% if (typeof offers !== 'undefined') { offers.forEach(function(offer) { %>
           <option value="<%= offer.offerId %>"><%= offer.brand %> - <%= offer.dataGB ? offer.dataGB + ' GB' : 'Unlimited' %> / <%= offer.durationDays %> days</option>
           <% }) } %>
         </select>
       </div>
-      <button type="submit" class="btn btn-primary btn-block">Apply Top-up</button>
+      <button type="submit" class="btn btn-primary btn-block">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+        Apply Top-up
+      </button>
     </form>
   </div>
   <% } else { %>

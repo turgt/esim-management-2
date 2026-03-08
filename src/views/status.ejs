@@ -11,90 +11,92 @@
   <!-- Status Banner -->
   <div class="card overflow-hidden">
     <% if (status.status === 'DONE' || status.status === 'completed') { %>
-    <div class="px-5 py-4 flex items-center gap-3 bg-emerald-50 dark:bg-emerald-500/10 border-b border-emerald-200 dark:border-emerald-500/20">
-      <div class="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
-        <i data-lucide="check" class="w-4 h-4 text-white"></i>
+    <div class="status-banner status-banner-done">
+      <div class="status-icon">
+        <i data-lucide="check" class="w-5 h-5"></i>
       </div>
       <div>
-        <p class="text-sm font-semibold text-emerald-700 dark:text-emerald-400">eSIM Ready</p>
-        <p class="text-xs text-emerald-600 dark:text-emerald-500">Your eSIM has been activated and is ready to use</p>
+        <p class="text-sm font-bold text-emerald-700 dark:text-emerald-400">eSIM Ready</p>
+        <p class="text-xs text-emerald-600 dark:text-emerald-500 mt-0.5">Your eSIM has been activated and is ready to use</p>
       </div>
     </div>
     <% } else if (status.status === 'PENDING' || status.status === 'pending') { %>
-    <div class="px-5 py-4 flex items-center gap-3 bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/20">
-      <div class="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
-        <i data-lucide="loader" class="w-4 h-4 text-white animate-spin"></i>
+    <div class="status-banner status-banner-pending">
+      <div class="status-icon">
+        <i data-lucide="loader" class="w-5 h-5 animate-spin"></i>
       </div>
       <div>
-        <p class="text-sm font-semibold text-amber-700 dark:text-amber-400">Processing</p>
-        <p class="text-xs text-amber-600 dark:text-amber-500">Your eSIM is being set up, this usually takes a few minutes</p>
+        <p class="text-sm font-bold text-amber-700 dark:text-amber-400">Processing</p>
+        <p class="text-xs text-amber-600 dark:text-amber-500 mt-0.5">Your eSIM is being set up, this usually takes a few minutes</p>
       </div>
     </div>
     <% } else if (status.status === 'FAILED' || status.status === 'failed') { %>
-    <div class="px-5 py-4 flex items-center gap-3 bg-red-50 dark:bg-red-500/10 border-b border-red-200 dark:border-red-500/20">
-      <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
-        <i data-lucide="x" class="w-4 h-4 text-white"></i>
+    <div class="status-banner status-banner-failed">
+      <div class="status-icon">
+        <i data-lucide="x" class="w-5 h-5"></i>
       </div>
       <div>
-        <p class="text-sm font-semibold text-red-700 dark:text-red-400">Activation Failed</p>
-        <p class="text-xs text-red-600 dark:text-red-500">Please contact support for assistance</p>
+        <p class="text-sm font-bold text-rose-700 dark:text-rose-400">Activation Failed</p>
+        <p class="text-xs text-rose-600 dark:text-rose-500 mt-0.5">Please contact support for assistance</p>
       </div>
     </div>
     <% } else { %>
-    <div class="px-5 py-4 flex items-center gap-3 bg-blue-50 dark:bg-blue-500/10 border-b border-blue-200 dark:border-blue-500/20">
-      <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-        <i data-lucide="loader" class="w-4 h-4 text-white animate-spin"></i>
+    <div class="status-banner status-banner-progress">
+      <div class="status-icon">
+        <i data-lucide="loader" class="w-5 h-5 animate-spin"></i>
       </div>
       <div>
-        <p class="text-sm font-semibold text-blue-700 dark:text-blue-400"><%= status.status %></p>
-        <p class="text-xs text-blue-600 dark:text-blue-500">Your eSIM is being prepared</p>
+        <p class="text-sm font-bold text-indigo-700 dark:text-indigo-400"><%= status.status %></p>
+        <p class="text-xs text-indigo-600 dark:text-indigo-500 mt-0.5">Your eSIM is being prepared</p>
       </div>
     </div>
     <% } %>
 
     <!-- Details Grid -->
-    <div class="p-5 grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
-      <div>
-        <p class="text-xs text-[var(--text-tertiary)] mb-0.5">Transaction ID</p>
-        <p class="font-mono text-xs text-[var(--text-primary)] truncate"><%= status.transactionId %></p>
-      </div>
-      <div>
-        <p class="text-xs text-[var(--text-tertiary)] mb-0.5">Offer</p>
-        <p class="text-[var(--text-primary)] truncate"><%= status.offerId %></p>
-      </div>
-      <% if (status.brandName || (esim && esim.brandName)) { %>
-      <div>
-        <p class="text-xs text-[var(--text-tertiary)] mb-0.5">Provider</p>
-        <p class="text-[var(--text-primary)]"><%= status.brandName || esim.brandName || '-' %></p>
-      </div>
-      <% } %>
-      <% if (status.country || (esim && esim.country)) { %>
-      <div>
-        <p class="text-xs text-[var(--text-tertiary)] mb-0.5">Region</p>
-        <p class="text-[var(--text-primary)]"><%= status.country || esim.country || '-' %></p>
-      </div>
-      <% } %>
-      <% if (status.durationDays || (esim && esim.durationDays)) { %>
-      <div>
-        <p class="text-xs text-[var(--text-tertiary)] mb-0.5">Duration</p>
-        <p class="font-semibold text-[var(--text-primary)]"><%= status.durationDays || esim.durationDays %> days</p>
-      </div>
-      <% } %>
-      <div>
-        <p class="text-xs text-[var(--text-tertiary)] mb-0.5">Data</p>
-        <p class="font-semibold text-[var(--text-primary)]"><%= status.dataUnlimited ? 'Unlimited' : (status.dataGB || (esim && esim.dataGB) ? (status.dataGB || esim.dataGB) + ' GB' : '-') %></p>
-      </div>
-      <% if (esim && esim.iccid) { %>
-      <div class="col-span-2">
-        <p class="text-xs text-[var(--text-tertiary)] mb-0.5">ICCID</p>
-        <div class="flex items-center gap-1.5">
-          <p class="font-mono text-xs text-[var(--text-primary)]"><%= esim.iccid %></p>
-          <button onclick="copyToClipboard('<%= esim.iccid %>', this)" class="copy-btn" title="Copy ICCID">
-            <i data-lucide="copy" class="w-3 h-3"></i>
-          </button>
+    <div class="p-5">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="detail-item">
+          <div class="detail-label">Transaction ID</div>
+          <div class="detail-value font-mono text-xs truncate"><%= status.transactionId %></div>
         </div>
+        <div class="detail-item">
+          <div class="detail-label">Offer</div>
+          <div class="detail-value truncate"><%= status.offerId %></div>
+        </div>
+        <% if (status.brandName || (esim && esim.brandName)) { %>
+        <div class="detail-item">
+          <div class="detail-label">Provider</div>
+          <div class="detail-value"><%= status.brandName || esim.brandName || '-' %></div>
+        </div>
+        <% } %>
+        <% if (status.country || (esim && esim.country)) { %>
+        <div class="detail-item">
+          <div class="detail-label">Region</div>
+          <div class="detail-value"><%= status.country || esim.country || '-' %></div>
+        </div>
+        <% } %>
+        <% if (status.durationDays || (esim && esim.durationDays)) { %>
+        <div class="detail-item">
+          <div class="detail-label">Duration</div>
+          <div class="detail-value font-semibold"><%= status.durationDays || esim.durationDays %> days</div>
+        </div>
+        <% } %>
+        <div class="detail-item">
+          <div class="detail-label">Data</div>
+          <div class="detail-value font-semibold"><%= status.dataUnlimited ? 'Unlimited' : (status.dataGB || (esim && esim.dataGB) ? (status.dataGB || esim.dataGB) + ' GB' : '-') %></div>
+        </div>
+        <% if (esim && esim.iccid) { %>
+        <div class="detail-item col-span-2">
+          <div class="detail-label">ICCID</div>
+          <div class="flex items-center gap-1.5">
+            <span class="detail-value font-mono text-xs"><%= esim.iccid %></span>
+            <button onclick="copyToClipboard('<%= esim.iccid %>', this)" class="copy-btn" title="Copy ICCID">
+              <i data-lucide="copy" class="w-3 h-3"></i>
+            </button>
+          </div>
+        </div>
+        <% } %>
       </div>
-      <% } %>
     </div>
   </div>
 
@@ -103,11 +105,12 @@
   <div class="card">
     <div class="card-header">
       <h3>Activity Log</h3>
+      <span class="badge badge-neutral"><%= status.log.length %></span>
     </div>
     <div class="card-body">
       <div class="relative">
         <% status.log.forEach(function(entry, index) { %>
-        <div class="flex gap-3 <%= index < status.log.length - 1 ? 'pb-4' : '' %>">
+        <div class="flex gap-3.5 <%= index < status.log.length - 1 ? 'pb-5' : '' %>">
           <div class="flex flex-col items-center">
             <%
               var isDone = ['DONE','ACCEPTED','completed'].includes(entry.status);
@@ -116,33 +119,33 @@
               var isFailed = ['FAILED','CANCELLED','REJECTED','ERROR','failed'].includes(entry.status);
             %>
             <% if (isDone) { %>
-            <div class="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
-              <i data-lucide="check" class="w-2.5 h-2.5 text-white"></i>
+            <div class="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+              <i data-lucide="check" class="w-3 h-3 text-white"></i>
             </div>
             <% } else if (isPending) { %>
-            <div class="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
-              <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+              <div class="w-2 h-2 rounded-full bg-white"></div>
             </div>
             <% } else if (isProgress) { %>
-            <div class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-              <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div class="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+              <div class="w-2 h-2 rounded-full bg-white"></div>
             </div>
             <% } else if (isFailed) { %>
-            <div class="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
-              <i data-lucide="x" class="w-2.5 h-2.5 text-white"></i>
+            <div class="w-6 h-6 rounded-full bg-rose-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+              <i data-lucide="x" class="w-3 h-3 text-white"></i>
             </div>
             <% } else { %>
-            <div class="w-5 h-5 rounded-full bg-[var(--surface-2)] border border-[var(--border-default)] flex items-center justify-center flex-shrink-0">
-              <div class="w-1.5 h-1.5 rounded-full bg-[var(--text-tertiary)]"></div>
+            <div class="w-6 h-6 rounded-full bg-[var(--surface-2)] border border-[var(--border-default)] flex items-center justify-center flex-shrink-0">
+              <div class="w-2 h-2 rounded-full bg-[var(--text-tertiary)]"></div>
             </div>
             <% } %>
             <% if (index < status.log.length - 1) { %>
-            <div class="w-px flex-1 bg-[var(--border-default)] min-h-[12px]"></div>
+            <div class="w-0.5 flex-1 bg-[var(--border-default)] min-h-[16px] rounded-full"></div>
             <% } %>
           </div>
           <div class="min-w-0 -mt-0.5">
-            <p class="text-sm font-medium text-[var(--text-primary)]"><%= entry.status %></p>
-            <p class="text-xs text-[var(--text-secondary)]"><%= entry.statusMessage %></p>
+            <p class="text-sm font-semibold text-[var(--text-primary)]"><%= entry.status %></p>
+            <p class="text-xs text-[var(--text-secondary)] mt-0.5"><%= entry.statusMessage %></p>
             <p class="text-xs text-[var(--text-tertiary)] mt-0.5"><%= new Date(entry.dateTime).toLocaleString() %></p>
           </div>
         </div>
@@ -155,9 +158,15 @@
   <!-- Actions -->
   <div class="flex flex-col sm:flex-row gap-3">
     <% if (isQrReady) { %>
-    <a href="/qrcode/<%= status.transactionId %>" class="flex-1 btn btn-primary">Download QR Code</a>
+    <a href="/qrcode/<%= status.transactionId %>" class="flex-1 btn btn-primary btn-lg">
+      <i data-lucide="qr-code" class="w-4 h-4"></i>
+      Download QR Code
+    </a>
     <% } %>
-    <button onclick="location.reload()" class="flex-1 btn btn-secondary">Refresh Status</button>
+    <button onclick="location.reload()" class="flex-1 btn btn-secondary btn-lg">
+      <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+      Refresh Status
+    </button>
   </div>
 </div>
 

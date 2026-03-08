@@ -1,13 +1,14 @@
 
 <% if (typeof user !== 'undefined' && user) { %>
       </div>
-      <footer class="py-4 mt-auto text-center border-t border-[var(--border-default)] mx-4 sm:mx-6">
+      <footer class="py-4 mt-auto text-center border-t border-[var(--border-default)] mx-4 sm:mx-6 lg:mx-8">
         <p class="text-xs text-[var(--text-tertiary)]">&copy; <%= new Date().getFullYear() %> eSIM Hub</p>
       </footer>
     </main>
   </div>
   <div id="toast-container" class="toast-container"></div>
 <% } else { %>
+  </div>
   </div>
 <% } %>
 

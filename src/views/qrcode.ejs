@@ -13,12 +13,15 @@
   <!-- QR Code Card -->
   <div class="card">
     <div class="p-6 text-center border-b border-[var(--border-subtle)] bg-[var(--surface-1)]">
-      <h2 class="text-lg font-semibold text-[var(--text-primary)]">Ready to Install</h2>
+      <div class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--brand-light)] mb-3">
+        <i data-lucide="qr-code" class="w-5 h-5 text-[var(--brand-primary)]"></i>
+      </div>
+      <h2 class="text-lg font-bold text-[var(--text-primary)]">Ready to Install</h2>
       <p class="text-sm text-[var(--text-secondary)] mt-1">Scan the QR code below with your device camera</p>
     </div>
 
-    <div class="p-6 flex justify-center">
-      <div class="bg-white p-4 rounded-lg border border-gray-100">
+    <div class="p-8 flex justify-center">
+      <div class="bg-white p-5 rounded-2xl shadow-lg border border-gray-100">
         <img src="data:image/png;base64,<%= qr.imageBase64 %>" alt="eSIM QR Code" class="qr-image w-64 h-64" />
       </div>
     </div>
@@ -33,28 +36,28 @@
       <div class="stepper-item">
         <div class="stepper-number">1</div>
         <div class="pb-3">
-          <p class="font-medium text-[var(--text-primary)] text-sm">Open Settings</p>
+          <p class="font-semibold text-[var(--text-primary)] text-sm">Open Settings</p>
           <p class="text-sm text-[var(--text-secondary)] mt-0.5">Go to Settings > Cellular/Mobile Data</p>
         </div>
       </div>
       <div class="stepper-item">
         <div class="stepper-number">2</div>
         <div class="pb-3">
-          <p class="font-medium text-[var(--text-primary)] text-sm">Add eSIM</p>
+          <p class="font-semibold text-[var(--text-primary)] text-sm">Add eSIM</p>
           <p class="text-sm text-[var(--text-secondary)] mt-0.5">Tap "Add Cellular Plan" or "Add eSIM"</p>
         </div>
       </div>
       <div class="stepper-item">
         <div class="stepper-number">3</div>
         <div class="pb-3">
-          <p class="font-medium text-[var(--text-primary)] text-sm">Scan QR Code</p>
+          <p class="font-semibold text-[var(--text-primary)] text-sm">Scan QR Code</p>
           <p class="text-sm text-[var(--text-secondary)] mt-0.5">Use your camera to scan this QR code</p>
         </div>
       </div>
       <div class="stepper-item">
         <div class="stepper-number">4</div>
         <div>
-          <p class="font-medium text-[var(--text-primary)] text-sm">Complete Setup</p>
+          <p class="font-semibold text-[var(--text-primary)] text-sm">Complete Setup</p>
           <p class="text-sm text-[var(--text-secondary)] mt-0.5">Follow the on-screen instructions to activate</p>
         </div>
       </div>
@@ -73,11 +76,11 @@
 
   <!-- Actions -->
   <div class="flex flex-col sm:flex-row gap-3">
-    <button onclick="downloadQR()" class="flex-1 btn btn-primary">
+    <button onclick="downloadQR()" class="flex-1 btn btn-primary btn-lg">
       <i data-lucide="download" class="w-4 h-4"></i>
       Save QR Code
     </button>
-    <button onclick="printQR()" class="flex-1 btn btn-secondary">
+    <button onclick="printQR()" class="flex-1 btn btn-secondary btn-lg">
       <i data-lucide="printer" class="w-4 h-4"></i>
       Print QR Code
     </button>
@@ -87,10 +90,10 @@
 <% } else { %>
 <div class="empty-state">
   <div class="empty-icon">
-    <i data-lucide="alert-circle" class="w-6 h-6"></i>
+    <i data-lucide="qr-code" class="w-6 h-6"></i>
   </div>
-  <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">QR Code Not Available</h3>
-  <p class="text-sm text-[var(--text-tertiary)] mb-4">The QR code is not yet available. Please check back later.</p>
+  <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">QR Code Not Available</h3>
+  <p class="text-sm text-[var(--text-secondary)] mb-5">The QR code is not yet available. Please check back later.</p>
   <a href="/purchases" class="btn btn-primary">Back to My eSIMs</a>
 </div>
 <% } %>
@@ -114,9 +117,9 @@ function printQR() {
   var printWindow = window.open('', '_blank');
   printWindow.document.write(
     '<html><head><title>eSIM QR Code</title>' +
-    '<style>body{margin:0;padding:40px;text-align:center;font-family:Arial,sans-serif}' +
+    '<style>body{margin:0;padding:40px;text-align:center;font-family:Inter,Arial,sans-serif}' +
     '.c{max-width:400px;margin:0 auto}img{width:100%;max-width:300px;margin:20px 0}' +
-    'h1{color:#333;margin-bottom:10px}p{color:#666;margin-bottom:20px}</style></head>' +
+    'h1{color:#0f172a;margin-bottom:10px;font-size:1.5rem}p{color:#475569;margin-bottom:20px}</style></head>' +
     '<body><div class="c"><h1>eSIM QR Code</h1><p>Scan this code to install your eSIM</p>' +
     '<img src="' + qrImg + '" alt="eSIM QR Code">' +
     '<p><small>Keep this QR code private and secure</small></p></div></body></html>'

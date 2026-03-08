@@ -102,56 +102,61 @@
 
     <!-- Desktop Sidebar -->
     <aside class="sidebar hidden md:flex">
-      <div class="mb-6 px-2">
-        <a href="/offers" class="text-lg font-bold text-[var(--text-primary)] no-underline">eSIM Hub</a>
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon">
+          <i data-lucide="signal" class="w-4.5 h-4.5"></i>
+        </div>
+        <a href="/offers" class="text-lg font-bold text-[var(--text-primary)] no-underline tracking-tight">eSIM Hub</a>
       </div>
 
-      <nav class="flex-1 space-y-0.5">
+      <nav class="sidebar-nav space-y-0.5">
         <a href="/offers" class="sidebar-link <%= typeof title !== 'undefined' && title === 'Offers' ? 'active' : '' %>">
-          <i data-lucide="globe" class="w-4 h-4"></i> Plans
+          <i data-lucide="globe" class="w-[1.125rem] h-[1.125rem]"></i> Plans
         </a>
         <a href="/purchases" class="sidebar-link <%= typeof title !== 'undefined' && (title === 'My eSIMs' || title === 'My Purchases' || title === 'Purchase Status' || title === 'QR Code') ? 'active' : '' %>">
-          <i data-lucide="smartphone" class="w-4 h-4"></i> My eSIMs
+          <i data-lucide="smartphone" class="w-[1.125rem] h-[1.125rem]"></i> My eSIMs
         </a>
 
         <div class="sidebar-divider"></div>
 
         <a href="/profile" class="sidebar-link <%= typeof title !== 'undefined' && title === 'Profile' ? 'active' : '' %>">
-          <i data-lucide="user" class="w-4 h-4"></i> Profile
+          <i data-lucide="user" class="w-[1.125rem] h-[1.125rem]"></i> Profile
         </a>
 
         <% if (user.isAdmin) { %>
         <div class="sidebar-section">Admin</div>
         <a href="/admin/dashboard" class="sidebar-link <%= typeof title !== 'undefined' && title.includes && title.includes('Dashboard') ? 'active' : '' %>">
-          <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+          <i data-lucide="layout-dashboard" class="w-[1.125rem] h-[1.125rem]"></i> Dashboard
         </a>
-        <a href="/admin/users" class="sidebar-link <%= typeof title !== 'undefined' && title.includes && (title.includes('User') || title === 'Manage Users') ? 'active' : '' %>">
-          <i data-lucide="users" class="w-4 h-4"></i> Users
+        <a href="/admin/users" class="sidebar-link <%= typeof title !== 'undefined' && title.includes && (title.includes('User') || title === 'Manage Users' || title === 'Admin Panel') ? 'active' : '' %>">
+          <i data-lucide="users" class="w-[1.125rem] h-[1.125rem]"></i> Users
         </a>
         <a href="/admin/esims" class="sidebar-link <%= typeof title !== 'undefined' && title.includes && (title === 'All eSIMs' || title === 'eSIM Detail' || title === 'Assign eSIM' || title.includes('Top-up') || title.includes('Top Up')) ? 'active' : '' %>">
-          <i data-lucide="list" class="w-4 h-4"></i> All eSIMs
+          <i data-lucide="layers" class="w-[1.125rem] h-[1.125rem]"></i> All eSIMs
         </a>
         <% } %>
       </nav>
 
-      <div class="mt-auto space-y-2 pt-4 border-t border-[var(--border-default)]">
-        <div class="flex items-center justify-between px-2">
-          <button onclick="toggleTheme()" class="p-1.5 rounded-md text-[var(--text-tertiary)] hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)]" title="Toggle theme">
+      <div class="sidebar-footer">
+        <div class="sidebar-actions">
+          <button onclick="toggleTheme()" class="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)]" title="Toggle theme">
             <i data-lucide="sun" class="w-4 h-4 theme-sun" style="display:none;"></i>
             <i data-lucide="moon" class="w-4 h-4 theme-moon"></i>
           </button>
-          <a href="/auth/logout" class="p-1.5 rounded-md text-[var(--text-tertiary)] hover:bg-[var(--surface-2)] hover:text-red-500" title="Logout">
+          <a href="/auth/logout" class="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:bg-[var(--surface-2)] hover:text-[var(--danger)]" title="Logout">
             <i data-lucide="log-out" class="w-4 h-4"></i>
           </a>
         </div>
-        <div class="px-2 py-1 flex items-center gap-2">
-          <div class="avatar avatar-sm bg-[var(--brand-primary)]">
+        <div class="sidebar-user">
+          <div class="avatar avatar-sm" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">
             <%= (user.displayName || user.username).charAt(0).toUpperCase() %>
           </div>
-          <div class="min-w-0">
+          <div class="min-w-0 flex-1">
             <p class="text-sm font-medium text-[var(--text-primary)] truncate"><%= user.displayName || user.username %></p>
             <% if (user.isAdmin) { %>
-            <p class="text-xs text-[var(--text-tertiary)]">Admin</p>
+            <p class="text-[0.6875rem] text-[var(--brand-primary)] font-medium">Admin</p>
+            <% } else { %>
+            <p class="text-[0.6875rem] text-[var(--text-tertiary)]">@<%= user.username %></p>
             <% } %>
           </div>
         </div>
@@ -161,51 +166,54 @@
     <!-- Mobile Sidebar Overlay -->
     <div id="sidebarOverlay" class="sidebar-overlay" onclick="if(event.target===this)closeSidebar()">
       <aside class="sidebar-mobile">
-        <div class="mb-6 px-2 flex items-center justify-between">
-          <span class="text-lg font-bold text-[var(--text-primary)]">eSIM Hub</span>
-          <button onclick="closeSidebar()" class="p-1.5 rounded-md text-[var(--text-tertiary)] hover:bg-[var(--surface-2)]">
+        <div class="sidebar-brand">
+          <div class="sidebar-brand-icon">
+            <i data-lucide="signal" class="w-4.5 h-4.5"></i>
+          </div>
+          <span class="text-lg font-bold text-[var(--text-primary)] tracking-tight flex-1">eSIM Hub</span>
+          <button onclick="closeSidebar()" class="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:bg-[var(--surface-2)]">
             <i data-lucide="x" class="w-5 h-5"></i>
           </button>
         </div>
 
-        <nav class="flex-1 space-y-0.5">
+        <nav class="sidebar-nav space-y-0.5 flex-1">
           <a href="/offers" class="sidebar-link <%= typeof title !== 'undefined' && title === 'Offers' ? 'active' : '' %>">
-            <i data-lucide="globe" class="w-4 h-4"></i> Plans
+            <i data-lucide="globe" class="w-[1.125rem] h-[1.125rem]"></i> Plans
           </a>
           <a href="/purchases" class="sidebar-link <%= typeof title !== 'undefined' && (title === 'My eSIMs' || title === 'My Purchases' || title === 'Purchase Status' || title === 'QR Code') ? 'active' : '' %>">
-            <i data-lucide="smartphone" class="w-4 h-4"></i> My eSIMs
+            <i data-lucide="smartphone" class="w-[1.125rem] h-[1.125rem]"></i> My eSIMs
           </a>
           <div class="sidebar-divider"></div>
           <a href="/profile" class="sidebar-link <%= typeof title !== 'undefined' && title === 'Profile' ? 'active' : '' %>">
-            <i data-lucide="user" class="w-4 h-4"></i> Profile
+            <i data-lucide="user" class="w-[1.125rem] h-[1.125rem]"></i> Profile
           </a>
 
           <% if (user.isAdmin) { %>
           <div class="sidebar-section">Admin</div>
           <a href="/admin/dashboard" class="sidebar-link <%= typeof title !== 'undefined' && title.includes && title.includes('Dashboard') ? 'active' : '' %>">
-            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+            <i data-lucide="layout-dashboard" class="w-[1.125rem] h-[1.125rem]"></i> Dashboard
           </a>
-          <a href="/admin/users" class="sidebar-link <%= typeof title !== 'undefined' && title.includes && (title.includes('User') || title === 'Manage Users') ? 'active' : '' %>">
-            <i data-lucide="users" class="w-4 h-4"></i> Users
+          <a href="/admin/users" class="sidebar-link <%= typeof title !== 'undefined' && title.includes && (title.includes('User') || title === 'Manage Users' || title === 'Admin Panel') ? 'active' : '' %>">
+            <i data-lucide="users" class="w-[1.125rem] h-[1.125rem]"></i> Users
           </a>
           <a href="/admin/esims" class="sidebar-link <%= typeof title !== 'undefined' && title.includes && (title === 'All eSIMs' || title === 'eSIM Detail' || title === 'Assign eSIM' || title.includes('Top-up') || title.includes('Top Up')) ? 'active' : '' %>">
-            <i data-lucide="list" class="w-4 h-4"></i> All eSIMs
+            <i data-lucide="layers" class="w-[1.125rem] h-[1.125rem]"></i> All eSIMs
           </a>
           <% } %>
         </nav>
 
-        <div class="mt-auto space-y-2 pt-4 border-t border-[var(--border-default)]">
-          <div class="flex items-center justify-between px-2">
-            <button onclick="toggleTheme()" class="p-1.5 rounded-md text-[var(--text-tertiary)] hover:bg-[var(--surface-2)]">
+        <div class="sidebar-footer">
+          <div class="sidebar-actions">
+            <button onclick="toggleTheme()" class="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:bg-[var(--surface-2)]">
               <i data-lucide="sun" class="w-4 h-4 theme-sun" style="display:none;"></i>
               <i data-lucide="moon" class="w-4 h-4 theme-moon"></i>
             </button>
-            <a href="/auth/logout" class="p-1.5 rounded-md text-[var(--text-tertiary)] hover:bg-[var(--surface-2)] hover:text-red-500">
+            <a href="/auth/logout" class="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:bg-[var(--surface-2)] hover:text-[var(--danger)]">
               <i data-lucide="log-out" class="w-4 h-4"></i>
             </a>
           </div>
-          <div class="px-2 py-1 flex items-center gap-2">
-            <div class="avatar avatar-sm bg-[var(--brand-primary)]">
+          <div class="sidebar-user">
+            <div class="avatar avatar-sm" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">
               <%= (user.displayName || user.username).charAt(0).toUpperCase() %>
             </div>
             <span class="text-sm font-medium text-[var(--text-primary)] truncate"><%= user.displayName || user.username %></span>
@@ -218,27 +226,37 @@
     <main class="flex-1 min-w-0 flex flex-col min-h-screen">
       <!-- Mobile Header -->
       <div class="mobile-header md:hidden">
-        <a href="/offers" class="text-base font-bold text-[var(--text-primary)] no-underline">eSIM Hub</a>
-        <button type="button" onclick="toggleSidebar(event)" class="p-2 -mr-1 rounded-md text-[var(--text-secondary)] hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)]">
+        <div class="flex items-center gap-2.5">
+          <div class="sidebar-brand-icon !w-7 !h-7 !rounded-lg" style="box-shadow:none;">
+            <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+          </div>
+          <span class="text-base font-bold text-[var(--text-primary)] tracking-tight">eSIM Hub</span>
+        </div>
+        <button type="button" onclick="toggleSidebar(event)" class="p-2 -mr-1 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)]">
           <i data-lucide="menu" class="w-5 h-5"></i>
         </button>
       </div>
 
       <% if (typeof user !== 'undefined' && user && user.emailVerified === false && user.email) { %>
-      <div class="bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-300 text-center py-2 text-sm">
+      <div class="bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-300 text-center py-2.5 text-sm font-medium">
+        <i data-lucide="mail-warning" class="w-4 h-4 inline-block -mt-0.5 mr-1"></i>
         Your email is not verified. Check your inbox for the verification link.
       </div>
       <% } %>
 
-      <div class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      <div class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
 <% } else { %>
 <%/* ===== AUTH: Centered Layout ===== */%>
-<body class="bg-[var(--surface-1)] text-[var(--text-primary)] font-sans min-h-screen flex items-center justify-center p-4 antialiased">
-  <div class="w-full max-w-sm">
-    <div class="text-center mb-6">
-      <span class="text-xl font-bold text-[var(--text-primary)]">eSIM Hub</span>
-    </div>
+<body class="bg-[var(--surface-1)] text-[var(--text-primary)] font-sans antialiased">
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="auth-brand-icon">
+          <i data-lucide="signal" class="w-6 h-6"></i>
+        </div>
+        <span class="text-xl font-bold text-[var(--text-primary)] tracking-tight">eSIM Hub</span>
+      </div>
 
 <% } %>
 

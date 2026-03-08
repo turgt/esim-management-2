@@ -1,8 +1,8 @@
 <%- include('../partials/header', {title: 'Admin Dashboard', user: locals.user}) %>
 
-<div class="mb-6 flex items-center justify-between">
+<div class="mb-8 flex items-center justify-between">
   <div>
-    <p class="text-sm text-[var(--text-tertiary)] mb-1">Welcome back, <span class="font-medium text-[var(--text-primary)]"><%= user.displayName || user.username %></span></p>
+    <p class="text-sm text-[var(--text-secondary)] mb-1">Welcome back, <span class="font-semibold text-[var(--text-primary)]"><%= user.displayName || user.username %></span></p>
     <h1 class="text-page-title">Dashboard</h1>
   </div>
   <a href="/admin/assign-esim" class="hidden sm:inline-flex btn btn-primary">
@@ -12,34 +12,68 @@
 </div>
 
 <!-- Stats -->
-<div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
   <div class="stat-card">
-    <p class="stat-label">Zendit Balance</p>
-    <p class="stat-value text-[var(--brand-primary)]"><%= typeof balance !== 'undefined' && balance ? '$' + (balance.availableBalance / (balance.currencyDivisor || 100)).toFixed(2) : '-' %></p>
+    <div class="stat-icon bg-[var(--brand-light)]">
+      <i data-lucide="wallet" class="w-5 h-5 text-[var(--brand-primary)]"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Zendit Balance</p>
+      <p class="stat-value text-[var(--brand-primary)]"><%= typeof balance !== 'undefined' && balance ? '$' + (balance.availableBalance / (balance.currencyDivisor || 100)).toFixed(2) : '-' %></p>
+    </div>
   </div>
   <div class="stat-card">
-    <p class="stat-label">Total Users</p>
-    <p class="stat-value"><%= typeof stats !== 'undefined' ? stats.totalUsers : 0 %></p>
+    <div class="stat-icon bg-slate-100 dark:bg-slate-500/10">
+      <i data-lucide="users" class="w-5 h-5 text-slate-600 dark:text-slate-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Total Users</p>
+      <p class="stat-value"><%= typeof stats !== 'undefined' ? stats.totalUsers : 0 %></p>
+    </div>
   </div>
   <div class="stat-card">
-    <p class="stat-label">Total eSIMs</p>
-    <p class="stat-value"><%= typeof stats !== 'undefined' ? stats.totalEsims : 0 %></p>
+    <div class="stat-icon bg-sky-50 dark:bg-sky-500/10">
+      <i data-lucide="smartphone" class="w-5 h-5 text-sky-600 dark:text-sky-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Total eSIMs</p>
+      <p class="stat-value"><%= typeof stats !== 'undefined' ? stats.totalEsims : 0 %></p>
+    </div>
   </div>
   <div class="stat-card">
-    <p class="stat-label">Active eSIMs</p>
-    <p class="stat-value text-emerald-600 dark:text-emerald-400"><%= typeof stats !== 'undefined' ? stats.activeEsims : 0 %></p>
+    <div class="stat-icon bg-emerald-50 dark:bg-emerald-500/10">
+      <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Active eSIMs</p>
+      <p class="stat-value text-emerald-600 dark:text-emerald-400"><%= typeof stats !== 'undefined' ? stats.activeEsims : 0 %></p>
+    </div>
   </div>
   <div class="stat-card">
-    <p class="stat-label">Pending</p>
-    <p class="stat-value text-amber-600 dark:text-amber-400"><%= typeof stats !== 'undefined' ? stats.pendingEsims : 0 %></p>
+    <div class="stat-icon bg-amber-50 dark:bg-amber-500/10">
+      <i data-lucide="clock" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Pending</p>
+      <p class="stat-value text-amber-600 dark:text-amber-400"><%= typeof stats !== 'undefined' ? stats.pendingEsims : 0 %></p>
+    </div>
   </div>
 </div>
 
 <!-- Quick Actions -->
-<div class="flex flex-wrap gap-3 mb-6">
-  <a href="/admin/assign-esim" class="btn btn-secondary">Assign eSIM</a>
-  <a href="/admin/users" class="btn btn-secondary">Manage Users</a>
-  <a href="/admin/esims" class="btn btn-secondary">All eSIMs</a>
+<div class="flex flex-wrap gap-3 mb-8">
+  <a href="/admin/assign-esim" class="btn btn-secondary">
+    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+    Assign eSIM
+  </a>
+  <a href="/admin/users" class="btn btn-secondary">
+    <i data-lucide="users" class="w-4 h-4"></i>
+    Manage Users
+  </a>
+  <a href="/admin/esims" class="btn btn-secondary">
+    <i data-lucide="layers" class="w-4 h-4"></i>
+    All eSIMs
+  </a>
 </div>
 
 <!-- Tables -->
@@ -48,7 +82,7 @@
   <div class="table-container">
     <div class="card-header">
       <h3>Recent eSIM Purchases</h3>
-      <a href="/admin/esims" class="text-xs font-medium text-[var(--brand-primary)]">View all</a>
+      <a href="/admin/esims" class="text-xs font-semibold text-[var(--brand-primary)] hover:underline">View all</a>
     </div>
     <div class="overflow-x-auto">
       <table class="table">
@@ -71,7 +105,7 @@
               <% } else if (esim.status === 'pending') { %>
               <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Pending</span>
               <% } else { %>
-              <span class="badge badge-danger"><span class="badge-dot bg-red-500"></span><%= esim.status %></span>
+              <span class="badge badge-danger"><span class="badge-dot bg-rose-500"></span><%= esim.status %></span>
               <% } %>
             </td>
             <td class="text-xs text-[var(--text-tertiary)]"><%= new Date(esim.createdAt).toLocaleDateString() %></td>
@@ -89,7 +123,7 @@
   <div class="table-container">
     <div class="card-header">
       <h3>Recent Users</h3>
-      <a href="/admin/users" class="text-xs font-medium text-[var(--brand-primary)]">View all</a>
+      <a href="/admin/users" class="text-xs font-semibold text-[var(--brand-primary)] hover:underline">View all</a>
     </div>
     <div class="overflow-x-auto">
       <table class="table">
@@ -104,7 +138,7 @@
           <tr>
             <td>
               <div class="flex items-center gap-2.5">
-                <div class="avatar avatar-sm bg-[var(--brand-primary)]"><%= u.username.charAt(0).toUpperCase() %></div>
+                <div class="avatar avatar-sm" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);"><%= u.username.charAt(0).toUpperCase() %></div>
                 <div>
                   <p class="font-medium text-[var(--text-primary)]"><%= u.username %></p>
                   <p class="text-xs text-[var(--text-tertiary)]"><%= u.email || '-' %></p>

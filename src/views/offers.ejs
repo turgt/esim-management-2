@@ -1,8 +1,8 @@
 <%- include('partials/header', {title: 'Offers', user: locals.user}) %>
 
-<div class="mb-6">
+<div class="mb-8">
   <h1 class="text-page-title">Available Plans</h1>
-  <p class="text-subtitle mt-1">Choose an eSIM plan for seamless connectivity</p>
+  <p class="text-subtitle mt-1">Choose an eSIM plan for seamless connectivity worldwide</p>
 </div>
 
 <% if (typeof error !== 'undefined' && error) { %>
@@ -13,12 +13,13 @@
 <% } %>
 
 <% if (typeof offers !== 'undefined' && offers && offers.length > 0) { %>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
   <% offers.forEach(function(offer, idx) { %>
   <%
     var price = offer.price && offer.price.fixed ? (offer.price.fixed / (offer.price.currencyDivisor || 100)).toFixed(2) : null;
     var currency = offer.price ? (offer.price.currency || 'USD') : 'USD';
-    var dataLabel = offer.dataGB ? offer.dataGB + ' GB' : 'Unlimited';
+    var dataLabel = offer.dataGB ? offer.dataGB : null;
+    var dataUnit = offer.dataGB ? 'GB' : 'Unlimited';
     var durationLabel = offer.durationDays ? offer.durationDays + ' days' : '';
     var regionShort = '';
     if (offer.regions && offer.regions.length > 0) {
@@ -28,24 +29,31 @@
       regionShort = offer.country;
     }
   %>
-  <button type="button" class="card text-left transition-colors hover:border-[var(--brand-primary)] cursor-pointer" onclick="confirmPurchase('<%= offer.offerId %>', '<%= (offer.brand || 'eSIM').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>')">
-    <div class="p-4">
-      <!-- Duration (primary differentiator) -->
-      <div class="flex items-center justify-between mb-1">
-        <span class="text-sm font-semibold text-[var(--text-primary)]"><%= durationLabel || '-' %></span>
-        <% if (regionShort) { %>
-        <span class="text-xs text-[var(--text-tertiary)]"><%= regionShort %></span>
+  <button type="button" class="offer-card" onclick="confirmPurchase('<%= offer.offerId %>', '<%= (offer.brand || 'eSIM').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>')">
+    <div class="offer-header">
+      <span class="offer-region"><%= regionShort || 'Global' %></span>
+      <% if (durationLabel) { %>
+      <span class="offer-duration"><%= durationLabel %></span>
+      <% } %>
+    </div>
+    <div class="offer-body">
+      <% if (dataLabel) { %>
+      <span class="offer-data"><%= dataLabel %></span>
+      <span class="offer-data-unit ml-1">GB</span>
+      <% } else { %>
+      <span class="offer-data">Unlimited</span>
+      <% } %>
+    </div>
+    <div class="offer-footer">
+      <div>
+        <% if (price) { %>
+        <span class="offer-price">$<%= price %></span>
+        <span class="offer-price-currency ml-0.5"><%= currency %></span>
         <% } %>
       </div>
-
-      <!-- Data -->
-      <p class="text-xs text-[var(--text-secondary)] mb-3"><%= dataLabel %></p>
-
-      <!-- Price -->
-      <% if (price) { %>
-      <span class="text-lg font-bold text-[var(--brand-primary)]">$<%= price %></span>
-      <span class="text-xs text-[var(--text-tertiary)] ml-0.5"><%= currency %></span>
-      <% } %>
+      <span class="offer-cta">
+        Buy <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </span>
     </div>
   </button>
   <% }) %>
@@ -53,24 +61,38 @@
 <% } else { %>
 <div class="empty-state">
   <div class="empty-icon">
-    <i data-lucide="inbox" class="w-6 h-6"></i>
+    <i data-lucide="globe" class="w-6 h-6"></i>
   </div>
-  <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">No plans available</h3>
-  <p class="text-sm text-[var(--text-tertiary)]">Check back later or contact support for assistance.</p>
+  <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">No plans available</h3>
+  <p class="text-sm text-[var(--text-secondary)]">Check back later or contact support for assistance.</p>
 </div>
 <% } %>
 
 <!-- Purchase Confirmation Modal -->
 <div id="purchaseModal" class="modal-backdrop hidden" style="display:none">
   <div class="confirm-modal">
-    <h3 class="text-base font-semibold text-[var(--text-primary)] mb-2">Confirm Purchase</h3>
-    <p class="text-sm text-[var(--text-secondary)] mb-6">You're about to purchase <strong id="modalPlanName"></strong> for <strong id="modalPlanPrice"></strong>. Continue?</p>
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-xl bg-[var(--brand-light)] flex items-center justify-center">
+        <i data-lucide="shopping-cart" class="w-5 h-5 text-[var(--brand-primary)]"></i>
+      </div>
+      <div>
+        <h3 class="text-base font-semibold text-[var(--text-primary)]">Confirm Purchase</h3>
+        <p class="text-xs text-[var(--text-secondary)]">Review your selection</p>
+      </div>
+    </div>
+    <div class="p-4 rounded-lg bg-[var(--surface-1)] border border-[var(--border-subtle)] mb-5">
+      <p class="text-sm text-[var(--text-secondary)]">Plan: <strong class="text-[var(--text-primary)]" id="modalPlanName"></strong></p>
+      <p class="text-lg font-bold text-[var(--brand-primary)] mt-1" id="modalPlanPrice"></p>
+    </div>
     <form id="purchaseForm" method="post" action="/purchases">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="offerId" id="modalOfferId" value="">
       <div class="flex gap-3">
         <button type="button" class="btn btn-secondary flex-1" onclick="closeModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary flex-1">Confirm Purchase</button>
+        <button type="submit" class="btn btn-primary flex-1">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          Confirm
+        </button>
       </div>
     </form>
   </div>

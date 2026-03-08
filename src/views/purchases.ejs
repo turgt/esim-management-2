@@ -1,68 +1,89 @@
 <%- include('partials/header', {title: 'My eSIMs', user: locals.user}) %>
 
-<div class="mb-6">
+<div class="mb-8">
   <h1 class="text-page-title">My eSIMs</h1>
   <p class="text-subtitle mt-1">Manage and monitor your purchased eSIM plans</p>
 </div>
 
 <% if (purchases.length > 0) { %>
 
-<div class="grid grid-cols-3 gap-4 mb-6">
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
   <div class="stat-card">
-    <div class="stat-label">Total</div>
-    <div class="stat-value"><%= purchases.length %></div>
+    <div class="stat-icon bg-[var(--brand-light)]">
+      <i data-lucide="smartphone" class="w-5 h-5 text-[var(--brand-primary)]"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-label">Total</div>
+      <div class="stat-value"><%= purchases.length %></div>
+    </div>
   </div>
   <div class="stat-card">
-    <div class="stat-label">Active</div>
-    <div class="stat-value text-emerald-600 dark:text-emerald-400"><%= purchases.filter(p => p.status === 'completed').length %></div>
+    <div class="stat-icon bg-emerald-50 dark:bg-emerald-500/10">
+      <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-label">Active</div>
+      <div class="stat-value text-emerald-600 dark:text-emerald-400"><%= purchases.filter(p => p.status === 'completed').length %></div>
+    </div>
   </div>
   <div class="stat-card">
-    <div class="stat-label">Pending</div>
-    <div class="stat-value text-amber-600 dark:text-amber-400"><%= purchases.filter(p => p.status === 'pending').length %></div>
+    <div class="stat-icon bg-amber-50 dark:bg-amber-500/10">
+      <i data-lucide="clock" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-label">Pending</div>
+      <div class="stat-value text-amber-600 dark:text-amber-400"><%= purchases.filter(p => p.status === 'pending').length %></div>
+    </div>
   </div>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
   <% purchases.forEach(function(purchase) { %>
-  <div class="card">
-    <div class="p-5">
-      <div class="flex items-start justify-between mb-3">
-        <div class="flex-1 min-w-0">
-          <h3 class="font-semibold text-[var(--text-primary)] truncate"><%= purchase.brandName || 'eSIM Plan' %></h3>
-          <p class="text-xs text-[var(--text-tertiary)] mt-0.5"><%= purchase.offerId %></p>
-        </div>
-        <% if (purchase.status === 'completed') { %>
-        <span class="badge badge-success"><span class="badge-dot bg-emerald-500 animate-pulse-dot"></span>Active</span>
-        <% } else if (purchase.status === 'pending') { %>
-        <span class="badge badge-warning"><span class="badge-dot bg-amber-500 animate-pulse-dot"></span>Pending</span>
-        <% } else if (purchase.status === 'failed') { %>
-        <span class="badge badge-danger"><span class="badge-dot bg-red-500"></span>Failed</span>
-        <% } else { %>
-        <span class="badge badge-neutral"><%= purchase.status %></span>
-        <% } %>
+  <div class="purchase-card">
+    <div class="purchase-header">
+      <div class="flex-1 min-w-0">
+        <h3 class="font-semibold text-[var(--text-primary)] truncate"><%= purchase.brandName || 'eSIM Plan' %></h3>
+        <p class="text-xs text-[var(--text-tertiary)] mt-0.5 font-mono"><%= purchase.offerId %></p>
       </div>
+      <% if (purchase.status === 'completed') { %>
+      <span class="badge badge-success"><span class="badge-dot bg-emerald-500 animate-pulse-dot"></span>Active</span>
+      <% } else if (purchase.status === 'pending') { %>
+      <span class="badge badge-warning"><span class="badge-dot bg-amber-500 animate-pulse-dot"></span>Pending</span>
+      <% } else if (purchase.status === 'failed') { %>
+      <span class="badge badge-danger"><span class="badge-dot bg-rose-500"></span>Failed</span>
+      <% } else { %>
+      <span class="badge badge-neutral"><%= purchase.status %></span>
+      <% } %>
+    </div>
 
-      <div class="text-sm text-[var(--text-secondary)]">
-        <% var details = []; %>
-        <% if (purchase.dataGB) details.push(purchase.dataGB + ' GB'); %>
-        <% if (purchase.durationDays) details.push(purchase.durationDays + ' days'); %>
-        <% if (purchase.country) details.push(purchase.country); %>
-        <%= details.join(' · ') %>
-        <% if (purchase.iccid) { %>
-        <p class="text-xs text-[var(--text-tertiary)] font-mono mt-1"><%= purchase.iccid %></p>
+    <div class="purchase-body">
+      <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-[var(--text-secondary)]">
+        <% if (purchase.dataGB) { %>
+        <span class="flex items-center gap-1"><i data-lucide="database" class="w-3.5 h-3.5 text-[var(--text-tertiary)]"></i> <%= purchase.dataGB %> GB</span>
+        <% } %>
+        <% if (purchase.durationDays) { %>
+        <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3.5 h-3.5 text-[var(--text-tertiary)]"></i> <%= purchase.durationDays %> days</span>
+        <% } %>
+        <% if (purchase.country) { %>
+        <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-[var(--text-tertiary)]"></i> <%= purchase.country %></span>
         <% } %>
       </div>
+      <% if (purchase.iccid) { %>
+      <p class="text-xs text-[var(--text-tertiary)] font-mono mt-2 flex items-center gap-1">
+        <i data-lucide="hash" class="w-3 h-3"></i> <%= purchase.iccid %>
+      </p>
+      <% } %>
 
       <% if (purchase.iccid && typeof plansMap !== 'undefined' && plansMap[purchase.iccid] && plansMap[purchase.iccid].list && plansMap[purchase.iccid].list.length > 0) { %>
       <div class="mt-3 pt-3 border-t border-[var(--border-subtle)] space-y-2">
-        <p class="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wide">Active Plans</p>
+        <p class="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wide">Active Plans</p>
         <% plansMap[purchase.iccid].list.forEach(function(plan) { %>
-        <div class="flex items-center justify-between text-xs p-2 rounded-md bg-[var(--surface-1)]">
+        <div class="flex items-center justify-between text-xs p-2.5 rounded-lg bg-[var(--surface-1)] border border-[var(--border-subtle)]">
           <div class="flex-1 min-w-0">
             <% if (plan.unlimited) { %>
-            <span class="font-medium text-[var(--text-primary)]">Unlimited</span>
+            <span class="font-semibold text-[var(--text-primary)]">Unlimited</span>
             <% } else { %>
-            <span class="font-medium text-[var(--text-primary)]"><%= plan.remainingDataGB != null ? plan.remainingDataGB.toFixed(2) : '-' %></span>
+            <span class="font-semibold text-[var(--text-primary)]"><%= plan.remainingDataGB != null ? plan.remainingDataGB.toFixed(2) : '-' %></span>
             <span class="text-[var(--text-tertiary)]"> / <%= plan.initialDataGB || '-' %> GB</span>
             <% } %>
           </div>
@@ -77,10 +98,13 @@
         <% }) %>
       </div>
       <% } %>
+    </div>
 
-      <div class="mt-4">
-        <a href="/status/<%= purchase.transactionId %>" class="btn btn-secondary btn-block btn-sm">View Details</a>
-      </div>
+    <div class="purchase-footer">
+      <a href="/status/<%= purchase.transactionId %>" class="btn btn-secondary btn-block btn-sm">
+        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+        View Details
+      </a>
     </div>
   </div>
   <% }) %>
@@ -93,9 +117,12 @@
   <div class="empty-icon">
     <i data-lucide="smartphone" class="w-6 h-6"></i>
   </div>
-  <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">No eSIMs yet</h3>
-  <p class="text-sm text-[var(--text-tertiary)] mb-4">Start by browsing our available eSIM plans</p>
-  <a href="/offers" class="btn btn-primary">Browse Plans</a>
+  <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">No eSIMs yet</h3>
+  <p class="text-sm text-[var(--text-secondary)] mb-5">Start by browsing our available eSIM plans</p>
+  <a href="/offers" class="btn btn-primary btn-lg">
+    <i data-lucide="globe" class="w-4 h-4"></i>
+    Browse Plans
+  </a>
 </div>
 <% } %>
 

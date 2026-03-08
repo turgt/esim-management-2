@@ -2,19 +2,29 @@ import pino from 'pino';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+let transportConfig = {};
+if (!isProduction) {
+  try {
+    await import('pino-pretty');
+    transportConfig = {
+      transport: {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          translateTime: 'HH:MM:ss',
+          ignore: 'pid,hostname'
+        }
+      }
+    };
+  } catch {
+    // pino-pretty not available (production build), use default JSON output
+  }
+}
+
 const logger = pino({
   level: process.env.LOG_LEVEL || (isProduction ? 'info' : 'debug'),
 
-  ...(isProduction ? {} : {
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'HH:MM:ss',
-        ignore: 'pid,hostname'
-      }
-    }
-  }),
+  ...transportConfig,
 
   base: {
     service: 'esim-hub',
