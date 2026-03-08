@@ -1203,6 +1203,15 @@ html {
   }
 }
 
+/* ===== PRINT ===== */
+@media print {
+  body { background: white !important; color: black !important; }
+  .sidebar, .sidebar-overlay, .mobile-header, .btn, .no-print { display: none !important; }
+  .card, .table-container { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
+  * { transition: none !important; animation: none !important; }
+  @page { margin: 1.5cm; }
+}
+
 /* ===== PREFERS REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
   * {

@@ -3,7 +3,8 @@ import { ensureAuth, ensureAdmin } from '../middleware/auth.js';
 import {
   showDashboard, listUsers, createUser, editUser,
   showAssignEsim, assignEsim, showTopup, topupEsim,
-  showAllEsims, showEsimDetail
+  showAllEsims, showEsimDetail,
+  listPayments, retryEsimPurchase, resolvePayment
 } from '../controllers/adminController.js';
 import { adminCreateUserRules, assignEsimRules, topupRules, validate } from '../middleware/validation.js';
 
@@ -28,5 +29,10 @@ router.post('/assign-esim', ensureAuth, ensureAdmin, assignEsimRules, validate, 
 // Top-up
 router.get('/topup/:esimId', ensureAuth, ensureAdmin, showTopup);
 router.post('/topup/:esimId', ensureAuth, ensureAdmin, topupRules, validate, topupEsim);
+
+// Payment Management
+router.get('/payments', ensureAuth, ensureAdmin, listPayments);
+router.post('/payments/:id/retry', ensureAuth, ensureAdmin, retryEsimPurchase);
+router.post('/payments/:id/resolve', ensureAuth, ensureAdmin, resolvePayment);
 
 export default router;

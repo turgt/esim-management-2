@@ -23,6 +23,7 @@ import esimRoutes from './routes/esim.js';
 import profileRoutes from './routes/profile.js';
 import paymentRoutes from './routes/payment.js';
 import { cookieParser, doubleCsrfProtection, csrfTokenMiddleware, csrfErrorHandler } from './middleware/csrf.js';
+import { verifyCallback, processCallback } from './services/paymentService.js';
 
 import {
   performanceMonitor,
@@ -52,10 +53,11 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://www.paytr.com"],
       scriptSrcAttr: ["'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"]
+      connectSrc: ["'self'"],
+      frameSrc: ["'self'", "https://www.paytr.com"]
     }
   },
   crossOriginEmbedderPolicy: false
@@ -146,6 +148,23 @@ app.use((req, res, next) => {
   res.locals.NODE_ENV = process.env.NODE_ENV;
   res.locals.theme = req.session.user?.theme || 'light';
   next();
+});
+
+// PayTR callback route — MUST be before CSRF middleware (server-to-server, no CSRF)
+app.post('/payment/callback', express.urlencoded({ extended: true }), async (req, res) => {
+  const pLog = logger.child({ module: 'paytr-callback' });
+  try {
+    if (!verifyCallback(req.body)) {
+      pLog.warn({ merchant_oid: req.body.merchant_oid }, 'PayTR callback hash mismatch');
+      return res.send('OK');
+    }
+
+    await processCallback(req.body);
+    res.send('OK');
+  } catch (err) {
+    pLog.error({ err, body: req.body }, 'PayTR callback processing error');
+    res.send('OK');
+  }
 });
 
 // CSRF protection (after session, before routes)

@@ -2,6 +2,7 @@ import db from '../db/models/index.js';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { listOffers, purchaseEsim, getUsage, getBalance, getEsimPlans, normalizeStatus } from '../services/zenditClient.js';
+import { purchaseEsimAfterPayment, topupEsimAfterPayment } from '../services/paymentService.js';
 import cacheService from '../services/cacheService.js';
 import { sendEsimAssignedEmail } from '../services/emailService.js';
 import { getPaginationParams, buildPagination } from '../utils/pagination.js';
@@ -36,12 +37,27 @@ export async function showDashboard(req, res) {
       limit: 5
     });
 
+    // Payment stats
+    const totalPayments = await db.Payment.count();
+    const completedPayments = await db.Payment.count({ where: { status: 'completed' } });
+    const failedPayments = await db.Payment.count({ where: { status: 'failed' } });
+    const pendingPayments = await db.Payment.count({ where: { status: 'pending' } });
+    const totalRevenue = await db.Payment.sum('amount', { where: { status: 'completed' } }) || 0;
+
+    const recentPayments = await db.Payment.findAll({
+      include: [{ model: db.User, attributes: ['id', 'username', 'displayName'] }],
+      order: [['createdAt', 'DESC']],
+      limit: 10
+    });
+
     res.render('admin/dashboard', {
       title: 'Admin Dashboard',
       stats: { totalUsers, totalEsims, activeEsims, pendingEsims },
+      paymentStats: { totalPayments, completedPayments, failedPayments, pendingPayments, totalRevenue },
       balance,
       recentEsims,
-      recentUsers
+      recentUsers,
+      recentPayments
     });
   } catch (err) {
     log.error({ err }, 'showDashboard error');
@@ -383,6 +399,153 @@ export async function showAllEsims(req, res) {
   } catch (err) {
     log.error({ err }, 'showAllEsims error');
     res.render('error', { message: 'Failed to load eSIMs' });
+  }
+}
+
+// List all payments (admin)
+export async function listPayments(req, res) {
+  try {
+    const { page, limit, offset } = getPaginationParams(req);
+    const { Op } = db.Sequelize;
+    const search = req.query.search || '';
+    const statusFilter = req.query.status || '';
+    const esimFailed = req.query.esimFailed === '1';
+    const where = {};
+
+    if (search) {
+      where[Op.or] = [
+        { merchantOid: { [Op.iLike]: `%${search}%` } },
+        { offerId: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+
+    if (statusFilter) {
+      where.status = statusFilter;
+    }
+
+    if (esimFailed) {
+      where.metadata = { esimPurchaseFailed: true };
+    }
+
+    const { count, rows: payments } = await db.Payment.findAndCountAll({
+      include: [
+        { model: db.User, attributes: ['id', 'username', 'displayName'] },
+        { model: db.Esim, attributes: ['id', 'transactionId', 'iccid', 'status'] }
+      ],
+      where,
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
+      distinct: true
+    });
+
+    const pagination = buildPagination(page, limit, count, req.query);
+
+    // Stats
+    const totalAll = await db.Payment.count();
+    const totalCompleted = await db.Payment.count({ where: { status: 'completed' } });
+    const totalFailed = await db.Payment.count({ where: { status: 'failed' } });
+    const totalEsimFailed = await db.Payment.count({ where: { metadata: { esimPurchaseFailed: true } } });
+
+    res.render('admin/payments', {
+      title: 'Admin Payments',
+      payments,
+      pagination,
+      search,
+      statusFilter,
+      esimFailed,
+      paymentStats: { totalAll, totalCompleted, totalFailed, totalEsimFailed }
+    });
+  } catch (err) {
+    log.error({ err }, 'listPayments error');
+    res.render('error', { message: 'Failed to load payments' });
+  }
+}
+
+// Retry eSIM purchase for a completed payment
+export async function retryEsimPurchase(req, res) {
+  try {
+    const payment = await db.Payment.findByPk(req.params.id);
+    if (!payment) {
+      return res.render('error', { message: 'Payment not found' });
+    }
+
+    if (payment.status !== 'completed') {
+      return res.render('error', { message: 'Only completed payments can be retried' });
+    }
+
+    if (payment.esimId && !payment.metadata?.esimPurchaseFailed) {
+      return res.render('error', { message: 'eSIM already purchased for this payment' });
+    }
+
+    try {
+      let esim;
+      if (payment.type === 'topup' && payment.targetIccid) {
+        esim = await topupEsimAfterPayment(payment);
+      } else {
+        esim = await purchaseEsimAfterPayment(payment);
+      }
+
+      // Clear the failure flag
+      await payment.update({
+        metadata: { ...payment.metadata, esimPurchaseFailed: false, esimPurchaseError: null }
+      });
+
+      await logAudit(ACTIONS.PAYMENT_RETRY, {
+        userId: req.session.user.id,
+        entity: 'Payment',
+        entityId: payment.id,
+        details: { merchantOid: payment.merchantOid, esimId: esim.id, result: 'success' },
+        ipAddress: getIp(req)
+      });
+    } catch (retryErr) {
+      await payment.update({
+        metadata: { ...payment.metadata, esimPurchaseError: retryErr.message, esimPurchaseFailed: true }
+      });
+
+      await logAudit(ACTIONS.PAYMENT_RETRY, {
+        userId: req.session.user.id,
+        entity: 'Payment',
+        entityId: payment.id,
+        details: { merchantOid: payment.merchantOid, result: 'failed', error: retryErr.message },
+        ipAddress: getIp(req)
+      });
+    }
+
+    res.redirect('/admin/payments');
+  } catch (err) {
+    log.error({ err }, 'retryEsimPurchase error');
+    res.render('error', { message: 'Failed to retry eSIM purchase' });
+  }
+}
+
+// Resolve a payment issue manually
+export async function resolvePayment(req, res) {
+  try {
+    const payment = await db.Payment.findByPk(req.params.id);
+    if (!payment) {
+      return res.render('error', { message: 'Payment not found' });
+    }
+
+    await payment.update({
+      resolvedAt: new Date(),
+      resolvedBy: req.session.user.id,
+      resolutionNote: req.body.resolutionNote || '',
+      metadata: { ...payment.metadata, esimPurchaseFailed: false }
+    });
+
+    await logAudit(ACTIONS.PAYMENT_RESOLVED, {
+      userId: req.session.user.id,
+      entity: 'Payment',
+      entityId: payment.id,
+      details: { merchantOid: payment.merchantOid, note: req.body.resolutionNote },
+      ipAddress: getIp(req)
+    });
+
+    res.redirect('/admin/payments');
+  } catch (err) {
+    log.error({ err }, 'resolvePayment error');
+    res.render('error', { message: 'Failed to resolve payment' });
   }
 }
 

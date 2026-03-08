@@ -1,0 +1,136 @@
+<%- include('partials/header', {title: 'Payment Result', user: locals.user}) %>
+
+<div class="max-w-md mx-auto px-1">
+  <div class="card text-center py-8 sm:py-10" id="resultCard">
+    <!-- Loading State (default) -->
+    <div id="stateLoading">
+      <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[var(--surface-2)] flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="loader-2" class="w-7 h-7 sm:w-8 sm:h-8 text-[var(--brand-primary)] animate-spin"></i>
+      </div>
+      <h2 class="text-lg sm:text-xl font-semibold text-[var(--text-primary)] mb-2">Processing Payment</h2>
+      <p class="text-sm text-[var(--text-secondary)] mb-4 px-2">Please wait while we confirm your payment...</p>
+      <p class="text-xs text-[var(--text-tertiary)] break-all px-4">Order: <span class="font-mono"><%= payment.merchantOid %></span></p>
+    </div>
+
+    <!-- Success State -->
+    <div id="stateSuccess" style="display:none;">
+      <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="check-circle-2" class="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600 dark:text-emerald-400"></i>
+      </div>
+      <h2 class="text-lg sm:text-xl font-semibold text-[var(--text-primary)] mb-2">Payment Successful!</h2>
+      <p class="text-sm text-[var(--text-secondary)] mb-6 px-2">Your eSIM has been purchased and is being activated.</p>
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <a id="viewEsimLink" href="/purchases" class="btn btn-primary inline-flex items-center gap-2">
+          <i data-lucide="smartphone" class="w-4 h-4"></i> View My eSIMs
+        </a>
+        <a id="viewReceiptLink" href="/payment/receipt/<%= payment.merchantOid %>" class="btn btn-secondary inline-flex items-center gap-2">
+          <i data-lucide="receipt" class="w-4 h-4"></i> View Receipt
+        </a>
+      </div>
+    </div>
+
+    <!-- Failed State -->
+    <div id="stateFailed" style="display:none;">
+      <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="x-circle" class="w-7 h-7 sm:w-8 sm:h-8 text-red-600 dark:text-red-400"></i>
+      </div>
+      <h2 class="text-lg sm:text-xl font-semibold text-[var(--text-primary)] mb-2">Payment Failed</h2>
+      <p class="text-sm text-[var(--text-secondary)] mb-6 px-2">Your payment could not be processed. No charges were made.</p>
+      <a href="/offers" class="btn btn-primary inline-flex items-center gap-2">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Try Again
+      </a>
+    </div>
+
+    <!-- eSIM Purchase Error State -->
+    <div id="stateEsimError" style="display:none;">
+      <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="alert-triangle" class="w-7 h-7 sm:w-8 sm:h-8 text-amber-600 dark:text-amber-400"></i>
+      </div>
+      <h2 class="text-lg sm:text-xl font-semibold text-[var(--text-primary)] mb-2">Payment Received</h2>
+      <p class="text-sm text-[var(--text-secondary)] mb-6 px-2">Your payment was successful but there was an issue activating the eSIM. Our team has been notified and will resolve this shortly.</p>
+      <a href="/purchases" class="btn btn-secondary inline-flex items-center gap-2">
+        <i data-lucide="smartphone" class="w-4 h-4"></i> My eSIMs
+      </a>
+    </div>
+
+    <!-- Timeout State -->
+    <div id="stateTimeout" style="display:none;">
+      <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[var(--surface-2)] flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="clock" class="w-7 h-7 sm:w-8 sm:h-8 text-[var(--text-tertiary)]"></i>
+      </div>
+      <h2 class="text-lg sm:text-xl font-semibold text-[var(--text-primary)] mb-2">Still Processing</h2>
+      <p class="text-sm text-[var(--text-secondary)] mb-6 px-2">Your payment is taking longer than expected. You can check your eSIMs page for updates.</p>
+      <a href="/purchases" class="btn btn-primary inline-flex items-center gap-2">
+        <i data-lucide="smartphone" class="w-4 h-4"></i> Check My eSIMs
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var merchantOid = '<%= payment.merchantOid %>';
+  var initialStatus = '<%= payment.status %>';
+  var pollInterval = 3000;
+  var maxPollTime = 60000;
+  var startTime = Date.now();
+  var timer = null;
+
+  function showState(stateId) {
+    ['stateLoading', 'stateSuccess', 'stateFailed', 'stateEsimError', 'stateTimeout'].forEach(function(id) {
+      document.getElementById(id).style.display = 'none';
+    });
+    document.getElementById(stateId).style.display = 'block';
+    lucide.createIcons();
+  }
+
+  function handleStatus(data) {
+    if (data.status === 'completed') {
+      if (data.esimPurchaseFailed) {
+        showState('stateEsimError');
+      } else if (data.esimTransactionId) {
+        var link = document.getElementById('viewEsimLink');
+        link.href = '/status/' + data.esimTransactionId + '?purchased=true';
+        showState('stateSuccess');
+      } else {
+        showState('stateSuccess');
+      }
+      clearInterval(timer);
+      return true;
+    } else if (data.status === 'failed') {
+      showState('stateFailed');
+      clearInterval(timer);
+      return true;
+    }
+    return false;
+  }
+
+  // Handle already-resolved state
+  if (initialStatus === 'completed' || initialStatus === 'failed') {
+    // Still poll once to get full data
+  }
+
+  function poll() {
+    if (Date.now() - startTime > maxPollTime) {
+      clearInterval(timer);
+      showState('stateTimeout');
+      return;
+    }
+
+    fetch('/payment/status/' + merchantOid)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        handleStatus(data);
+      })
+      .catch(function() {
+        // silently retry
+      });
+  }
+
+  timer = setInterval(poll, pollInterval);
+  // Initial poll
+  setTimeout(poll, 500);
+})();
+</script>
+
+<%- include('partials/footer') %>

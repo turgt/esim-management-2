@@ -10,7 +10,8 @@ const OPTIONAL_DEFAULTS = {
   PORT: '3000',
   COUNTRY: 'TR',
   OFFERS_LIMIT: '100',
-  ZENDIT_API_BASE: 'https://api.zendit.io/v1'
+  ZENDIT_API_BASE: 'https://api.zendit.io/v1',
+  PAYTR_TEST_MODE: '1'
 };
 
 export function validateEnv() {

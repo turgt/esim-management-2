@@ -101,10 +101,18 @@
     </div>
 
     <div class="purchase-footer">
-      <a href="/status/<%= purchase.transactionId %>" class="btn btn-secondary btn-block btn-sm">
-        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-        View Details
-      </a>
+      <div class="flex gap-2">
+        <a href="/status/<%= purchase.transactionId %>" class="btn btn-secondary btn-sm flex-1">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          Details
+        </a>
+        <% if (purchase.iccid && purchase.status === 'completed') { %>
+        <a href="/payment/topup/<%= purchase.id %>" class="btn btn-secondary btn-sm flex-1 text-emerald-600 dark:text-emerald-400">
+          <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+          Top-up
+        </a>
+        <% } %>
+      </div>
     </div>
   </div>
   <% }) %>

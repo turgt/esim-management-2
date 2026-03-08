@@ -1,0 +1,267 @@
+<%- include('../partials/header', {title: 'Admin Payments', user: locals.user}) %>
+
+<div class="mb-8 flex items-center justify-between">
+  <div>
+    <h1 class="text-page-title">Payments</h1>
+    <p class="text-subtitle mt-1">Manage all payment transactions</p>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  <div class="stat-card">
+    <div class="stat-icon bg-slate-100 dark:bg-slate-500/10">
+      <i data-lucide="credit-card" class="w-5 h-5 text-slate-600 dark:text-slate-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Total Payments</p>
+      <p class="stat-value"><%= typeof paymentStats !== 'undefined' ? paymentStats.totalAll : 0 %></p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon bg-emerald-50 dark:bg-emerald-500/10">
+      <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Completed</p>
+      <p class="stat-value text-emerald-600 dark:text-emerald-400"><%= typeof paymentStats !== 'undefined' ? paymentStats.totalCompleted : 0 %></p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon bg-rose-50 dark:bg-rose-500/10">
+      <i data-lucide="x-circle" class="w-5 h-5 text-rose-600 dark:text-rose-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Failed</p>
+      <p class="stat-value text-rose-600 dark:text-rose-400"><%= typeof paymentStats !== 'undefined' ? paymentStats.totalFailed : 0 %></p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon bg-amber-50 dark:bg-amber-500/10">
+      <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">eSIM Error</p>
+      <p class="stat-value text-amber-600 dark:text-amber-400"><%= typeof paymentStats !== 'undefined' ? paymentStats.totalEsimFailed : 0 %></p>
+    </div>
+  </div>
+</div>
+
+<!-- Search & Filter Pills -->
+<div class="mb-5 space-y-3">
+  <form method="get" action="/admin/payments" class="flex flex-col sm:flex-row gap-3">
+    <div class="flex-1 input-icon-wrapper">
+      <i data-lucide="search" class="input-icon w-4 h-4"></i>
+      <input type="text" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>" placeholder="Search by user, order ID, or amount..." class="input">
+    </div>
+    <input type="hidden" name="status" id="statusInput" value="<%= typeof statusFilter !== 'undefined' ? statusFilter : '' %>">
+    <input type="hidden" name="esimFailed" id="esimFailedInput" value="<%= typeof esimFailed !== 'undefined' ? esimFailed : '' %>">
+    <button type="submit" class="btn btn-secondary">Search</button>
+    <% if ((typeof search !== 'undefined' && search) || (typeof statusFilter !== 'undefined' && statusFilter) || (typeof esimFailed !== 'undefined' && esimFailed)) { %>
+    <a href="/admin/payments" class="btn btn-ghost">Clear</a>
+    <% } %>
+  </form>
+  <div class="flex flex-wrap gap-2">
+    <a href="/admin/payments<%= typeof search !== 'undefined' && search ? '?search=' + search : '' %>" class="filter-pill <%= (typeof statusFilter === 'undefined' || !statusFilter) && (typeof esimFailed === 'undefined' || !esimFailed) ? 'active' : '' %>">All</a>
+    <a href="/admin/payments?status=completed<%= typeof search !== 'undefined' && search ? '&search=' + search : '' %>" class="filter-pill <%= typeof statusFilter !== 'undefined' && statusFilter === 'completed' ? 'active' : '' %>">
+      <span class="badge-dot bg-emerald-500"></span>Completed
+    </a>
+    <a href="/admin/payments?status=failed<%= typeof search !== 'undefined' && search ? '&search=' + search : '' %>" class="filter-pill <%= typeof statusFilter !== 'undefined' && statusFilter === 'failed' ? 'active' : '' %>">
+      <span class="badge-dot bg-rose-500"></span>Failed
+    </a>
+    <a href="/admin/payments?status=pending<%= typeof search !== 'undefined' && search ? '&search=' + search : '' %>" class="filter-pill <%= typeof statusFilter !== 'undefined' && statusFilter === 'pending' ? 'active' : '' %>">
+      <span class="badge-dot bg-amber-500"></span>Pending
+    </a>
+    <a href="/admin/payments?esimFailed=true<%= typeof search !== 'undefined' && search ? '&search=' + search : '' %>" class="filter-pill <%= typeof esimFailed !== 'undefined' && esimFailed === 'true' ? 'active' : '' %>">
+      <span class="badge-dot bg-amber-500"></span>eSIM Error
+    </a>
+  </div>
+</div>
+
+<!-- Payments Table (desktop) -->
+<div class="table-container hidden md:block">
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr>
+        <th>#</th>
+        <th>User</th>
+        <th>Order ID</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>eSIM</th>
+        <th>Date</th>
+        <th>Actions</th>
+      </tr></thead>
+      <tbody>
+        <% if (typeof payments !== 'undefined' && payments.length > 0) { %>
+        <% payments.forEach(function(payment) { %>
+        <tr>
+          <td class="text-[var(--text-tertiary)] font-mono text-xs">#<%= payment.id %></td>
+          <td class="font-medium text-[var(--text-primary)]"><%= payment.User ? payment.User.username : '-' %></td>
+          <td>
+            <div class="flex items-center gap-1">
+              <span class="font-mono text-xs text-[var(--text-secondary)]"><%= payment.orderId ? payment.orderId.substring(0, 16) + '...' : '-' %></span>
+              <% if (payment.orderId) { %>
+              <button onclick="copyToClipboard('<%= payment.orderId %>', this)" class="copy-btn" title="Copy Order ID">
+                <i data-lucide="copy" class="w-3 h-3"></i>
+              </button>
+              <% } %>
+            </div>
+          </td>
+          <td class="font-semibold text-[var(--text-primary)]">$<%= payment.amount ? parseFloat(payment.amount).toFixed(2) : '0.00' %></td>
+          <td>
+            <% if (payment.resolvedAt) { %>
+            <span class="badge badge-neutral"><span class="badge-dot bg-slate-400"></span>Resolved</span>
+            <% } else if (payment.metadata && payment.metadata.esimPurchaseFailed) { %>
+            <span class="badge" style="background: rgba(245, 158, 11, 0.1); color: #d97706;"><i data-lucide="alert-triangle" class="w-3 h-3 inline-block mr-1"></i>eSIM Error</span>
+            <% } else if (payment.status === 'completed') { %>
+            <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Completed</span>
+            <% } else if (payment.status === 'pending') { %>
+            <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Pending</span>
+            <% } else if (payment.status === 'failed') { %>
+            <span class="badge badge-danger"><span class="badge-dot bg-rose-500"></span>Failed</span>
+            <% } else { %>
+            <span class="badge badge-neutral"><%= payment.status %></span>
+            <% } %>
+          </td>
+          <td>
+            <% if (payment.Esim) { %>
+            <a href="/admin/esims/<%= payment.Esim.id %>" class="text-xs font-mono text-[var(--brand-primary)] hover:underline"><%= payment.Esim.iccid ? payment.Esim.iccid.substring(0, 12) + '...' : 'eSIM #' + payment.Esim.id %></a>
+            <% } else { %>
+            <span class="text-[var(--text-tertiary)]">-</span>
+            <% } %>
+          </td>
+          <td class="text-xs text-[var(--text-tertiary)]"><%= new Date(payment.createdAt).toLocaleDateString() %></td>
+          <td>
+            <div class="flex items-center gap-2">
+              <% if (!payment.resolvedAt && payment.metadata && payment.metadata.esimPurchaseFailed) { %>
+              <form method="POST" action="/admin/payments/<%= payment.id %>/retry" style="display:inline;">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-sm btn-ghost text-amber-600 dark:text-amber-400" title="Retry eSIM Purchase">
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Retry
+                </button>
+              </form>
+              <button type="button" onclick="toggleResolve(<%= payment.id %>)" class="btn btn-sm btn-ghost text-[var(--brand-primary)]" title="Resolve">
+                <i data-lucide="check-square" class="w-3.5 h-3.5"></i> Resolve
+              </button>
+              <% } %>
+            </div>
+            <% if (!payment.resolvedAt && payment.metadata && payment.metadata.esimPurchaseFailed) { %>
+            <div id="resolve-form-<%= payment.id %>" class="hidden mt-2">
+              <form method="POST" action="/admin/payments/<%= payment.id %>/resolve">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <textarea name="resolutionNote" rows="2" class="input text-xs mb-2 w-full" placeholder="Resolution note..." required></textarea>
+                <button type="submit" class="btn btn-sm btn-primary w-full">
+                  <i data-lucide="check" class="w-3.5 h-3.5"></i> Submit Resolution
+                </button>
+              </form>
+            </div>
+            <% } %>
+          </td>
+        </tr>
+        <% }) %>
+        <% } else { %>
+        <tr><td colspan="8" class="text-center py-12 text-sm text-[var(--text-tertiary)]">No payments found</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+  <%- include('../partials/pagination') %>
+</div>
+
+<!-- Payments Cards (mobile) -->
+<div class="md:hidden space-y-3">
+  <% if (typeof payments !== 'undefined' && payments.length > 0) { %>
+  <% payments.forEach(function(payment) { %>
+  <div class="card">
+    <div class="p-4">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-[var(--text-tertiary)] font-mono">#<%= payment.id %></span>
+          <span class="font-semibold text-[var(--text-primary)]"><%= payment.User ? payment.User.username : '-' %></span>
+        </div>
+        <% if (payment.resolvedAt) { %>
+        <span class="badge badge-neutral"><span class="badge-dot bg-slate-400"></span>Resolved</span>
+        <% } else if (payment.metadata && payment.metadata.esimPurchaseFailed) { %>
+        <span class="badge" style="background: rgba(245, 158, 11, 0.1); color: #d97706;"><i data-lucide="alert-triangle" class="w-3 h-3 inline-block mr-1"></i>eSIM Error</span>
+        <% } else if (payment.status === 'completed') { %>
+        <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Completed</span>
+        <% } else if (payment.status === 'pending') { %>
+        <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Pending</span>
+        <% } else if (payment.status === 'failed') { %>
+        <span class="badge badge-danger"><span class="badge-dot bg-rose-500"></span>Failed</span>
+        <% } else { %>
+        <span class="badge badge-neutral"><%= payment.status %></span>
+        <% } %>
+      </div>
+      <% if (payment.orderId) { %>
+      <div class="flex items-center gap-1 mb-2">
+        <span class="font-mono text-xs text-[var(--text-secondary)]"><%= payment.orderId %></span>
+        <button onclick="copyToClipboard('<%= payment.orderId %>', this)" class="copy-btn" title="Copy Order ID">
+          <i data-lucide="copy" class="w-3 h-3"></i>
+        </button>
+      </div>
+      <% } %>
+      <div class="flex items-center gap-3 text-xs text-[var(--text-tertiary)] mb-3">
+        <span class="flex items-center gap-1 font-semibold text-[var(--text-primary)]">
+          <i data-lucide="dollar-sign" class="w-3 h-3"></i> $<%= payment.amount ? parseFloat(payment.amount).toFixed(2) : '0.00' %>
+        </span>
+        <% if (payment.Esim) { %>
+        <a href="/admin/esims/<%= payment.Esim.id %>" class="flex items-center gap-1 text-[var(--brand-primary)] hover:underline">
+          <i data-lucide="smartphone" class="w-3 h-3"></i> <%= payment.Esim.iccid ? payment.Esim.iccid.substring(0, 12) + '...' : 'eSIM #' + payment.Esim.id %>
+        </a>
+        <% } %>
+        <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> <%= new Date(payment.createdAt).toLocaleDateString() %></span>
+      </div>
+      <div class="flex items-center gap-2 pt-3 border-t border-[var(--border-subtle)]">
+        <% if (!payment.resolvedAt && payment.metadata && payment.metadata.esimPurchaseFailed) { %>
+        <form method="POST" action="/admin/payments/<%= payment.id %>/retry" class="flex-1">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-sm btn-secondary w-full">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Retry
+          </button>
+        </form>
+        <button type="button" onclick="toggleResolve(<%= payment.id %>)" class="btn btn-sm btn-secondary flex-1">
+          <i data-lucide="check-square" class="w-3.5 h-3.5"></i> Resolve
+        </button>
+        <% } %>
+      </div>
+      <% if (!payment.resolvedAt && payment.metadata && payment.metadata.esimPurchaseFailed) { %>
+      <div id="resolve-form-mobile-<%= payment.id %>" class="hidden mt-3">
+        <form method="POST" action="/admin/payments/<%= payment.id %>/resolve">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <textarea name="resolutionNote" rows="2" class="input text-xs mb-2 w-full" placeholder="Resolution note..." required></textarea>
+          <button type="submit" class="btn btn-sm btn-primary w-full">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i> Submit Resolution
+          </button>
+        </form>
+      </div>
+      <% } %>
+    </div>
+  </div>
+  <% }) %>
+  <% } else { %>
+  <div class="empty-state">
+    <div class="empty-icon"><i data-lucide="credit-card" class="w-6 h-6"></i></div>
+    <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">No payments found</h3>
+  </div>
+  <% } %>
+  <%- include('../partials/pagination') %>
+</div>
+
+<script>
+function toggleResolve(paymentId) {
+  // Toggle desktop form
+  var desktopForm = document.getElementById('resolve-form-' + paymentId);
+  if (desktopForm) {
+    desktopForm.classList.toggle('hidden');
+  }
+  // Toggle mobile form
+  var mobileForm = document.getElementById('resolve-form-mobile-' + paymentId);
+  if (mobileForm) {
+    mobileForm.classList.toggle('hidden');
+  }
+}
+</script>
+
+<%- include('../partials/footer') %>

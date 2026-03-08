@@ -1,0 +1,173 @@
+<%- include('partials/header', {title: 'Receipt', user: locals.user}) %>
+
+<style>
+@media print {
+  .sidebar, .mobile-header, .sidebar-overlay, .receipt-actions, footer, .toast-container {
+    display: none !important;
+  }
+  body, html {
+    background: white !important;
+    color: #111 !important;
+  }
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .breadcrumb {
+    display: none !important;
+  }
+}
+</style>
+
+<div class="mb-6">
+  <div class="breadcrumb">
+    <a href="/payment/history"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to Payments</a>
+  </div>
+</div>
+
+<div class="max-w-lg mx-auto">
+  <div class="card overflow-hidden">
+    <!-- Brand Header -->
+    <div class="p-6 text-center border-b border-[var(--border-subtle)] bg-[var(--surface-1)]">
+      <div class="flex items-center justify-center gap-2.5 mb-2">
+        <div class="sidebar-brand-icon !w-9 !h-9 !rounded-xl" style="box-shadow:none;">
+          <i data-lucide="signal" class="w-4.5 h-4.5"></i>
+        </div>
+        <span class="text-xl font-bold text-[var(--text-primary)] tracking-tight">eSIM Hub</span>
+      </div>
+      <p class="text-sm text-[var(--text-secondary)]">Receipt</p>
+    </div>
+
+    <!-- Receipt Details -->
+    <div class="p-6 space-y-0">
+      <!-- Order ID -->
+      <div class="flex justify-between items-start py-3 border-b border-[var(--border-subtle)]">
+        <span class="text-sm text-[var(--text-secondary)]">Order ID</span>
+        <span class="text-sm font-mono text-[var(--text-primary)] break-all text-right ml-4"><%= payment.merchantOid %></span>
+      </div>
+
+      <!-- Date -->
+      <div class="flex justify-between items-center py-3 border-b border-[var(--border-subtle)]">
+        <span class="text-sm text-[var(--text-secondary)]">Date</span>
+        <span class="text-sm text-[var(--text-primary)]"><%= new Date(payment.createdAt).toLocaleDateString() %> <%= new Date(payment.createdAt).toLocaleTimeString() %></span>
+      </div>
+
+      <!-- Status -->
+      <div class="flex justify-between items-center py-3 border-b border-[var(--border-subtle)]">
+        <span class="text-sm text-[var(--text-secondary)]">Status</span>
+        <% if (payment.status === 'completed') { %>
+        <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Completed</span>
+        <% } else if (payment.status === 'pending') { %>
+        <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Pending</span>
+        <% } else if (payment.status === 'failed') { %>
+        <span class="badge badge-danger"><span class="badge-dot bg-rose-500"></span>Failed</span>
+        <% } else { %>
+        <span class="badge badge-neutral"><%= payment.status %></span>
+        <% } %>
+      </div>
+
+      <!-- Plan -->
+      <div class="flex justify-between items-center py-3 border-b border-[var(--border-subtle)]">
+        <span class="text-sm text-[var(--text-secondary)]">Plan</span>
+        <span class="text-sm text-[var(--text-primary)] font-mono"><%= payment.offerId %></span>
+      </div>
+
+      <!-- Type -->
+      <div class="flex justify-between items-center py-3 border-b border-[var(--border-subtle)]">
+        <span class="text-sm text-[var(--text-secondary)]">Type</span>
+        <span class="text-sm text-[var(--text-primary)] capitalize">
+          <% if (payment.type === 'topup') { %>
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5 inline-block -mt-0.5 mr-0.5 text-[var(--text-tertiary)]"></i> Top-up
+          <% } else { %>
+          <i data-lucide="shopping-cart" class="w-3.5 h-3.5 inline-block -mt-0.5 mr-0.5 text-[var(--text-tertiary)]"></i> Purchase
+          <% } %>
+        </span>
+      </div>
+
+      <!-- Amount -->
+      <div class="flex justify-between items-center py-3 border-b border-[var(--border-subtle)]">
+        <span class="text-sm text-[var(--text-secondary)]">Amount</span>
+        <span class="text-lg font-bold text-[var(--brand-primary)]">$<%= parseFloat(payment.amount).toFixed(2) %> <span class="text-sm font-normal text-[var(--text-tertiary)]"><%= payment.currency %></span></span>
+      </div>
+
+      <!-- Payment Method -->
+      <div class="flex justify-between items-center py-3 border-b border-[var(--border-subtle)]">
+        <span class="text-sm text-[var(--text-secondary)]">Payment Method</span>
+        <span class="text-sm text-[var(--text-primary)]">PayTR</span>
+      </div>
+    </div>
+
+    <!-- eSIM Info Section -->
+    <% if (locals.esim && esim) { %>
+    <div class="px-6 pb-6">
+      <div class="p-4 rounded-lg bg-[var(--surface-1)] border border-[var(--border-subtle)]">
+        <p class="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-3">eSIM Information</p>
+
+        <div class="space-y-0">
+          <!-- ICCID -->
+          <div class="flex justify-between items-center py-2 border-b border-[var(--border-subtle)]">
+            <span class="text-xs text-[var(--text-secondary)]">ICCID</span>
+            <span class="text-xs font-mono text-[var(--text-primary)] break-all text-right ml-4"><%= esim.iccid || 'N/A' %></span>
+          </div>
+
+          <!-- eSIM Status -->
+          <div class="flex justify-between items-center py-2 border-b border-[var(--border-subtle)]">
+            <span class="text-xs text-[var(--text-secondary)]">Status</span>
+            <% if (esim.status === 'completed') { %>
+            <span class="badge badge-success text-[10px]"><span class="badge-dot bg-emerald-500"></span>Active</span>
+            <% } else if (esim.status === 'pending') { %>
+            <span class="badge badge-warning text-[10px]"><span class="badge-dot bg-amber-500"></span>Pending</span>
+            <% } else { %>
+            <span class="badge badge-neutral text-[10px]"><%= esim.status %></span>
+            <% } %>
+          </div>
+
+          <!-- Country -->
+          <% if (esim.country) { %>
+          <div class="flex justify-between items-center py-2 border-b border-[var(--border-subtle)]">
+            <span class="text-xs text-[var(--text-secondary)]">Country</span>
+            <span class="text-xs text-[var(--text-primary)]"><%= esim.country %></span>
+          </div>
+          <% } %>
+
+          <!-- Data -->
+          <% if (esim.dataGB) { %>
+          <div class="flex justify-between items-center py-2 border-b border-[var(--border-subtle)]">
+            <span class="text-xs text-[var(--text-secondary)]">Data</span>
+            <span class="text-xs text-[var(--text-primary)] font-semibold"><%= esim.dataGB %> GB</span>
+          </div>
+          <% } %>
+
+          <!-- Duration -->
+          <% if (esim.durationDays) { %>
+          <div class="flex justify-between items-center py-2">
+            <span class="text-xs text-[var(--text-secondary)]">Duration</span>
+            <span class="text-xs text-[var(--text-primary)] font-semibold"><%= esim.durationDays %> days</span>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Action Buttons -->
+    <div class="receipt-actions px-6 pb-6">
+      <div class="flex gap-3">
+        <button type="button" onclick="window.print()" class="btn btn-primary flex-1">
+          <i data-lucide="printer" class="w-4 h-4"></i>
+          Print
+        </button>
+        <a href="/payment/history" class="btn btn-secondary flex-1">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          Back to Payments
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

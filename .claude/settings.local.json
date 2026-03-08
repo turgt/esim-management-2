@@ -18,7 +18,8 @@
       "Bash(grep:*)",
       "Bash(python3:*)",
       "Bash(python:*)",
-      "Bash(npx playwright:*)"
+      "Bash(npx playwright:*)",
+      "WebFetch(domain:dev.paytr.com)"
     ]
   }
 }

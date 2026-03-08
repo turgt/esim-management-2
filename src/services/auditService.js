@@ -15,7 +15,12 @@ export const ACTIONS = {
   USER_EDIT: 'admin.user_edit',
   ESIM_PURCHASE: 'esim.purchase',
   ESIM_ASSIGN: 'admin.esim_assign',
-  ESIM_TOPUP: 'admin.esim_topup'
+  ESIM_TOPUP: 'admin.esim_topup',
+  PAYMENT_CREATED: 'payment.created',
+  PAYMENT_SUCCESS: 'payment.success',
+  PAYMENT_FAILED: 'payment.failed',
+  PAYMENT_RETRY: 'admin.payment_retry',
+  PAYMENT_RESOLVED: 'admin.payment_resolved'
 };
 
 export async function logAudit(action, { userId = null, entity = null, entityId = null, details = null, ipAddress = null } = {}) {

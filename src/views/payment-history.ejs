@@ -1,0 +1,136 @@
+<%- include('partials/header', {title: 'My Payments', user: locals.user}) %>
+
+<div class="mb-8">
+  <h1 class="text-page-title">My Payments</h1>
+  <p class="text-subtitle mt-1">View your payment history</p>
+</div>
+
+<% if (payments.length > 0) { %>
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+  <div class="stat-card">
+    <div class="stat-icon bg-[var(--brand-light)]">
+      <i data-lucide="receipt" class="w-5 h-5 text-[var(--brand-primary)]"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-label">Total Payments</div>
+      <div class="stat-value"><%= stats.total %></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon bg-emerald-50 dark:bg-emerald-500/10">
+      <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-label">Successful</div>
+      <div class="stat-value text-emerald-600 dark:text-emerald-400"><%= stats.completed %></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon bg-rose-50 dark:bg-rose-500/10">
+      <i data-lucide="x-circle" class="w-5 h-5 text-rose-600 dark:text-rose-400"></i>
+    </div>
+    <div class="stat-content">
+      <div class="stat-label">Failed</div>
+      <div class="stat-value text-rose-600 dark:text-rose-400"><%= stats.failed %></div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+  <% payments.forEach(function(payment) { %>
+  <div class="purchase-card">
+    <div class="purchase-header">
+      <div class="flex-1 min-w-0">
+        <h3 class="font-semibold text-[var(--text-primary)] truncate"><%= (payment.metadata && payment.metadata.planName) ? payment.metadata.planName : payment.offerId %></h3>
+        <p class="text-xs text-[var(--text-tertiary)] mt-0.5 font-mono truncate"><%= payment.merchantOid %></p>
+      </div>
+      <% if (payment.status === 'completed') { %>
+      <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Completed</span>
+      <% } else if (payment.status === 'pending') { %>
+      <span class="badge badge-warning"><span class="badge-dot bg-amber-500 animate-pulse-dot"></span>Pending</span>
+      <% } else if (payment.status === 'failed') { %>
+      <span class="badge badge-danger"><span class="badge-dot bg-rose-500"></span>Failed</span>
+      <% } else { %>
+      <span class="badge badge-neutral"><%= payment.status %></span>
+      <% } %>
+    </div>
+
+    <div class="purchase-body">
+      <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm text-[var(--text-secondary)]">
+        <span class="flex items-center gap-1.5">
+          <i data-lucide="banknote" class="w-3.5 h-3.5 text-[var(--text-tertiary)]"></i>
+          <span class="font-semibold text-[var(--text-primary)]">$<%= parseFloat(payment.amount).toFixed(2) %></span>
+          <span class="text-[var(--text-tertiary)]"><%= payment.currency %></span>
+        </span>
+        <span class="flex items-center gap-1.5">
+          <i data-lucide="calendar" class="w-3.5 h-3.5 text-[var(--text-tertiary)]"></i>
+          <%= new Date(payment.createdAt).toLocaleDateString() %>
+        </span>
+        <% if (payment.type === 'topup') { %>
+        <span class="badge badge-neutral text-xs">
+          <i data-lucide="refresh-cw" class="w-3 h-3"></i> Top-up
+        </span>
+        <% } else { %>
+        <span class="badge badge-neutral text-xs">
+          <i data-lucide="shopping-cart" class="w-3 h-3"></i> Purchase
+        </span>
+        <% } %>
+      </div>
+
+      <% if (payment.merchantOid) { %>
+      <p class="text-xs text-[var(--text-tertiary)] font-mono mt-2 flex items-center gap-1">
+        <i data-lucide="hash" class="w-3 h-3"></i>
+        Order: <%= payment.merchantOid.length > 20 ? payment.merchantOid.substring(0, 20) + '...' : payment.merchantOid %>
+      </p>
+      <% } %>
+
+      <% if (payment.Esim && payment.Esim.iccid) { %>
+      <div class="mt-3 pt-3 border-t border-[var(--border-subtle)]">
+        <p class="text-xs text-[var(--text-tertiary)] flex items-center gap-1.5">
+          <i data-lucide="sim-card" class="w-3 h-3"></i>
+          <span class="font-mono"><%= payment.Esim.iccid %></span>
+        </p>
+      </div>
+      <% } %>
+    </div>
+
+    <div class="purchase-footer">
+      <% if (payment.status === 'completed') { %>
+      <a href="/payment/receipt/<%= payment.merchantOid %>" class="btn btn-secondary btn-block btn-sm">
+        <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+        View Receipt
+      </a>
+      <% } else if (payment.status === 'pending') { %>
+      <a href="/payment/status/<%= payment.merchantOid %>" class="btn btn-secondary btn-block btn-sm">
+        <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+        View Status
+      </a>
+      <% } else { %>
+      <span class="btn btn-secondary btn-block btn-sm opacity-50 cursor-not-allowed pointer-events-none">
+        <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+        Payment Failed
+      </span>
+      <% } %>
+    </div>
+  </div>
+  <% }) %>
+</div>
+
+<%- include('partials/pagination') %>
+
+<% } else { %>
+<div class="empty-state">
+  <div class="empty-icon">
+    <i data-lucide="receipt" class="w-6 h-6"></i>
+  </div>
+  <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">No payments yet</h3>
+  <p class="text-sm text-[var(--text-secondary)] mb-5">Start by browsing our available eSIM plans</p>
+  <a href="/offers" class="btn btn-primary btn-lg">
+    <i data-lucide="globe" class="w-4 h-4"></i>
+    Browse Plans
+  </a>
+</div>
+<% } %>
+
+<%- include('partials/footer') %>

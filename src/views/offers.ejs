@@ -29,7 +29,7 @@
       regionShort = offer.country;
     }
   %>
-  <button type="button" class="offer-card" onclick="confirmPurchase('<%= offer.offerId %>', '<%= (offer.brand || 'eSIM').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>')">
+  <button type="button" class="offer-card" onclick="confirmPurchase('<%= offer.offerId %>', '<%= (offer.brand || 'eSIM').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>')" data-price="<%= price || '0.00' %>" data-currency="<%= currency %>">
     <div class="offer-header">
       <span class="offer-region"><%= regionShort || 'Global' %></span>
       <% if (durationLabel) { %>
@@ -84,9 +84,12 @@
       <p class="text-sm text-[var(--text-secondary)]">Plan: <strong class="text-[var(--text-primary)]" id="modalPlanName"></strong></p>
       <p class="text-lg font-bold text-[var(--brand-primary)] mt-1" id="modalPlanPrice"></p>
     </div>
-    <form id="purchaseForm" method="post" action="/purchases">
+    <form id="purchaseForm" method="post" action="/payment/create">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="offerId" id="modalOfferId" value="">
+      <input type="hidden" name="amount" id="modalAmount" value="">
+      <input type="hidden" name="currency" id="modalCurrency" value="">
+      <input type="hidden" name="planName" id="modalPlanNameHidden" value="">
       <div class="flex gap-3">
         <button type="button" class="btn btn-secondary flex-1" onclick="closeModal()">Cancel</button>
         <button type="submit" class="btn btn-primary flex-1">
@@ -101,6 +104,9 @@
 <script>
 function confirmPurchase(offerId, planName, price, currency) {
   document.getElementById('modalOfferId').value = offerId;
+  document.getElementById('modalAmount').value = price;
+  document.getElementById('modalCurrency').value = currency;
+  document.getElementById('modalPlanNameHidden').value = planName;
   document.getElementById('modalPlanName').textContent = planName;
   document.getElementById('modalPlanPrice').textContent = price + ' ' + currency;
   var modal = document.getElementById('purchaseModal');

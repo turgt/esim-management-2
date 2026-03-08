@@ -125,4 +125,91 @@ export async function sendEsimAssignedEmail(user, esim) {
   return sendMail(user.email, 'eSIM Assigned - eSIM Hub', html);
 }
 
-export default { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail, sendEsimAssignedEmail };
+export async function sendPaymentSuccessEmail(user, payment, esim) {
+  const html = `
+    <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+      <h2 style="color: #1e293b;">Payment Successful!</h2>
+      <p style="color: #475569;">Hi ${user.displayName || user.username},</p>
+      <p style="color: #475569;">Your payment has been processed and your eSIM is being activated.</p>
+      <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0;">
+        <p style="margin: 8px 0;"><strong>Order:</strong> ${payment.merchantOid}</p>
+        <p style="margin: 8px 0;"><strong>Amount:</strong> $${parseFloat(payment.amount).toFixed(2)} ${payment.currency}</p>
+        <p style="margin: 8px 0;"><strong>Plan:</strong> ${payment.offerId}</p>
+        ${esim && esim.iccid ? `<p style="margin: 8px 0;"><strong>ICCID:</strong> ${esim.iccid}</p>` : ''}
+      </div>
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="${APP_URL()}/purchases" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 600;">
+          View My eSIMs
+        </a>
+      </div>
+    </div>
+  `;
+  return sendMail(user.email, 'Payment Successful - eSIM Hub', html);
+}
+
+export async function sendPaymentFailedEmail(user, payment) {
+  const html = `
+    <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+      <h2 style="color: #1e293b;">Payment Could Not Be Processed</h2>
+      <p style="color: #475569;">Hi ${user.displayName || user.username},</p>
+      <p style="color: #475569;">Unfortunately, your payment could not be processed. No charges were made to your account.</p>
+      <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0;">
+        <p style="margin: 8px 0;"><strong>Order:</strong> ${payment.merchantOid}</p>
+        <p style="margin: 8px 0;"><strong>Amount:</strong> $${parseFloat(payment.amount).toFixed(2)} ${payment.currency}</p>
+        <p style="margin: 8px 0;"><strong>Plan:</strong> ${payment.offerId}</p>
+      </div>
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="${APP_URL()}/offers" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 600;">
+          Try Again
+        </a>
+      </div>
+    </div>
+  `;
+  return sendMail(user.email, 'Payment Failed - eSIM Hub', html);
+}
+
+export async function sendEsimActivationFailedEmail(user, payment) {
+  const html = `
+    <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+      <h2 style="color: #1e293b;">eSIM Activation Issue</h2>
+      <p style="color: #475569;">Hi ${user.displayName || user.username},</p>
+      <p style="color: #475569;">Your payment was successful, but there was an issue activating your eSIM. Our team has been notified and will resolve this shortly.</p>
+      <div style="background: #fef3c7; padding: 20px; border-radius: 12px; margin: 20px 0;">
+        <p style="margin: 8px 0;"><strong>Order:</strong> ${payment.merchantOid}</p>
+        <p style="margin: 8px 0;"><strong>Amount:</strong> $${parseFloat(payment.amount).toFixed(2)} ${payment.currency}</p>
+        <p style="margin: 8px 0; color: #92400e;"><strong>Status:</strong> Payment received - eSIM pending manual activation</p>
+      </div>
+      <p style="color: #475569;">You do not need to take any action. We will contact you once the issue is resolved.</p>
+    </div>
+  `;
+  await sendMail(user.email, 'eSIM Activation Issue - eSIM Hub', html);
+
+  // Also notify admin
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (adminEmail) {
+    const adminHtml = `
+      <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <h2 style="color: #dc2626;">eSIM Purchase Failed After Payment</h2>
+        <div style="background: #fef2f2; padding: 20px; border-radius: 12px; margin: 20px 0;">
+          <p style="margin: 8px 0;"><strong>User:</strong> ${user.username} (${user.email})</p>
+          <p style="margin: 8px 0;"><strong>Order:</strong> ${payment.merchantOid}</p>
+          <p style="margin: 8px 0;"><strong>Amount:</strong> $${parseFloat(payment.amount).toFixed(2)} ${payment.currency}</p>
+          <p style="margin: 8px 0;"><strong>Offer:</strong> ${payment.offerId}</p>
+          <p style="margin: 8px 0;"><strong>Error:</strong> ${payment.metadata?.esimPurchaseError || 'Unknown'}</p>
+        </div>
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="${APP_URL()}/admin/payments" style="background: linear-gradient(135deg, #dc2626, #991b1b); color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 600;">
+            View in Admin Panel
+          </a>
+        </div>
+      </div>
+    `;
+    await sendMail(adminEmail, 'ALERT: eSIM Purchase Failed After Payment', adminHtml);
+  }
+}
+
+export default {
+  sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail,
+  sendEsimAssignedEmail, sendPaymentSuccessEmail, sendPaymentFailedEmail,
+  sendEsimActivationFailedEmail
+};
