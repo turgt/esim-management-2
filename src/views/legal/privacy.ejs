@@ -1,0 +1,84 @@
+<% if (locals.user) { %>
+  <%- include('../partials/header', {title: title, user: user}) %>
+<% } else { %>
+  <%- include('../partials/legal-header', {title: title}) %>
+<% } %>
+
+<div class="card p-6 sm:p-8">
+  <h1 class="text-xl font-bold text-[var(--text-primary)] mb-1">Gizlilik Politikasi</h1>
+  <p class="text-xs text-[var(--text-tertiary)] mb-6">Son Guncelleme: 11 Mart 2026</p>
+
+  <div class="space-y-6 text-sm text-[var(--text-secondary)] leading-relaxed">
+    <p>Bu Gizlilik Politikasi, Mehmet Kozan Sahis Sirketi tarafindan sunulan dijital veri paketi satis hizmetlerini kullanan kullanicilarin kisisel verilerinin nasil toplandgini, kullanildigini ve korundigunu aciklamaktadir.</p>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">1. Veri Sorumlusu</h2>
+      <p class="mb-2">Bu platform kapsaminda toplanan kisisel verilerden sorumlu veri sorumlusu:</p>
+      <p><strong>Mehmet Kozan Sahis Sirketi</strong><br>Antalya, Turkiye</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">2. Toplanan Bilgiler</h2>
+      <p class="mb-2">Hizmetlerimizi sunabilmek amaciyla asagidaki bilgiler toplanabilir:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Ad ve soyad</li>
+        <li>E-posta adresi</li>
+        <li>Telefon numarasi (gerekli durumlarda)</li>
+        <li>Odeme bilgileri (odeme saglayicilari araciligiyla)</li>
+        <li>IP adresi ve cihaz bilgileri</li>
+        <li>Cerezler ve kullanim verileri</li>
+      </ul>
+      <p class="mt-2">Odeme bilgileri dogrudan tarafimizca saklanmaz; guvenli odeme altyapilari uzerinden islenir.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">3. Verilerin Kullanim Amaclari</h2>
+      <p class="mb-2">Toplanan bilgiler asagidaki amaclarla kullanilabilir:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Dijital veri paketlerinin saglanmasi</li>
+        <li>Kullanici hesabinin olusturulmasi ve yonetimi</li>
+        <li>Odeme islemlerinin gerceklestirilmesi</li>
+        <li>Teknik destek saglanmasi</li>
+        <li>Hizmet guvenliginin saglanmasi</li>
+        <li>Yasal yukumluluklerin yerine getirilmesi</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">4. Verilerin Paylasilmasi</h2>
+      <p class="mb-2">Kisisel veriler asagidaki durumlar disinda ucuncu kisilerle paylasilmaz:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Odeme altyapi saglayicilari</li>
+        <li>Teknik hizmet saglayicilar</li>
+        <li>Yasal zorunluluklar dogrultusunda resmi kurumlar</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">5. Veri Guvenligi</h2>
+      <p>Kullanici verilerinin korunmasi icin teknik ve idari guvenlik onlemleri uygulanmaktadir. Ancak internet uzerinden yapilan veri aktariminin tamamen guvenli oldugu garanti edilemez.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">6. Kullanici Haklari</h2>
+      <p class="mb-2">Turkiye'de yururlukte bulunan KVKK (6698 sayili Kisisel Verilerin Korunmasi Kanunu) kapsaminda kullanicilar:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Kisisel verilerinin islenip islenmedigini ogrenme</li>
+        <li>Islenen veriler hakkinda bilgi talep etme</li>
+        <li>Verilerin duzeltilmesini veya silinmesini talep etme</li>
+      </ul>
+      <p class="mt-2">haklarina sahiptir.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">7. Iletisim</h2>
+      <p>Gizlilik politikasi hakkinda sorulariniz icin bizimle iletisime gecebilirsiniz.</p>
+    </div>
+  </div>
+</div>
+
+<% if (locals.user) { %>
+  <%- include('../partials/footer') %>
+<% } else { %>
+  <%- include('../partials/legal-footer') %>
+<% } %>

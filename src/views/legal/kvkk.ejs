@@ -1,0 +1,105 @@
+<% if (locals.user) { %>
+  <%- include('../partials/header', {title: title, user: user}) %>
+<% } else { %>
+  <%- include('../partials/legal-header', {title: title}) %>
+<% } %>
+
+<div class="card p-6 sm:p-8">
+  <h1 class="text-xl font-bold text-[var(--text-primary)] mb-1">KVKK Aydinlatma Metni</h1>
+  <p class="text-xs text-[var(--text-tertiary)] mb-6">Son Guncelleme: 11 Mart 2026</p>
+
+  <div class="space-y-6 text-sm text-[var(--text-secondary)] leading-relaxed">
+    <p>Bu Aydinlatma Metni, 6698 sayili Kisisel Verilerin Korunmasi Kanunu (KVKK) uyarinca, Mehmet Kozan Sahis Sirketi tarafindan kisisel verilerin islenmesine iliskin olarak kullanicilarin bilgilendirilmesi amaciyla hazirlanmistir.</p>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">1. Veri Sorumlusu</h2>
+      <p class="mb-2">KVKK kapsaminda kisisel verileriniz, veri sorumlusu sifatiyla asagidaki isletme tarafindan islenmektedir:</p>
+      <p><strong>Mehmet Kozan Sahis Sirketi</strong><br>Antalya, Turkiye</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">2. Islenen Kisisel Veriler</h2>
+      <p class="mb-2">Sunulan dijital veri paketi hizmetleri kapsaminda asagidaki kisisel veriler islenebilir:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Kimlik bilgileri (ad, soyad)</li>
+        <li>Iletisim bilgileri (e-posta adresi, telefon numarasi)</li>
+        <li>Islem bilgileri (satin alma kayitlari, paket tercihleri)</li>
+        <li>Odeme bilgileri (odeme altyapilari uzerinden)</li>
+        <li>IP adresi ve cihaz bilgileri</li>
+        <li>Kullanim ve trafik verileri</li>
+        <li>Cerez verileri</li>
+      </ul>
+      <p class="mt-2">Odeme karti bilgileri tarafimizca saklanmamakta olup yalnizca yetkili odeme kuruluslari tarafindan islenmektedir.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">3. Kisisel Verilerin Islenme Amaclari</h2>
+      <p class="mb-2">Toplanan kisisel veriler asagidaki amaclarla islenebilir:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Dijital veri paketlerinin saglanmasi</li>
+        <li>Kullanici hesabinin olusturulmasi ve yonetilmesi</li>
+        <li>Satin alma ve odeme islemlerinin gerceklestirilmesi</li>
+        <li>Musteri destek hizmetlerinin saglanmasi</li>
+        <li>Platform guvenliginin saglanmasi</li>
+        <li>Dolandiricilik ve kotuye kullaniminin onlenmesi</li>
+        <li>Yasal yukumluluklerin yerine getirilmesi</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">4. Kisisel Verilerin Aktarilmasi</h2>
+      <p class="mb-2">Kisisel verileriniz asagidaki taraflarla sinirli olmak uzere paylasilabilir:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Odeme hizmeti saglayicilari</li>
+        <li>Teknik altyapi ve barindirma hizmeti saglayicilari</li>
+        <li>Yasal yukumlulukler kapsaminda yetkili kamu kurumlari</li>
+      </ul>
+      <p class="mt-2">Verileriniz, hukuki zorunluluklar disinda ucuncu kisilerle paylasilmaz.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">5. Kisisel Verilerin Toplanma Yontemi</h2>
+      <p class="mb-2">Kisisel verileriniz asagidaki yollarla toplanabilir:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Web sitesi veya platform uzerinden yapilan kayit islemleri</li>
+        <li>Satin alma islemleri</li>
+        <li>Cerezler ve benzeri teknolojiler</li>
+        <li>Kullanici destek talepleri</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">6. Hukuki Sebepler</h2>
+      <p class="mb-2">Kisisel verileriniz KVKK'nin 5. ve 6. maddeleri kapsaminda asagidaki hukuki sebeplere dayanarak islenebilir:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Bir sozlesmenin kurulmasi veya ifasiyla dogrudan ilgili olmasi</li>
+        <li>Veri sorumlusunun hukuki yukumlulugunu yerine getirmesi</li>
+        <li>Mesru menfaatlerin korunmasi</li>
+        <li>Kullanicinin acik rizasinin bulunmasi</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">7. Veri Sahibi Haklari</h2>
+      <p class="mb-2">KVKK'nin 11. maddesi uyarinca kullanicilar asagidaki haklara sahiptir:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Kisisel verilerinin islenip islenmedigini ogrenme</li>
+        <li>Islenen veriler hakkinda bilgi talep etme</li>
+        <li>Verilerin duzeltilmesini isteme</li>
+        <li>Verilerin silinmesini veya yok edilmesini talep etme</li>
+        <li>Islemenin hukuka aykiri olmasi halinde zararin giderilmesini talep etme</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">8. Basvuru ve Iletisim</h2>
+      <p>KVKK kapsamindaki taleplerinizi veri sorumlusuna yazili olarak iletebilirsiniz. Basvurular ilgili mevzuat kapsaminda degerlendirilecek ve en gec 30 gun icerisinde sonuclandirilacaktir.</p>
+    </div>
+  </div>
+</div>
+
+<% if (locals.user) { %>
+  <%- include('../partials/footer') %>
+<% } else { %>
+  <%- include('../partials/legal-footer') %>
+<% } %>

@@ -1,0 +1,73 @@
+<% if (locals.user) { %>
+  <%- include('../partials/header', {title: title, user: user}) %>
+<% } else { %>
+  <%- include('../partials/legal-header', {title: title}) %>
+<% } %>
+
+<div class="card p-6 sm:p-8">
+  <h1 class="text-xl font-bold text-[var(--text-primary)] mb-1">Hizmet Sartlari (Kullanim Kosullari)</h1>
+  <p class="text-xs text-[var(--text-tertiary)] mb-6">Son Guncelleme: 11 Mart 2026</p>
+
+  <div class="space-y-6 text-sm text-[var(--text-secondary)] leading-relaxed">
+    <p>Bu hizmet sartlari, Mehmet Kozan Sahis Sirketi tarafindan sunulan dijital veri paketi satis hizmetlerinin kullanimina iliskin kurallari belirler.</p>
+    <p>Platformu kullanarak asagidaki sartlari kabul etmis sayilirsiniz.</p>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">1. Hizmet Tanimi</h2>
+      <p class="mb-2">Platform, kullanicilara farkli surelerde gecerli olan dijital veri paketleri sunmaktadir. Paketler:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Gunluk</li>
+        <li>Haftalik</li>
+        <li>Aylik</li>
+      </ul>
+      <p class="mt-2">olarak sunulabilir.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">2. Kullanici Sorumluluklari</h2>
+      <p class="mb-2">Kullanicilar:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Hizmeti yasal amaclarla kullanmayi</li>
+        <li>Platformun guvenligini tehlikeye atacak davranislarda bulunmamayi</li>
+        <li>Sahte veya yanlis bilgi vermemeyi</li>
+      </ul>
+      <p class="mt-2">kabul eder.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">3. Hizmet Kullanimi</h2>
+      <p class="mb-2">Satin alinan veri paketleri:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Satin alma isleminden sonra aktif hale getirilebilir</li>
+        <li>Belirlenen sure boyunca kullanilabilir</li>
+        <li>Suresi doldugunda otomatik olarak sona erer</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">4. Hizmet Degisiklikleri</h2>
+      <p>Sirket, hizmet iceriklerini, fiyatlarini veya paket ozelliklerini onceden bildirmeksizin degistirme hakkini sakli tutar.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">5. Hizmetin Askiya Alinmasi</h2>
+      <p class="mb-2">Asagidaki durumlarda kullanici erisimi askiya alinabilir veya sonlandirilabilir:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Hizmetin kotuye kullanilmasi</li>
+        <li>Dolandiricilik veya yasa disi faaliyet suphesi</li>
+        <li>Hizmet sartlarinin ihlal edilmesi</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">6. Sorumlulugu Sinirlandirilmasi</h2>
+      <p>Sirket, ucuncu taraf ag altyapilarindan veya teknik sorunlardan kaynaklanan kesintilerden dogabilecek zararlardan sorumlu tutulamaz.</p>
+    </div>
+  </div>
+</div>
+
+<% if (locals.user) { %>
+  <%- include('../partials/footer') %>
+<% } else { %>
+  <%- include('../partials/legal-footer') %>
+<% } %>

@@ -22,6 +22,7 @@ import adminRoutes from './routes/admin.js';
 import esimRoutes from './routes/esim.js';
 import profileRoutes from './routes/profile.js';
 import paymentRoutes from './routes/payment.js';
+import legalRoutes from './routes/legal.js';
 import { cookieParser, doubleCsrfProtection, csrfTokenMiddleware, csrfErrorHandler } from './middleware/csrf.js';
 import { verifyCallback, processCallback } from './services/paymentService.js';
 
@@ -209,6 +210,7 @@ app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/profile', profileRoutes);
 app.use('/payment', paymentRoutes);
+app.use('/legal', legalRoutes);
 app.use('/', esimRoutes);
 
 // Root redirect

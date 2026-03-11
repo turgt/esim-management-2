@@ -27,7 +27,7 @@ const logger = pino({
   ...transportConfig,
 
   base: {
-    service: 'esim-hub',
+    service: 'datapatch',
     env: process.env.NODE_ENV || 'development'
   },
 

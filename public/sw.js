@@ -1,5 +1,5 @@
-// eSIM Hub Service Worker
-const CACHE_NAME = 'esim-hub-v1';
+// DataPatch Service Worker
+const CACHE_NAME = 'datapatch-v1';
 const CACHE_URLS = [
   '/public/styles.css',
   '/offers',

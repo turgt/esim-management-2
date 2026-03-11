@@ -1,0 +1,103 @@
+<% if (locals.user) { %>
+  <%- include('../partials/header', {title: title, user: user}) %>
+<% } else { %>
+  <%- include('../partials/legal-header', {title: title}) %>
+<% } %>
+
+<div class="card p-6 sm:p-8">
+  <h1 class="text-xl font-bold text-[var(--text-primary)] mb-1">Mesafeli Satis Sozlesmesi</h1>
+  <p class="text-xs text-[var(--text-tertiary)] mb-6">Son Guncelleme: 11 Mart 2026</p>
+
+  <div class="space-y-6 text-sm text-[var(--text-secondary)] leading-relaxed">
+    <p>Bu Mesafeli Satis Sozlesmesi, asagida bilgileri bulunan satici ile platform uzerinden dijital veri paketi satin alan kullanici ("Alici") arasinda elektronik ortamda kurulmustur.</p>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">1. Taraflar</h2>
+      <p class="mb-2"><strong>Satici:</strong><br>Mehmet Kozan Sahis Sirketi<br>Antalya, Turkiye</p>
+      <p class="mb-2"><strong>Alici:</strong><br>Platform uzerinden hizmet satin alan gercek veya tuzel kisi.</p>
+      <p>Alici, platform uzerinden siparis vererek bu sozlesme hukumlerini kabul etmis sayilir.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">2. Sozlesmenin Konusu</h2>
+      <p class="mb-2">Isbu sozlesmenin konusu, Alici'nin Satici'ya ait platform uzerinden satin aldigi dijital veri paketi hizmetinin satisina ve kullanimina iliskin taraflarin hak ve yukumluluklerinin belirlenmesidir.</p>
+      <p class="mb-2">Satici, farkli surelerde gecerli olan veri paketleri sunabilir:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Gunluk veri paketleri</li>
+        <li>Haftalik veri paketleri</li>
+        <li>Aylik veri paketleri</li>
+      </ul>
+      <p class="mt-2">Satin alinan paketler dijital olarak teslim edilir.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">3. Hizmetin Teslimi</h2>
+      <p class="mb-2">Satin alinan dijital veri paketi:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Odeme islemi tamamlandiktan sonra</li>
+        <li>Elektronik ortamda</li>
+        <li>Kullanicinin hesabina veya ilgili dijital teslim yontemi ile</li>
+      </ul>
+      <p class="mt-2">teslim edilir. Teslimat fiziksel bir gonderim icermemektedir.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">4. Fiyat ve Odeme</h2>
+      <p class="mb-2">Satin alinan hizmetin fiyati, siparis sirasinda platform uzerinde belirtilen tutardir.</p>
+      <p class="mb-2">Odeme islemleri guvenli odeme altyapilari araciligiyla gerceklestirilmektedir.</p>
+      <p>Satici, fiyatlari onceden bildirmeksizin degistirme hakkini sakli tutar.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">5. Cayma Hakki</h2>
+      <p class="mb-2">Alici, dijital icerik niteligindeki hizmetlerde cayma hakkinin istisnasi oldugunu kabul eder.</p>
+      <p class="mb-2">Satin alinan veri paketleri dijital urun niteliginde oldugundan ve teslimat elektronik ortamda gerceklestiginden:</p>
+      <p class="font-semibold text-[var(--text-primary)]">Cayma hakki kullanilamaz ve para iadesi yapilmaz.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">6. Hizmet Kullanimi</h2>
+      <p class="mb-2">Alici satin aldigi veri paketini:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Sadece yasal amaclarla kullanmayi</li>
+        <li>Hizmeti kotuye kullanmamayi</li>
+        <li>Platform kurallarina uygun davranmayi</li>
+      </ul>
+      <p class="mt-2">kabul eder. Hizmetin kotuye kullanilmasi durumunda Satici hizmeti askiya alma veya sonlandirma hakkina sahiptir.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">7. Teknik Sorunlar</h2>
+      <p class="mb-2">Satici, ucuncu taraf ag altyapilari veya teknik sistemlerden kaynaklanan kesintilerden dogabilecek sorunlar konusunda sorumlulugu sinirli oldugunu belirtir.</p>
+      <p>Ancak teknik bir hata nedeniyle hizmetin teslim edilmemesi durumunda Satici sorunun giderilmesi icin gerekli islemleri gerceklestirebilir.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">8. Mucbir Sebepler</h2>
+      <p>Dogal afetler, internet altyapisi kesintileri, siber saldirilar veya benzeri kontrol disi durumlar mucbir sebep olarak kabul edilir. Bu durumlarda Satici sorumlu tutulamaz.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">9. Uyusmazliklarin Cozumu</h2>
+      <p class="mb-2">Isbu sozlesmeden dogabilecek uyusmazliklarda Turkiye Cumhuriyeti kanunlari uygulanir.</p>
+      <p class="mb-2">Uyusmazliklarin cozumunde:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Antalya Tuketici Hakem Heyetleri</li>
+        <li>Antalya Tuketici Mahkemeleri</li>
+      </ul>
+      <p class="mt-2">yetkilidir.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">10. Yururluk</h2>
+      <p class="mb-2">Alici, platform uzerinden siparis vererek bu sozlesmenin tum sartlarini okudugunu, anladigini ve kabul ettigini beyan eder.</p>
+      <p>Bu sozlesme elektronik ortamda onaylandigi anda yururluge girer.</p>
+    </div>
+  </div>
+</div>
+
+<% if (locals.user) { %>
+  <%- include('../partials/footer') %>
+<% } else { %>
+  <%- include('../partials/legal-footer') %>
+<% } %>

@@ -72,7 +72,7 @@ export async function generatePaytrToken({ payment, user, userIp }) {
   }
 
   const merchantOid = payment.merchantOid;
-  const email = user.email || `${user.username}@esimhub.local`;
+  const email = user.email || `${user.username}@datapatch.net`;
   const paymentAmount = Math.round(payment.amount * 100);
   const userName = user.displayName || user.username;
 

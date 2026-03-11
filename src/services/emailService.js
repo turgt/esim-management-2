@@ -29,7 +29,7 @@ function initTransporter() {
 
 async function sendMail(to, subject, html) {
   const transport = initTransporter();
-  const from = process.env.SMTP_FROM || 'eSIM Hub <noreply@esimhub.com>';
+  const from = process.env.SMTP_FROM || 'DataPatch <noreply@datapatch.net>';
 
   if (!transport) {
     log.info({ to, subject }, 'Email logged (no SMTP)');
@@ -54,7 +54,7 @@ export async function sendVerificationEmail(user, token) {
   const verifyUrl = `${APP_URL()}/auth/verify-email/${token}`;
   const html = `
     <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-      <h2 style="color: #1e293b;">Welcome to eSIM Hub!</h2>
+      <h2 style="color: #1e293b;">Welcome to DataPatch!</h2>
       <p style="color: #475569;">Hi ${user.displayName || user.username},</p>
       <p style="color: #475569;">Please verify your email address by clicking the button below:</p>
       <div style="text-align: center; margin: 32px 0;">
@@ -66,7 +66,7 @@ export async function sendVerificationEmail(user, token) {
       <p style="color: #94a3b8; font-size: 14px;">This link expires in 24 hours.</p>
     </div>
   `;
-  return sendMail(user.email, 'Verify your email - eSIM Hub', html);
+  return sendMail(user.email, 'Verify your email - DataPatch', html);
 }
 
 export async function sendPasswordResetEmail(user, token) {
@@ -85,13 +85,13 @@ export async function sendPasswordResetEmail(user, token) {
       <p style="color: #94a3b8; font-size: 14px;">This link expires in 1 hour. If you didn't request this, ignore this email.</p>
     </div>
   `;
-  return sendMail(user.email, 'Password Reset - eSIM Hub', html);
+  return sendMail(user.email, 'Password Reset - DataPatch', html);
 }
 
 export async function sendWelcomeEmail(user) {
   const html = `
     <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-      <h2 style="color: #1e293b;">Welcome to eSIM Hub!</h2>
+      <h2 style="color: #1e293b;">Welcome to DataPatch!</h2>
       <p style="color: #475569;">Hi ${user.displayName || user.username},</p>
       <p style="color: #475569;">Your account has been verified. You can now browse and manage eSIM plans.</p>
       <div style="text-align: center; margin: 32px 0;">
@@ -101,7 +101,7 @@ export async function sendWelcomeEmail(user) {
       </div>
     </div>
   `;
-  return sendMail(user.email, 'Welcome to eSIM Hub!', html);
+  return sendMail(user.email, 'Welcome to DataPatch!', html);
 }
 
 export async function sendEsimAssignedEmail(user, esim) {
@@ -122,7 +122,7 @@ export async function sendEsimAssignedEmail(user, esim) {
       </div>
     </div>
   `;
-  return sendMail(user.email, 'eSIM Assigned - eSIM Hub', html);
+  return sendMail(user.email, 'eSIM Assigned - DataPatch', html);
 }
 
 export async function sendPaymentSuccessEmail(user, payment, esim) {
@@ -144,7 +144,7 @@ export async function sendPaymentSuccessEmail(user, payment, esim) {
       </div>
     </div>
   `;
-  return sendMail(user.email, 'Payment Successful - eSIM Hub', html);
+  return sendMail(user.email, 'Payment Successful - DataPatch', html);
 }
 
 export async function sendPaymentFailedEmail(user, payment) {
@@ -165,7 +165,7 @@ export async function sendPaymentFailedEmail(user, payment) {
       </div>
     </div>
   `;
-  return sendMail(user.email, 'Payment Failed - eSIM Hub', html);
+  return sendMail(user.email, 'Payment Failed - DataPatch', html);
 }
 
 export async function sendEsimActivationFailedEmail(user, payment) {
@@ -182,7 +182,7 @@ export async function sendEsimActivationFailedEmail(user, payment) {
       <p style="color: #475569;">You do not need to take any action. We will contact you once the issue is resolved.</p>
     </div>
   `;
-  await sendMail(user.email, 'eSIM Activation Issue - eSIM Hub', html);
+  await sendMail(user.email, 'eSIM Activation Issue - DataPatch', html);
 
   // Also notify admin
   const adminEmail = process.env.ADMIN_EMAIL;

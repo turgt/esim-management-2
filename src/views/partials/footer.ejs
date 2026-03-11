@@ -1,13 +1,27 @@
 
 <% if (typeof user !== 'undefined' && user) { %>
       </div>
-      <footer class="py-4 mt-auto text-center border-t border-[var(--border-default)] mx-4 sm:mx-6 lg:mx-8">
-        <p class="text-xs text-[var(--text-tertiary)]">&copy; <%= new Date().getFullYear() %> eSIM Hub</p>
+      <footer class="py-4 mt-auto border-t border-[var(--border-default)] mx-4 sm:mx-6 lg:mx-8">
+        <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mb-2">
+          <a href="/legal/terms" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Hizmet Sartlari</a>
+          <a href="/legal/privacy" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Gizlilik</a>
+          <a href="/legal/kvkk" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">KVKK</a>
+          <a href="/legal/distance-sales" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Mesafeli Satis</a>
+          <a href="/legal/refund" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Iade Politikasi</a>
+        </div>
+        <p class="text-xs text-[var(--text-tertiary)] text-center">&copy; <%= new Date().getFullYear() %> DataPatch</p>
       </footer>
     </main>
   </div>
   <div id="toast-container" class="toast-container"></div>
 <% } else { %>
+  </div>
+  <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 mt-5 mb-2">
+    <a href="/legal/terms" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Hizmet Sartlari</a>
+    <a href="/legal/privacy" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Gizlilik</a>
+    <a href="/legal/kvkk" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">KVKK</a>
+    <a href="/legal/distance-sales" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Mesafeli Satis</a>
+    <a href="/legal/refund" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Iade Politikasi</a>
   </div>
   </div>
 <% } %>

@@ -60,7 +60,7 @@
     "express",
     "postgresql"
   ],
-  "author": "eSIM Hub",
+  "author": "DataPatch",
   "jest": {
     "transform": {},
     "testEnvironment": "node",

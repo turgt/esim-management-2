@@ -1,0 +1,56 @@
+<% if (locals.user) { %>
+  <%- include('../partials/header', {title: title, user: user}) %>
+<% } else { %>
+  <%- include('../partials/legal-header', {title: title}) %>
+<% } %>
+
+<div class="card p-6 sm:p-8">
+  <h1 class="text-xl font-bold text-[var(--text-primary)] mb-1">Para Iadesi Politikasi</h1>
+  <p class="text-xs text-[var(--text-tertiary)] mb-6">Son Guncelleme: 11 Mart 2026</p>
+
+  <div class="space-y-6 text-sm text-[var(--text-secondary)] leading-relaxed">
+    <p>Bu politika, Mehmet Kozan Sahis Sirketi tarafindan satilan dijital veri paketleri icin gecerlidir.</p>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">1. Dijital Urun Politikasi</h2>
+      <p class="mb-2">Satin alinan veri paketleri dijital urun niteligindedir.</p>
+      <p class="mb-2">Bu nedenle:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Satin alma islemi tamamlandiktan sonra</li>
+        <li>Paket kullanilmis olsun veya olmasin</li>
+      </ul>
+      <p class="mt-2 font-semibold text-[var(--text-primary)]">para iadesi yapilmaz.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">2. Teknik Hata Durumlari</h2>
+      <p class="mb-2">Asagidaki durumlarda inceleme yapilabilir:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Hizmetin teknik olarak teslim edilmemesi</li>
+        <li>Sistem hatasi nedeniyle paket aktivasyonunun gerceklesmemesi</li>
+      </ul>
+      <p class="mt-2">Bu durumlarda sirket, sorunu cozmek veya esdeger hizmet saglamak icin gerekli adimlari atabilir.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">3. Kullanici Hatalari</h2>
+      <p class="mb-2">Asagidaki durumlar iade kapsamina girmez:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Yanlis paket satin alinmasi</li>
+        <li>Kullanici cihazi veya ayarlarindan kaynaklanan sorunlar</li>
+        <li>Paket suresi dolmus hizmetler</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">4. Politika Degisiklikleri</h2>
+      <p>Sirket, para iadesi politikasini guncelleme hakkini sakli tutar.</p>
+    </div>
+  </div>
+</div>
+
+<% if (locals.user) { %>
+  <%- include('../partials/footer') %>
+<% } else { %>
+  <%- include('../partials/legal-footer') %>
+<% } %>
