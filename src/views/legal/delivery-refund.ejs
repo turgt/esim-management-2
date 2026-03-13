@@ -1,0 +1,70 @@
+<% if (locals.user) { %>
+  <%- include('../partials/header', {title: title, user: user}) %>
+<% } else { %>
+  <%- include('../partials/legal-header', {title: title}) %>
+<% } %>
+
+<div class="card p-6 sm:p-8">
+  <h1 class="text-xl font-bold text-[var(--text-primary)] mb-1">Teslimat ve Iade Sartlari</h1>
+  <p class="text-xs text-[var(--text-tertiary)] mb-6">Son Guncelleme: 13 Mart 2026</p>
+
+  <div class="space-y-6 text-sm text-[var(--text-secondary)] leading-relaxed">
+    <p>Bu sayfa, Mehmet Kozan Sahis Sirketi tarafindan isletilen DataPatch platformunda satin alinan dijital veri paketlerinin teslimat ve iade kosullarini aciklamaktadir.</p>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">1. Teslimat Kosullari</h2>
+      <p class="mb-2">Platformumuzda satilan tum urunler dijital veri paketi niteligindedir. Fiziksel bir urun gonderimi bulunmamaktadir.</p>
+      <p class="mb-2">Teslimat sureci:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Odeme islemi basariyla tamamlandiktan sonra dijital veri paketi otomatik olarak hesabiniza tanimlanir</li>
+        <li>Veri paketi aktivasyonu icin gereken QR kod ve kurulum bilgileri hesabiniz uzerinden erisilebilir hale gelir</li>
+        <li>Teslimat suresi genellikle birkaç dakika icerisindedir</li>
+        <li>Teslimat tamamen elektronik ortamda gerceklesir</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">2. Teslimat Sorunlari</h2>
+      <p class="mb-2">Asagidaki durumlarda destek ekibimiz sorunu inceleyerek cozum uretir:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Odeme basarili olmakla birlikte veri paketinin hesaba tanimlanmamasi</li>
+        <li>Teknik hata nedeniyle QR kod veya aktivasyon bilgilerinin olusturulamamasi</li>
+        <li>Sistem kaynaklı teslim gecikmesi</li>
+      </ul>
+      <p class="mt-2">Bu tür durumlarda sirketimiz, sorunu cozmek veya esdeger hizmet saglamak icin gerekli adimlari atar.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">3. Iade Kosullari</h2>
+      <p class="mb-2">Satin alinan veri paketleri dijital urun niteligindedir. Bu nedenle:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Satin alma islemi tamamlandiktan sonra cayma hakki kullanilamaz</li>
+        <li>Dijital urun teslimat sonrasi para iadesi yapilmaz</li>
+        <li>Paket kullanilmis olsun veya olmasin iade kabul edilmez</li>
+      </ul>
+      <p class="mt-2">Bu kural, 6502 sayili Tuketicinin Korunmasi Hakkinda Kanun'un dijital icerikler ile ilgili cayma hakki istisnasi kapsamindadir.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">4. Istisnai Iade Durumları</h2>
+      <p class="mb-2">Asagidaki durumlarda inceleme baslatılabilir:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Hizmetin teknik olarak teslim edilmemesi (sistem hatasi)</li>
+        <li>Mukerrer (cift) odeme alinmasi</li>
+        <li>Sistem hatasi nedeniyle paket aktivasyonunun gerceklesmemesi</li>
+      </ul>
+      <p class="mt-2">Bu durumlarda destek ekibimize basvurmaniz gerekmektedir. Inceleme sonucunda uygun gorulurse iade veya esdeger hizmet saglanabilir.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">5. Iletisim</h2>
+      <p>Teslimat veya iade ile ilgili sorulariniz icin: <strong>info@datapatch.app</strong></p>
+    </div>
+  </div>
+</div>
+
+<% if (locals.user) { %>
+  <%- include('../partials/footer') %>
+<% } else { %>
+  <%- include('../partials/legal-footer') %>
+<% } %>

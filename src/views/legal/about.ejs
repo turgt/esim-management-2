@@ -1,0 +1,55 @@
+<% if (locals.user) { %>
+  <%- include('../partials/header', {title: title, user: user}) %>
+<% } else { %>
+  <%- include('../partials/legal-header', {title: title}) %>
+<% } %>
+
+<div class="card p-6 sm:p-8">
+  <h1 class="text-xl font-bold text-[var(--text-primary)] mb-1">Hakkimizda</h1>
+  <p class="text-xs text-[var(--text-tertiary)] mb-6">Son Guncelleme: 13 Mart 2026</p>
+
+  <div class="space-y-6 text-sm text-[var(--text-secondary)] leading-relaxed">
+    <p>DataPatch, Mehmet Kozan Sahis Sirketi tarafindan isletilen dijital veri paketi satis platformudur.</p>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">Sirket Bilgileri</h2>
+      <div class="p-4 rounded-lg bg-[var(--surface-1)] border border-[var(--border-subtle)] space-y-2">
+        <p><strong>Unvan:</strong> Mehmet Kozan Sahis Sirketi</p>
+        <p><strong>Adres:</strong> Antalya, Turkiye</p>
+        <p><strong>E-posta:</strong> info@datapatch.app</p>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">Ne Yapiyoruz?</h2>
+      <p class="mb-2">DataPatch olarak kullanicilarina hizli, guvenilir ve uygun fiyatli dijital veri paketleri sunuyoruz. Platformumuz uzerinden:</p>
+      <ul class="list-disc list-inside space-y-1 ml-2">
+        <li>Farkli ulke ve bolgelere yonelik veri paketleri satin alabilirsiniz</li>
+        <li>QR kod ile kolayca kurulum yapabilirsiniz</li>
+        <li>Mevcut paketlerinize ek yükleme (top-up) yapabilirsiniz</li>
+        <li>Tum islemlerinizi guvenli odeme altyapilari ile gerceklestirebilirsiniz</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">Misyonumuz</h2>
+      <p>Kullanicilarina dunyanin her yerinde kesintisiz baglanti imkani sunmak, dijital veri paketi hizmetlerini erisilebilir ve kullanici dostu bir sekilde saglamaktir.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">Guvenlik</h2>
+      <p>Platformumuz SSL sertifikasi ile koruma altindadir. Tum odeme islemleri guvenli odeme altyapilari araciligiyla gerceklestirilmekte olup, kredi karti bilgileriniz tarafimizca saklanmamaktadir.</p>
+    </div>
+
+    <div>
+      <h2 class="text-base font-semibold text-[var(--text-primary)] mb-3">Iletisim</h2>
+      <p>Soru, oneri veya sikayet icin bizimle iletisime gecebilirsiniz: <strong>info@datapatch.app</strong></p>
+    </div>
+  </div>
+</div>
+
+<% if (locals.user) { %>
+  <%- include('../partials/footer') %>
+<% } else { %>
+  <%- include('../partials/legal-footer') %>
+<% } %>
