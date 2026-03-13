@@ -1,15 +1,15 @@
-<%- include('../partials/header', {title: 'eSIM Detail', user: locals.user}) %>
+<%- include('../partials/header', {title: 'Data Detail', user: locals.user}) %>
 
 <div class="mb-6">
   <div class="breadcrumb">
     <a href="/admin/dashboard">Dashboard</a>
     <span class="separator"><i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></span>
-    <a href="/admin/esims">All eSIMs</a>
+    <a href="/admin/esims">All Datas</a>
     <span class="separator"><i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></span>
     <span class="text-[var(--text-primary)] font-medium">#<%= esim.id %></span>
   </div>
   <div class="flex items-center gap-3">
-    <h1 class="text-page-title">eSIM #<%= esim.id %></h1>
+    <h1 class="text-page-title">Data #<%= esim.id %></h1>
     <% if (esim.status === 'completed') { %>
     <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
     <% } else if (esim.status === 'pending') { %>

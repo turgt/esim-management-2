@@ -1,8 +1,8 @@
-<%- include('partials/header', {title: 'My eSIMs', user: locals.user}) %>
+<%- include('partials/header', {title: 'My Datas', user: locals.user}) %>
 
 <div class="mb-8">
-  <h1 class="text-page-title">My eSIMs</h1>
-  <p class="text-subtitle mt-1">Manage and monitor your purchased eSIM plans</p>
+  <h1 class="text-page-title">My Datas</h1>
+  <p class="text-subtitle mt-1">Manage and monitor your purchased Data plans</p>
 </div>
 
 <% if (purchases.length > 0) { %>
@@ -42,7 +42,7 @@
   <div class="purchase-card">
     <div class="purchase-header">
       <div class="flex-1 min-w-0">
-        <h3 class="font-semibold text-[var(--text-primary)] truncate"><%= purchase.brandName || 'eSIM Plan' %></h3>
+        <h3 class="font-semibold text-[var(--text-primary)] truncate"><%= purchase.brandName || 'Data Plan' %></h3>
         <p class="text-xs text-[var(--text-tertiary)] mt-0.5 font-mono"><%= purchase.offerId %></p>
       </div>
       <% if (purchase.status === 'completed') { %>
@@ -125,8 +125,8 @@
   <div class="empty-icon">
     <i data-lucide="smartphone" class="w-6 h-6"></i>
   </div>
-  <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">No eSIMs yet</h3>
-  <p class="text-sm text-[var(--text-secondary)] mb-5">Start by browsing our available eSIM plans</p>
+  <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">No Datas yet</h3>
+  <p class="text-sm text-[var(--text-secondary)] mb-5">Start by browsing our available Data plans</p>
   <a href="/offers" class="btn btn-primary btn-lg">
     <i data-lucide="globe" class="w-4 h-4"></i>
     Browse Plans

@@ -1,11 +1,11 @@
-<%- include('../partials/header', {title: 'Top-up eSIM', user: locals.user}) %>
+<%- include('../partials/header', {title: 'Top-up Data', user: locals.user}) %>
 
 <div class="mb-6">
   <div class="breadcrumb">
-    <a href="/admin/esims"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to All eSIMs</a>
+    <a href="/admin/esims"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to All Datas</a>
   </div>
-  <h1 class="text-page-title">Top-up eSIM</h1>
-  <p class="text-subtitle mt-1">Add a new data package to an existing eSIM</p>
+  <h1 class="text-page-title">Top-up Data</h1>
+  <p class="text-subtitle mt-1">Add a new data package to an existing Data</p>
 </div>
 
 <% if (typeof error !== 'undefined' && error) { %>
@@ -19,7 +19,7 @@
   <!-- eSIM Info -->
   <div class="card">
     <div class="card-header">
-      <h2>eSIM Information</h2>
+      <h2>Data Information</h2>
     </div>
     <div class="card-body detail-grid grid-cols-2">
       <div class="detail-item">
@@ -143,7 +143,7 @@
   <% } else { %>
   <div class="alert alert-warning">
     <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0"></i>
-    This eSIM does not have an ICCID yet. Top-up is only available after the eSIM is activated.
+    This Data does not have an ICCID yet. Top-up is only available after the Data is activated.
   </div>
   <% } %>
 </div>

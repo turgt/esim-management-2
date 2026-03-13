@@ -2,10 +2,10 @@
 
 <div class="mb-6">
   <div class="breadcrumb">
-    <a href="/purchases"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to My eSIMs</a>
+    <a href="/purchases"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to My Datas</a>
   </div>
-  <h1 class="text-page-title">Your eSIM QR Code</h1>
-  <p class="text-subtitle mt-1">Scan this code with your device to install the eSIM</p>
+  <h1 class="text-page-title">Your Data QR Code</h1>
+  <p class="text-subtitle mt-1">Scan this code with your device to install the Data</p>
 </div>
 
 <% if (qr.imageBase64) { %>
@@ -22,7 +22,7 @@
 
     <div class="p-8 flex justify-center">
       <div class="bg-white p-5 rounded-2xl shadow-lg border border-gray-100">
-        <img src="data:image/png;base64,<%= qr.imageBase64 %>" alt="eSIM QR Code" class="qr-image w-64 h-64" />
+        <img src="data:image/png;base64,<%= qr.imageBase64 %>" alt="Data QR Code" class="qr-image w-64 h-64" />
       </div>
     </div>
   </div>
@@ -43,8 +43,8 @@
       <div class="stepper-item">
         <div class="stepper-number">2</div>
         <div class="pb-3">
-          <p class="font-semibold text-[var(--text-primary)] text-sm">Add eSIM</p>
-          <p class="text-sm text-[var(--text-secondary)] mt-0.5">Tap "Add Cellular Plan" or "Add eSIM"</p>
+          <p class="font-semibold text-[var(--text-primary)] text-sm">Add Data</p>
+          <p class="text-sm text-[var(--text-secondary)] mt-0.5">Tap "Add Cellular Plan" or "Add Data"</p>
         </div>
       </div>
       <div class="stepper-item">
@@ -94,7 +94,7 @@
   </div>
   <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">QR Code Not Available</h3>
   <p class="text-sm text-[var(--text-secondary)] mb-5">The QR code is not yet available. Please check back later.</p>
-  <a href="/purchases" class="btn btn-primary">Back to My eSIMs</a>
+  <a href="/purchases" class="btn btn-primary">Back to My Datas</a>
 </div>
 <% } %>
 
@@ -116,12 +116,12 @@ function printQR() {
   var qrImg = document.querySelector('.qr-image').src;
   var printWindow = window.open('', '_blank');
   printWindow.document.write(
-    '<html><head><title>eSIM QR Code</title>' +
+    '<html><head><title>Data QR Code</title>' +
     '<style>body{margin:0;padding:40px;text-align:center;font-family:Inter,Arial,sans-serif}' +
     '.c{max-width:400px;margin:0 auto}img{width:100%;max-width:300px;margin:20px 0}' +
     'h1{color:#0f172a;margin-bottom:10px;font-size:1.5rem}p{color:#475569;margin-bottom:20px}</style></head>' +
-    '<body><div class="c"><h1>eSIM QR Code</h1><p>Scan this code to install your eSIM</p>' +
-    '<img src="' + qrImg + '" alt="eSIM QR Code">' +
+    '<body><div class="c"><h1>Data QR Code</h1><p>Scan this code to install your Data</p>' +
+    '<img src="' + qrImg + '" alt="Data QR Code">' +
     '<p><small>Keep this QR code private and secure</small></p></div></body></html>'
   );
   printWindow.document.close();

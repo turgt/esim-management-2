@@ -1,11 +1,11 @@
-<%- include('../partials/header', {title: 'Assign eSIM', user: locals.user}) %>
+<%- include('../partials/header', {title: 'Assign Data', user: locals.user}) %>
 
 <div class="mb-6">
   <div class="breadcrumb">
     <a href="/admin/dashboard"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to Dashboard</a>
   </div>
-  <h1 class="text-page-title">Assign eSIM</h1>
-  <p class="text-subtitle mt-1">Purchase and assign an eSIM plan to a user</p>
+  <h1 class="text-page-title">Assign Data</h1>
+  <p class="text-subtitle mt-1">Purchase and assign a Data plan to a user</p>
 </div>
 
 <% if (typeof error !== 'undefined' && error) { %>
@@ -27,12 +27,12 @@
         <select id="assign-user" name="userId" required class="input">
           <option value="">Choose a user...</option>
           <% if (typeof users !== 'undefined') { users.forEach(function(u) { %>
-          <option value="<%= u.id %>"><%= u.username %> (<%= u.Esims ? u.Esims.length : 0 %> eSIMs)</option>
+          <option value="<%= u.id %>"><%= u.username %> (<%= u.Esims ? u.Esims.length : 0 %> Datas)</option>
           <% }) } %>
         </select>
       </div>
       <div>
-        <label for="assign-offer" class="input-label">Select eSIM Plan</label>
+        <label for="assign-offer" class="input-label">Select Data Plan</label>
         <select id="assign-offer" name="offerId" required class="input">
           <option value="">Choose a plan...</option>
           <% if (typeof offers !== 'undefined') { offers.forEach(function(offer) { %>
@@ -42,7 +42,7 @@
       </div>
       <button type="submit" class="btn btn-primary btn-block btn-lg">
         <i data-lucide="send" class="w-4 h-4"></i>
-        Assign eSIM
+        Assign Data
       </button>
     </form>
   </div>

@@ -2,7 +2,7 @@
 
 <div class="mb-8">
   <h1 class="text-page-title">User Management</h1>
-  <p class="text-subtitle mt-1">Manage users and monitor eSIM usage</p>
+  <p class="text-subtitle mt-1">Manage users and monitor Data usage</p>
 </div>
 
 <% if (typeof error !== 'undefined' && error) { %>
@@ -23,7 +23,7 @@
       <input type="text" name="username" required placeholder="Username" class="input">
       <input type="email" name="email" placeholder="Email" class="input">
       <input type="password" name="password" required placeholder="Password" class="input">
-      <input type="number" name="esimLimit" value="5" min="0" placeholder="eSIM Limit" class="input">
+      <input type="number" name="esimLimit" value="5" min="0" placeholder="Data Limit" class="input">
       <button type="submit" class="btn btn-primary">
         <i data-lucide="user-plus" class="w-4 h-4"></i>
         Create
@@ -57,7 +57,7 @@
       <i data-lucide="smartphone" class="w-5 h-5 text-sky-600 dark:text-sky-400"></i>
     </div>
     <div class="stat-content">
-      <div class="stat-label">Total eSIMs</div>
+      <div class="stat-label">Total Datas</div>
       <div class="stat-value"><%= users.reduce((sum, u) => sum + (u.Esims ? u.Esims.length : 0), 0) %></div>
     </div>
   </div>
@@ -94,7 +94,7 @@
         <th>User</th>
         <th>Email</th>
         <th>Role</th>
-        <th>eSIMs</th>
+        <th>Datas</th>
         <th>Status</th>
         <th>Actions</th>
       </tr></thead>

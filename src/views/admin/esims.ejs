@@ -1,9 +1,9 @@
-<%- include('../partials/header', {title: 'All eSIMs', user: locals.user}) %>
+<%- include('../partials/header', {title: 'All Datas', user: locals.user}) %>
 
 <div class="mb-8 flex items-center justify-between">
   <div>
-    <h1 class="text-page-title">All eSIMs</h1>
-    <p class="text-subtitle mt-1">Manage all eSIM purchases across the platform</p>
+    <h1 class="text-page-title">All Datas</h1>
+    <p class="text-subtitle mt-1">Manage all Data purchases across the platform</p>
   </div>
   <a href="/admin/assign-esim" class="btn btn-primary">
     <i data-lucide="plus" class="w-4 h-4"></i>
@@ -98,7 +98,7 @@
         </tr>
         <% }) %>
         <% } else { %>
-        <tr><td colspan="7" class="text-center py-12 text-sm text-[var(--text-tertiary)]">No eSIMs found</td></tr>
+        <tr><td colspan="7" class="text-center py-12 text-sm text-[var(--text-tertiary)]">No Datas found</td></tr>
         <% } %>
       </tbody>
     </table>
@@ -106,7 +106,7 @@
   <%- include('../partials/pagination') %>
 </div>
 
-<!-- eSIMs Cards (mobile) -->
+<!-- Datas Cards (mobile) -->
 <div class="md:hidden space-y-3">
   <% if (typeof esims !== 'undefined' && esims.length > 0) { %>
   <% esims.forEach(function(esim) { %>
@@ -155,7 +155,7 @@
   <% } else { %>
   <div class="empty-state">
     <div class="empty-icon"><i data-lucide="layers" class="w-6 h-6"></i></div>
-    <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">No eSIMs found</h3>
+    <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">No Datas found</h3>
   </div>
   <% } %>
   <%- include('../partials/pagination') %>

@@ -2,7 +2,7 @@
 
 <div class="mb-8">
   <h1 class="text-page-title">Available Plans</h1>
-  <p class="text-subtitle mt-1">Choose an eSIM plan for seamless connectivity worldwide</p>
+  <p class="text-subtitle mt-1">Choose a Data plan for seamless connectivity worldwide</p>
 </div>
 
 <% if (typeof error !== 'undefined' && error) { %>
@@ -29,7 +29,7 @@
       regionShort = offer.country;
     }
   %>
-  <button type="button" class="offer-card" onclick="confirmPurchase('<%= offer.offerId %>', '<%= (offer.brand || 'eSIM').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>')" data-price="<%= price || '0.00' %>" data-currency="<%= currency %>">
+  <button type="button" class="offer-card" onclick="confirmPurchase('<%= offer.offerId %>', '<%= (offer.brand || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>')" data-price="<%= price || '0.00' %>" data-currency="<%= currency %>">
     <div class="offer-header">
       <span class="offer-region"><%= regionShort || 'Global' %></span>
       <% if (durationLabel) { %>

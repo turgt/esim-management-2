@@ -1,18 +1,18 @@
-<%- include('partials/header', {title: 'Top-up eSIM', user: locals.user}) %>
+<%- include('partials/header', {title: 'Top-up Data', user: locals.user}) %>
 
 <div class="mb-6">
   <div class="breadcrumb">
-    <a href="/purchases"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to My eSIMs</a>
+    <a href="/purchases"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to My Datas</a>
   </div>
-  <h1 class="text-page-title">Top-up eSIM</h1>
-  <p class="text-subtitle mt-1">Add more data to your existing eSIM</p>
+  <h1 class="text-page-title">Top-up Data</h1>
+  <p class="text-subtitle mt-1">Add more data to your existing Data</p>
 </div>
 
 <div class="max-w-4xl mx-auto space-y-6">
   <!-- eSIM Info Card -->
   <div class="card">
     <div class="card-header">
-      <h2>eSIM Information</h2>
+      <h2>Data Information</h2>
       <% if (esim.status === 'completed') { %>
       <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
       <% } else if (esim.status === 'pending') { %>
@@ -84,7 +84,7 @@
   <!-- Available Plans -->
   <div>
     <h2 class="text-lg font-semibold text-[var(--text-primary)] mb-1">Available Top-up Plans</h2>
-    <p class="text-sm text-[var(--text-secondary)] mb-4">Select a plan to add more data to this eSIM</p>
+    <p class="text-sm text-[var(--text-secondary)] mb-4">Select a plan to add more data to this Data</p>
 
     <% if (typeof offers !== 'undefined' && offers && offers.length > 0) { %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -103,7 +103,7 @@
           regionShort = offer.country;
         }
       %>
-      <button type="button" class="offer-card" onclick="confirmTopup('<%= offer.offerId %>', '<%= (offer.brand || 'eSIM').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>')" data-price="<%= price || '0.00' %>" data-currency="<%= currency %>">
+      <button type="button" class="offer-card" onclick="confirmTopup('<%= offer.offerId %>', '<%= (offer.brand || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>')" data-price="<%= price || '0.00' %>" data-currency="<%= currency %>">
         <div class="offer-header">
           <span class="offer-region"><%= regionShort || 'Global' %></span>
           <% if (durationLabel) { %>
@@ -138,7 +138,7 @@
         <i data-lucide="package" class="w-6 h-6"></i>
       </div>
       <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">No top-up plans available</h3>
-      <p class="text-sm text-[var(--text-secondary)]">There are no compatible top-up plans for this eSIM at the moment.</p>
+      <p class="text-sm text-[var(--text-secondary)]">There are no compatible top-up plans for this Data at the moment.</p>
     </div>
     <% } %>
   </div>
@@ -153,7 +153,7 @@
       </div>
       <div>
         <h3 class="text-base font-semibold text-[var(--text-primary)]">Confirm Top-up</h3>
-        <p class="text-xs text-[var(--text-secondary)]">Add data to your eSIM</p>
+        <p class="text-xs text-[var(--text-secondary)]">Add data to your Data</p>
       </div>
     </div>
     <div class="p-4 rounded-lg bg-[var(--surface-1)] border border-[var(--border-subtle)] mb-5">
