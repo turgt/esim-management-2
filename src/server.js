@@ -52,12 +52,12 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdn.paddle.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.paddle.com", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdn.paddle.com", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com"],
       scriptSrcAttr: ["'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com"],
+      connectSrc: ["'self'", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com", "https://cdn.paddle.com"],
       frameSrc: ["'self'", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com"]
     }
   },
