@@ -54,10 +54,10 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.paddle.com", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdn.paddle.com", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdn.paddle.com", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com", "https://static.cloudflareinsights.com"],
       scriptSrcAttr: ["'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com", "https://cdn.paddle.com"],
+      connectSrc: ["'self'", "https://unpkg.com", "https://cdn.paddle.com", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com", "https://api.paddle.com", "https://sandbox-api.paddle.com"],
       frameSrc: ["'self'", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com"]
     }
   },

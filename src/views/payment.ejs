@@ -98,10 +98,18 @@
 
   window.openCheckout = openCheckout;
 
+  if (!clientToken) {
+    console.error('Paddle: PADDLE_CLIENT_TOKEN is not configured');
+    document.getElementById('errorMsg').textContent = 'Payment not configured (missing client token).';
+    showStatus('statusError');
+    return;
+  }
+
   try {
     var initOpts = {
       token: clientToken,
       eventCallback: function (data) {
+        console.log('Paddle event:', data.name, data);
         if (data.name === 'checkout.completed') {
           window.location.href = '/payment/result/' + merchantOid;
         } else if (data.name === 'checkout.closed') {
@@ -109,8 +117,9 @@
         } else if (data.name === 'checkout.loaded') {
           showStatus('statusReady');
         } else if (data.name === 'checkout.error') {
-          document.getElementById('errorMsg').textContent =
-            (data.data && data.data.message) || 'Could not load payment form. Please try again.';
+          var msg = (data.data && data.data.message) || 'Could not load payment form. Please try again.';
+          console.error('Paddle checkout.error:', data);
+          document.getElementById('errorMsg').textContent = msg;
           showStatus('statusError');
         }
       }
@@ -121,7 +130,8 @@
     Paddle.Initialize(initOpts);
     openCheckout();
   } catch (e) {
-    document.getElementById('errorMsg').textContent = 'Failed to initialize payment. Please try again.';
+    console.error('Paddle initialize error:', e);
+    document.getElementById('errorMsg').textContent = e.message || 'Failed to initialize payment. Please try again.';
     showStatus('statusError');
   }
 })();
