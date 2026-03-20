@@ -82,6 +82,7 @@
   var merchantOid = '<%= payment.merchantOid %>';
   var transactionId = '<%= paddleTransactionId %>';
   var clientToken = '<%= paddleClientToken %>';
+  var environment = '<%= paddleEnvironment %>';
 
   function showStatus(id) {
     ['statusLoading', 'statusReady', 'statusError'].forEach(function (s) {
@@ -105,6 +106,11 @@
   }
 
   try {
+    // Must be called BEFORE Paddle.Initialize() for sandbox
+    if (environment === 'sandbox') {
+      Paddle.Environment.set('sandbox');
+    }
+
     Paddle.Initialize({
       token: clientToken,
       eventCallback: function (data) {
