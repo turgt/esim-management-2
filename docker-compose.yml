@@ -31,11 +31,11 @@ services:
       ZENDIT_API_BASE: https://api.zendit.io/v1
       ZENDIT_API_KEY: sand_f78d3a0c-45da-4cb8-bb98-f5a5e47c061f68b9746c4809099222b4188a
       APP_URL: http://localhost:3000
-      # PayTR - test mode, credentials will be filled later
-      PAYTR_MERCHANT_ID: ""
-      PAYTR_MERCHANT_KEY: ""
-      PAYTR_MERCHANT_SALT: ""
-      PAYTR_TEST_MODE: "1"
+      # Paddle - sandbox mode by default
+      PADDLE_API_KEY: ""
+      PADDLE_CLIENT_TOKEN: ""
+      PADDLE_WEBHOOK_SECRET: ""
+      PADDLE_ENVIRONMENT: "sandbox"
       ADMIN_EMAIL: ""
       # SMTP bos birakildi - email console'a yazilacak
       SMTP_HOST: ""

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { ensureAuth } from '../middleware/auth.js';
 import {
   createPayment,
-  generatePaytrToken,
+  createPaddleCheckout,
   findByMerchantOid,
   checkZenditBalance
 } from '../services/paymentService.js';
@@ -59,20 +59,21 @@ router.post('/create', ensureAuth, async (req, res) => {
     });
 
     try {
-      const userIp = req.ip || req.connection?.remoteAddress || '127.0.0.1';
-      const iframeToken = await generatePaytrToken({ payment, user, userIp });
-
+      const { paddleTransactionId } = await createPaddleCheckout({ payment, user });
+      await payment.update({ providerTransactionId: paddleTransactionId });
       res.render('payment', {
         title: 'Payment',
         payment,
-        iframeToken,
+        paddleTransactionId,
+        paddleClientToken: process.env.PADDLE_CLIENT_TOKEN || '',
+        paddleEnvironment: process.env.PADDLE_ENVIRONMENT === 'production' ? 'production' : 'sandbox',
         offerId,
         amount: parsedAmount,
         currency: currency || 'USD'
       });
-    } catch (tokenErr) {
-      log.error({ err: tokenErr, merchantOid: payment.merchantOid }, 'PayTR token generation failed');
-      await payment.update({ status: 'failed', metadata: { ...payment.metadata, tokenError: tokenErr.message } });
+    } catch (checkoutErr) {
+      log.error({ err: checkoutErr, merchantOid: payment.merchantOid }, 'Paddle checkout creation failed');
+      await payment.update({ status: 'failed', metadata: { ...payment.metadata, checkoutError: checkoutErr.message } });
       res.render('error', {
         message: 'Payment system temporarily unavailable. Please try again later.',
         title: 'Payment Error'
@@ -126,20 +127,21 @@ router.post('/topup/create', ensureAuth, async (req, res) => {
     }, { type: 'topup', targetIccid: iccid });
 
     try {
-      const userIp = req.ip || req.connection?.remoteAddress || '127.0.0.1';
-      const iframeToken = await generatePaytrToken({ payment, user, userIp });
-
+      const { paddleTransactionId } = await createPaddleCheckout({ payment, user });
+      await payment.update({ providerTransactionId: paddleTransactionId });
       res.render('payment', {
         title: 'Payment',
         payment,
-        iframeToken,
+        paddleTransactionId,
+        paddleClientToken: process.env.PADDLE_CLIENT_TOKEN || '',
+        paddleEnvironment: process.env.PADDLE_ENVIRONMENT === 'production' ? 'production' : 'sandbox',
         offerId,
         amount: parsedAmount,
         currency: currency || 'USD'
       });
-    } catch (tokenErr) {
-      log.error({ err: tokenErr, merchantOid: payment.merchantOid }, 'PayTR token generation failed');
-      await payment.update({ status: 'failed', metadata: { ...payment.metadata, tokenError: tokenErr.message } });
+    } catch (checkoutErr) {
+      log.error({ err: checkoutErr, merchantOid: payment.merchantOid }, 'Paddle checkout creation failed');
+      await payment.update({ status: 'failed', metadata: { ...payment.metadata, checkoutError: checkoutErr.message } });
       res.render('error', {
         message: 'Payment system temporarily unavailable. Please try again later.',
         title: 'Payment Error'

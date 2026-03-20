@@ -37,20 +37,94 @@
     </div>
   </div>
 
-  <!-- PayTR iFrame -->
-  <div class="card">
-    <h3 class="text-sm sm:text-base font-semibold text-[var(--text-primary)] mb-3 sm:mb-4">
-      <i data-lucide="lock" class="w-4 h-4 inline-block -mt-0.5 mr-1"></i>
-      Secure Payment
-    </h3>
-    <div class="rounded-lg overflow-hidden border border-[var(--border-subtle)] -mx-2 sm:mx-0" style="min-height: 400px;">
-      <script src="https://www.paytr.com/js/iframeResizer.min.js"></script>
-      <iframe src="https://www.paytr.com/odeme/guvenli/<%= iframeToken %>" id="paytriframe" frameborder="0" scrolling="yes" style="width: 100%; min-height: 400px;"></iframe>
-      <script>
-        try { iFrameResize({ checkOrigin: false, heightCalculationMethod: 'lowestElement' }, '#paytriframe'); } catch(e) {}
-      </script>
+  <!-- Payment overlay trigger area -->
+  <div class="card text-center py-8 sm:py-10" id="paymentStatus">
+    <div id="statusLoading">
+      <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[var(--surface-2)] flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="loader-2" class="w-7 h-7 sm:w-8 sm:h-8 text-[var(--brand-primary)] animate-spin"></i>
+      </div>
+      <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">Opening Secure Payment</h3>
+      <p class="text-sm text-[var(--text-secondary)]">Please wait...</p>
+    </div>
+
+    <div id="statusReady" style="display:none;">
+      <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[var(--brand-light)] flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="lock" class="w-7 h-7 sm:w-8 sm:h-8 text-[var(--brand-primary)]"></i>
+      </div>
+      <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">Secure Payment Ready</h3>
+      <p class="text-sm text-[var(--text-secondary)] mb-5">Your payment form was closed. Click below to reopen.</p>
+      <button id="reopenBtn" onclick="openCheckout()" class="btn btn-primary inline-flex items-center gap-2">
+        <i data-lucide="credit-card" class="w-4 h-4"></i> Open Payment Form
+      </button>
+    </div>
+
+    <div id="statusError" style="display:none;">
+      <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="alert-circle" class="w-7 h-7 sm:w-8 sm:h-8 text-red-500"></i>
+      </div>
+      <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">Payment Unavailable</h3>
+      <p class="text-sm text-[var(--text-secondary)] mb-5" id="errorMsg">Could not load payment form. Please try again.</p>
+      <a href="/offers" class="btn btn-secondary inline-flex items-center gap-2">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Plans
+      </a>
     </div>
   </div>
+
+  <p class="text-center text-xs text-[var(--text-tertiary)] mt-3">
+    <i data-lucide="shield-check" class="w-3.5 h-3.5 inline-block -mt-0.5 mr-0.5"></i>
+    Payments securely processed by Paddle
+  </p>
 </div>
+
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+<script>
+(function () {
+  var merchantOid = '<%= payment.merchantOid %>';
+  var transactionId = '<%= paddleTransactionId %>';
+  var clientToken = '<%= paddleClientToken %>';
+  var environment = '<%= paddleEnvironment %>';
+
+  function showStatus(id) {
+    ['statusLoading', 'statusReady', 'statusError'].forEach(function (s) {
+      document.getElementById(s).style.display = 'none';
+    });
+    document.getElementById(id).style.display = 'block';
+    lucide.createIcons();
+  }
+
+  function openCheckout() {
+    Paddle.Checkout.open({ transactionId: transactionId });
+  }
+
+  window.openCheckout = openCheckout;
+
+  try {
+    var initOpts = {
+      token: clientToken,
+      eventCallback: function (data) {
+        if (data.name === 'checkout.completed') {
+          window.location.href = '/payment/result/' + merchantOid;
+        } else if (data.name === 'checkout.closed') {
+          showStatus('statusReady');
+        } else if (data.name === 'checkout.loaded') {
+          showStatus('statusReady');
+        } else if (data.name === 'checkout.error') {
+          document.getElementById('errorMsg').textContent =
+            (data.data && data.data.message) || 'Could not load payment form. Please try again.';
+          showStatus('statusError');
+        }
+      }
+    };
+    if (environment === 'sandbox') {
+      initOpts.environment = 'sandbox';
+    }
+    Paddle.Initialize(initOpts);
+    openCheckout();
+  } catch (e) {
+    document.getElementById('errorMsg').textContent = 'Failed to initialize payment. Please try again.';
+    showStatus('statusError');
+  }
+})();
+</script>
 
 <%- include('partials/footer') %>

@@ -24,7 +24,7 @@ import profileRoutes from './routes/profile.js';
 import paymentRoutes from './routes/payment.js';
 import legalRoutes from './routes/legal.js';
 import { cookieParser, doubleCsrfProtection, csrfTokenMiddleware, csrfErrorHandler } from './middleware/csrf.js';
-import { verifyCallback, processCallback } from './services/paymentService.js';
+import { verifyPaddleWebhook, processPaddleWebhook } from './services/paymentService.js';
 
 import {
   performanceMonitor,
@@ -54,11 +54,11 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://www.paytr.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdn.paddle.com"],
       scriptSrcAttr: ["'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
-      frameSrc: ["'self'", "https://www.paytr.com"]
+      connectSrc: ["'self'", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com"],
+      frameSrc: ["'self'", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com"]
     }
   },
   crossOriginEmbedderPolicy: false
@@ -103,7 +103,10 @@ app.use(express.urlencoded({
   limit: '10mb'
 }));
 app.use(express.json({
-  limit: '10mb'
+  limit: '10mb',
+  verify: (req, _res, buf) => {
+    req.rawBody = buf.toString('utf8');
+  }
 }));
 
 // Static files with caching
@@ -151,20 +154,23 @@ app.use((req, res, next) => {
   next();
 });
 
-// PayTR callback route — MUST be before CSRF middleware (server-to-server, no CSRF)
-app.post('/payment/callback', express.urlencoded({ extended: true }), async (req, res) => {
-  const pLog = logger.child({ module: 'paytr-callback' });
+// Paddle webhook route — MUST be before CSRF middleware (server-to-server, no CSRF)
+// Raw body is captured via the express.json() verify callback above (req.rawBody)
+app.post('/payment/webhook', async (req, res) => {
+  const wLog = logger.child({ module: 'paddle-webhook' });
   try {
-    if (!verifyCallback(req.body)) {
-      pLog.warn({ merchant_oid: req.body.merchant_oid }, 'PayTR callback hash mismatch');
-      return res.send('OK');
+    const signature = req.headers['paddle-signature'];
+    if (!verifyPaddleWebhook(req.rawBody || '', signature)) {
+      wLog.warn({ event_type: req.body?.event_type }, 'Paddle webhook signature verification failed');
+      return res.status(401).json({ error: 'Invalid signature' });
     }
 
-    await processCallback(req.body);
-    res.send('OK');
+    wLog.info({ event_type: req.body?.event_type }, 'Paddle webhook received');
+    await processPaddleWebhook(req.body);
+    res.json({ received: true });
   } catch (err) {
-    pLog.error({ err, body: req.body }, 'PayTR callback processing error');
-    res.send('OK');
+    wLog.error({ err }, 'Paddle webhook processing error');
+    res.status(500).json({ error: 'Internal error' });
   }
 });
 

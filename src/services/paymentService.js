@@ -8,14 +8,15 @@ import logger from '../lib/logger.js';
 
 const log = logger.child({ module: 'payment' });
 
-const PAYTR_API_URL = 'https://www.paytr.com/odeme/api/get-token';
-
-function getMerchantConfig() {
+function getPaddleConfig() {
+  const environment = process.env.PADDLE_ENVIRONMENT || 'sandbox';
   return {
-    merchantId: process.env.PAYTR_MERCHANT_ID || '',
-    merchantKey: process.env.PAYTR_MERCHANT_KEY || '',
-    merchantSalt: process.env.PAYTR_MERCHANT_SALT || '',
-    testMode: process.env.PAYTR_TEST_MODE || '1'
+    apiKey: process.env.PADDLE_API_KEY || '',
+    webhookSecret: process.env.PADDLE_WEBHOOK_SECRET || '',
+    environment,
+    apiBase: environment === 'production'
+      ? 'https://api.paddle.com'
+      : 'https://sandbox-api.paddle.com'
   };
 }
 
@@ -45,7 +46,7 @@ export async function createPayment(userId, offerId, amount, currency = 'USD', m
     amount,
     currency,
     status: 'pending',
-    provider: 'paytr',
+    provider: 'paddle',
     merchantOid,
     type: opts.type || 'purchase',
     targetIccid: opts.targetIccid || null,
@@ -64,87 +65,91 @@ export async function createPayment(userId, offerId, amount, currency = 'USD', m
   return payment;
 }
 
-export async function generatePaytrToken({ payment, user, userIp }) {
-  const config = getMerchantConfig();
+export async function createPaddleCheckout({ payment, user }) {
+  const config = getPaddleConfig();
 
-  if (!config.merchantId || !config.merchantKey || !config.merchantSalt) {
-    throw new Error('PayTR credentials not configured');
+  if (!config.apiKey) {
+    throw new Error('Paddle API key not configured');
   }
 
-  const merchantOid = payment.merchantOid;
-  const email = user.email || `${user.username}@datapatch.net`;
-  const paymentAmount = Math.round(payment.amount * 100);
-  const userName = user.displayName || user.username;
-
-  const label = payment.type === 'topup' ? `eSIM Top-up - ${payment.offerId}` : `eSIM Plan - ${payment.offerId}`;
-  const basket = JSON.stringify([[label, payment.amount.toString(), 1]]);
-  const userBasket = Buffer.from(basket).toString('base64');
-
-  const noInstallment = '1';
-  const maxInstallment = '0';
-  const currency = payment.currency === 'USD' ? 'USD' : 'TL';
-  const testMode = config.testMode;
-
-  const hashStr = config.merchantId + userIp + merchantOid + email + paymentAmount +
-    userBasket + noInstallment + maxInstallment + currency + testMode + config.merchantSalt;
-
-  const paytrToken = crypto
-    .createHmac('sha256', config.merchantKey)
-    .update(hashStr)
-    .digest('base64');
-
   const appUrl = process.env.APP_URL || 'http://localhost:3000';
+  const amountCents = Math.round(payment.amount * 100).toString();
+  const label = payment.type === 'topup'
+    ? `Data Top-up - ${payment.offerId}`
+    : `Data Plan - ${payment.offerId}`;
 
-  const params = new URLSearchParams({
-    merchant_id: config.merchantId,
-    user_ip: userIp,
-    merchant_oid: merchantOid,
-    email: email,
-    payment_amount: paymentAmount.toString(),
-    paytr_token: paytrToken,
-    user_basket: userBasket,
-    debug_on: testMode === '1' ? '1' : '0',
-    no_installment: noInstallment,
-    max_installment: maxInstallment,
-    user_name: userName,
-    user_phone: '05000000000',
-    merchant_ok_url: `${appUrl}/payment/result/${merchantOid}`,
-    merchant_fail_url: `${appUrl}/payment/result/${merchantOid}`,
-    timeout_limit: '30',
-    currency: currency,
-    test_mode: testMode,
-    user_address: 'N/A',
-    lang: 'en'
-  });
+  const body = {
+    items: [{
+      quantity: 1,
+      price: {
+        description: label,
+        name: label,
+        unit_price: {
+          amount: amountCents,
+          currency_code: payment.currency || 'USD'
+        },
+        tax_mode: 'inclusive',
+        quantity: { minimum: 1, maximum: 1 }
+      }
+    }],
+    customer: {
+      email: user.email || `${user.username}@datapatch.net`
+    },
+    custom_data: {
+      merchantOid: payment.merchantOid
+    },
+    checkout: {
+      url: `${appUrl}/payment/result/${payment.merchantOid}`
+    }
+  };
 
-  const response = await fetch(PAYTR_API_URL, {
+  const response = await fetch(`${config.apiBase}/transactions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: params.toString()
+    headers: {
+      'Authorization': `Bearer ${config.apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
   });
 
   const data = await response.json();
 
-  if (data.status !== 'success') {
-    log.error({ merchantOid, reason: data.reason }, 'PayTR token request failed');
-    throw new Error(`PayTR token error: ${data.reason || 'Unknown error'}`);
+  if (!response.ok || data.error) {
+    log.error({ merchantOid: payment.merchantOid, error: data.error }, 'Paddle checkout creation failed');
+    throw new Error(`Paddle checkout error: ${data.error?.detail || JSON.stringify(data.error) || 'Unknown error'}`);
   }
 
-  log.info({ merchantOid }, 'PayTR token generated successfully');
-  return data.token;
+  log.info({ merchantOid: payment.merchantOid, transactionId: data.data.id }, 'Paddle checkout created');
+  return {
+    checkoutUrl: data.data.checkout.url,
+    paddleTransactionId: data.data.id
+  };
 }
 
-export function verifyCallback(body) {
-  const config = getMerchantConfig();
-  const { merchant_oid, status, total_amount, hash } = body;
+export function verifyPaddleWebhook(rawBody, signatureHeader) {
+  const config = getPaddleConfig();
+  if (!config.webhookSecret || !signatureHeader) return false;
 
-  const hashStr = merchant_oid + config.merchantSalt + status + total_amount;
+  // Paddle-Signature format: ts=TIMESTAMP;h1=HMAC_SHA256_HEX
+  const parts = signatureHeader.split(';');
+  const tsPart = parts.find(p => p.startsWith('ts='));
+  const h1Part = parts.find(p => p.startsWith('h1='));
+  if (!tsPart || !h1Part) return false;
+
+  const ts = tsPart.slice(3);
+  const h1 = h1Part.slice(3);
+
+  const signedPayload = `${ts}:${rawBody}`;
   const expectedHash = crypto
-    .createHmac('sha256', config.merchantKey)
-    .update(hashStr)
-    .digest('base64');
+    .createHmac('sha256', config.webhookSecret)
+    .update(signedPayload)
+    .digest('hex');
 
-  return hash === expectedHash;
+  try {
+    return crypto.timingSafeEqual(Buffer.from(h1, 'hex'), Buffer.from(expectedHash, 'hex'));
+  } catch {
+    return false;
+  }
 }
 
 async function sendEmailNotification(payment, esim) {
@@ -164,38 +169,43 @@ async function sendEmailNotification(payment, esim) {
   }
 }
 
-export async function processCallback(body) {
-  const { merchant_oid, status, total_amount } = body;
+export async function processPaddleWebhook(body) {
+  const { event_type, data } = body;
 
-  const payment = await findByMerchantOid(merchant_oid);
+  const merchantOid = data?.custom_data?.merchantOid;
+  if (!merchantOid) {
+    log.warn({ event_type }, 'Paddle webhook missing merchantOid in custom_data');
+    return null;
+  }
+
+  const payment = await findByMerchantOid(merchantOid);
   if (!payment) {
-    log.warn({ merchant_oid }, 'Callback for unknown payment');
+    log.warn({ merchantOid }, 'Webhook for unknown payment');
     return null;
   }
 
   // Idempotent: skip if already processed
   if (payment.status !== 'pending') {
-    log.info({ merchant_oid, existingStatus: payment.status }, 'Payment already processed, skipping');
+    log.info({ merchantOid, existingStatus: payment.status }, 'Payment already processed, skipping');
     return payment;
   }
 
-  if (status === 'success') {
+  if (event_type === 'transaction.completed') {
     await payment.update({
       status: 'completed',
-      providerTransactionId: merchant_oid,
-      metadata: { ...payment.metadata, paytrCallback: body, paidAmount: total_amount }
+      providerTransactionId: data.id,
+      metadata: { ...payment.metadata, paddleCallback: { event_type, transactionId: data.id } }
     });
 
-    log.info({ merchant_oid, paymentId: payment.id }, 'Payment completed');
+    log.info({ merchantOid, paymentId: payment.id }, 'Payment completed via Paddle');
 
     await logAudit(ACTIONS.PAYMENT_SUCCESS, {
       userId: payment.userId,
       entity: 'Payment',
       entityId: payment.id,
-      details: { merchant_oid, total_amount }
+      details: { merchantOid, transactionId: data.id }
     });
 
-    // Trigger eSIM purchase (or top-up)
     let esim = null;
     try {
       if (payment.type === 'topup' && payment.targetIccid) {
@@ -205,7 +215,7 @@ export async function processCallback(body) {
       }
       await sendEmailNotification(payment, esim);
     } catch (err) {
-      log.error({ err, merchant_oid }, 'eSIM purchase failed after successful payment');
+      log.error({ err, merchantOid }, 'eSIM purchase failed after successful payment');
       await payment.update({
         metadata: {
           ...payment.metadata,
@@ -215,22 +225,24 @@ export async function processCallback(body) {
       });
       await sendEmailNotification(payment, null);
     }
-  } else {
+  } else if (event_type === 'transaction.payment_failed') {
     await payment.update({
       status: 'failed',
-      metadata: { ...payment.metadata, paytrCallback: body }
+      metadata: { ...payment.metadata, paddleCallback: { event_type, transactionId: data.id } }
     });
 
-    log.info({ merchant_oid, paymentId: payment.id }, 'Payment failed');
+    log.info({ merchantOid, paymentId: payment.id }, 'Payment failed via Paddle');
 
     await logAudit(ACTIONS.PAYMENT_FAILED, {
       userId: payment.userId,
       entity: 'Payment',
       entityId: payment.id,
-      details: { merchant_oid, status }
+      details: { merchantOid, event_type }
     });
 
     await sendEmailNotification(payment, null);
+  } else {
+    log.info({ event_type, merchantOid }, 'Unhandled Paddle webhook event, ignoring');
   }
 
   return payment;
@@ -297,7 +309,6 @@ export async function topupEsimAfterPayment(payment) {
   const parentEsim = await db.Esim.findOne({ where: { iccid, userId: payment.userId } });
 
   const purchase = await purchaseEsim(payment.offerId, transactionId, iccid);
-  const confirmation = purchase.confirmation || {};
 
   const esim = await db.Esim.create({
     userId: payment.userId,
@@ -336,9 +347,9 @@ export async function findByMerchantOid(merchantOid) {
 
 export default {
   createPayment,
-  generatePaytrToken,
-  verifyCallback,
-  processCallback,
+  createPaddleCheckout,
+  verifyPaddleWebhook,
+  processPaddleWebhook,
   purchaseEsimAfterPayment,
   topupEsimAfterPayment,
   findByMerchantOid,
