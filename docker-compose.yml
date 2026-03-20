@@ -35,6 +35,7 @@ services:
       PADDLE_API_KEY: ""
       PADDLE_CLIENT_TOKEN: ""
       PADDLE_WEBHOOK_SECRET: ""
+      PADDLE_PRODUCT_ID: ""
       PADDLE_ENVIRONMENT: "sandbox"
       ADMIN_EMAIL: ""
       # SMTP bos birakildi - email console'a yazilacak

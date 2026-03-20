@@ -78,18 +78,22 @@ export async function createPaddleCheckout({ payment, user }) {
     ? `Data Top-up - ${payment.offerId}`
     : `Data Plan - ${payment.offerId}`;
 
+  const productId = process.env.PADDLE_PRODUCT_ID || '';
+  if (!productId) {
+    throw new Error('PADDLE_PRODUCT_ID not configured');
+  }
+
   const body = {
     items: [{
       quantity: 1,
       price: {
         description: label,
-        name: label,
+        product_id: productId,
         unit_price: {
           amount: amountCents,
           currency_code: payment.currency || 'USD'
         },
-        tax_mode: 'inclusive',
-        quantity: { minimum: 1, maximum: 1 }
+        tax_mode: 'account_setting'
       }
     }],
     customer: {
@@ -103,6 +107,8 @@ export async function createPaddleCheckout({ payment, user }) {
     }
   };
 
+  log.info({ merchantOid: payment.merchantOid, body }, 'Paddle transaction request');
+
   const response = await fetch(`${config.apiBase}/transactions`, {
     method: 'POST',
     headers: {
@@ -115,8 +121,8 @@ export async function createPaddleCheckout({ payment, user }) {
   const data = await response.json();
 
   if (!response.ok || data.error) {
-    log.error({ merchantOid: payment.merchantOid, error: data.error }, 'Paddle checkout creation failed');
-    throw new Error(`Paddle checkout error: ${data.error?.detail || JSON.stringify(data.error) || 'Unknown error'}`);
+    log.error({ merchantOid: payment.merchantOid, status: response.status, paddleResponse: data }, 'Paddle checkout creation failed');
+    throw new Error(`Paddle checkout error: ${data.error?.detail || JSON.stringify(data) || 'Unknown error'}`);
   }
 
   log.info({ merchantOid: payment.merchantOid, transactionId: data.data.id }, 'Paddle checkout created');
