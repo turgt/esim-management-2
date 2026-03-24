@@ -38,11 +38,9 @@ services:
       PADDLE_PRODUCT_ID: ""
       PADDLE_ENVIRONMENT: "sandbox"
       ADMIN_EMAIL: ""
-      # SMTP bos birakildi - email console'a yazilacak
-      SMTP_HOST: ""
-      SMTP_PORT: ""
-      SMTP_USER: ""
-      SMTP_PASS: ""
+      # Resend HTTP API - https://resend.com/api-keys
+      RESEND_API_KEY: ""  # re_xxxxxxxx
+      SMTP_FROM: "DataPatch <noreply@datapatch.net>"
     depends_on:
       db:
         condition: service_healthy

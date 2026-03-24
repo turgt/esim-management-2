@@ -1,49 +1,45 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import logger from '../lib/logger.js';
 
 const log = logger.child({ module: 'email' });
 
-let transporter = null;
+let resendClient = null;
 
-function initTransporter() {
-  if (transporter) return transporter;
+function getResendClient() {
+  if (resendClient) return resendClient;
 
-  const host = process.env.SMTP_HOST;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-
-  if (!host || !user || !pass) {
-    log.warn('SMTP not configured. Emails will be logged to console.');
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    log.warn('RESEND_API_KEY not configured. Emails will be logged to console.');
     return null;
   }
 
-  transporter = nodemailer.createTransport({
-    host,
-    port: parseInt(process.env.SMTP_PORT) || 587,
-    secure: parseInt(process.env.SMTP_PORT) === 465,
-    auth: { user, pass }
-  });
-
-  return transporter;
+  resendClient = new Resend(apiKey);
+  return resendClient;
 }
 
 async function sendMail(to, subject, html) {
-  const transport = initTransporter();
+  const client = getResendClient();
   const from = process.env.SMTP_FROM || 'DataPatch <noreply@datapatch.net>';
 
-  if (!transport) {
-    log.info({ to, subject }, 'Email logged (no SMTP)');
+  if (!client) {
+    log.info({ to, subject }, 'Email logged (no Resend API key)');
     log.debug({ html }, 'Email body');
     return { logged: true };
   }
 
   try {
-    const info = await transport.sendMail({ from, to, subject, html });
-    log.info({ to, messageId: info.messageId }, 'Email sent');
-    return info;
+    const { data, error } = await client.emails.send({ from, to, subject, html });
+
+    if (error) {
+      log.error({ err: error, to, subject }, 'Resend API error');
+      return { error: error.message, logged: true };
+    }
+
+    log.info({ to, messageId: data.id }, 'Email sent via Resend');
+    return data;
   } catch (error) {
     log.error({ err: error, to, subject }, 'Email send failed');
-    log.info({ to, subject }, 'Email fallback logged');
     return { error: error.message, logged: true };
   }
 }
