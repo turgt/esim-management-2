@@ -250,10 +250,44 @@
       </div>
 
       <% if (typeof user !== 'undefined' && user && user.emailVerified === false && user.email) { %>
-      <div class="bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-300 text-center py-2.5 text-sm font-medium">
+      <div id="verify-banner" class="bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-300 text-center py-2.5 text-sm font-medium">
         <i data-lucide="mail-warning" class="w-4 h-4 inline-block -mt-0.5 mr-1"></i>
-        Your email is not verified. Check your inbox for the verification link.
+        <span id="verify-msg">Your email is not verified. Check your inbox or</span>
+        <button type="button" id="resend-btn" onclick="resendVerification()" class="underline font-semibold hover:text-amber-900 dark:hover:text-amber-200 ml-0.5">resend the link</button>
       </div>
+      <script>
+        function resendVerification() {
+          const btn = document.getElementById('resend-btn');
+          const msg = document.getElementById('verify-msg');
+          btn.disabled = true;
+          btn.textContent = 'Sending...';
+          fetch('/auth/resend-verification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': '<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>' }
+          })
+          .then(r => r.json())
+          .then(data => {
+            if (data.error) {
+              msg.textContent = data.error;
+              btn.style.display = 'none';
+            } else {
+              msg.textContent = data.message;
+              btn.style.display = 'none';
+              // Show resend button again after 2 min
+              setTimeout(() => {
+                msg.textContent = 'Still not received?';
+                btn.textContent = 'Resend again';
+                btn.disabled = false;
+                btn.style.display = 'inline';
+              }, 120000);
+            }
+          })
+          .catch(() => {
+            msg.textContent = 'Something went wrong. Try again later.';
+            btn.style.display = 'none';
+          });
+        }
+      </script>
       <% } %>
 
       <div class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

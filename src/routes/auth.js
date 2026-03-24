@@ -13,6 +13,7 @@ r.get('/register', c.showRegister);
 r.post('/register', registrationRateLimit, registerRules, validate, c.register);
 
 r.get('/verify-email/:token', c.verifyEmail);
+r.post('/resend-verification', c.resendVerificationEmail);
 
 r.get('/forgot-password', c.showForgotPassword);
 r.post('/forgot-password', passwordResetRateLimit, forgotPasswordRules, validate, c.forgotPassword);

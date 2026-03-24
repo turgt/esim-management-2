@@ -183,6 +183,48 @@ export async function verifyEmail(req, res) {
   }
 }
 
+export async function resendVerificationEmail(req, res) {
+  try {
+    const userId = req.session.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    // Rate limit: 2 minutes between resends
+    const lastSent = req.session.lastVerificationEmailSent || 0;
+    const cooldown = 2 * 60 * 1000; // 2 minutes
+    const remaining = cooldown - (Date.now() - lastSent);
+    if (remaining > 0) {
+      const seconds = Math.ceil(remaining / 1000);
+      return res.status(429).json({ error: `Please wait ${seconds} seconds before requesting again.` });
+    }
+
+    const user = await db.User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.emailVerified) {
+      return res.json({ message: 'Email is already verified.' });
+    }
+
+    // Generate new token
+    const emailVerificationToken = crypto.randomBytes(32).toString('hex');
+    const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await user.update({ emailVerificationToken, emailVerificationExpires });
+    await sendVerificationEmail(user, emailVerificationToken);
+
+    req.session.lastVerificationEmailSent = Date.now();
+
+    log.info({ userId: user.id, email: user.email }, 'Verification email resent');
+    res.json({ message: 'Verification email sent. Please check your inbox.' });
+  } catch (err) {
+    log.error({ err }, 'Resend verification email error');
+    res.status(500).json({ error: 'Failed to send verification email.' });
+  }
+}
+
 export async function showForgotPassword(req, res) {
   const errors = req.session.validationErrors || [];
   delete req.session.validationErrors;
