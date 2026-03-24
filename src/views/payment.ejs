@@ -97,7 +97,6 @@
     var checkoutSettings = { transactionId: transactionId };
     if (userEmail) {
       checkoutSettings.customer = { email: userEmail };
-      checkoutSettings.settings = { showAddDiscountCode: true };
     }
     Paddle.Checkout.open(checkoutSettings);
   }
