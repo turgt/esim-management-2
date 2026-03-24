@@ -83,6 +83,7 @@
   var transactionId = '<%= paddleTransactionId %>';
   var clientToken = '<%= paddleClientToken %>';
   var environment = '<%= paddleEnvironment %>';
+  var userEmail = '<%= locals.user && locals.user.email ? locals.user.email : "" %>';
 
   function showStatus(id) {
     ['statusLoading', 'statusReady', 'statusError'].forEach(function (s) {
@@ -93,7 +94,12 @@
   }
 
   function openCheckout() {
-    Paddle.Checkout.open({ transactionId: transactionId });
+    var checkoutSettings = { transactionId: transactionId };
+    if (userEmail) {
+      checkoutSettings.customer = { email: userEmail };
+      checkoutSettings.settings = { showAddDiscountCode: true };
+    }
+    Paddle.Checkout.open(checkoutSettings);
   }
 
   window.openCheckout = openCheckout;
