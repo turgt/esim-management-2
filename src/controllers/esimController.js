@@ -135,8 +135,10 @@ export async function showStatus(req, res) {
     if (!esimRecord.smdpAddress && confirmation.smdpAddress) {
       updateData.smdpAddress = confirmation.smdpAddress;
     }
-    if (!esimRecord.activationCode && (confirmation.externalReferenceId || confirmation.activationCode)) {
-      updateData.activationCode = confirmation.externalReferenceId || confirmation.activationCode;
+    // Update activationCode: prefer externalReferenceId, fix old short codes
+    const correctCode = confirmation.externalReferenceId || confirmation.activationCode;
+    if (correctCode && esimRecord.activationCode !== correctCode) {
+      updateData.activationCode = correctCode;
     }
 
     let statusUpdated = false;
@@ -262,6 +264,18 @@ export async function listUserPurchases(req, res) {
       } catch (e) {
         // silently skip
       }
+    }));
+
+    // Fix old activation codes: fetch externalReferenceId from API
+    await Promise.all(purchases.filter(p => p.activationCode && /^\d+$/.test(p.activationCode)).map(async (p) => {
+      try {
+        const apiData = await getPurchase(p.transactionId);
+        const ref = apiData.confirmation?.externalReferenceId;
+        if (ref && ref !== p.activationCode) {
+          await p.update({ activationCode: ref });
+          p.activationCode = ref;
+        }
+      } catch (e) { /* skip */ }
     }));
 
     res.render('purchases', {
