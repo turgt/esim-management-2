@@ -30,8 +30,8 @@
   <% if (esim && esim.smdpAddress && esim.activationCode) { %>
   <%
     var lpaString = 'LPA:1$' + esim.smdpAddress + '$' + esim.activationCode;
-    var appleLink = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + encodeURIComponent(lpaString);
-    var androidLink = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + encodeURIComponent(lpaString);
+    var appleLink = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + lpaString;
+    var androidLink = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + lpaString;
   %>
   <!-- One-Tap Install (iOS 17.4+ / Android 10+) -->
   <div class="card" id="directInstallCard" style="display:none">

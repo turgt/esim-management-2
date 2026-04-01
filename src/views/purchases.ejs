@@ -193,12 +193,11 @@ function showInstallModal(smdpAddress, activationCode) {
   var isIOS = /iPhone|iPad|iPod/.test(ua);
   var isAndroid = /Android/.test(ua);
   var lpa = 'LPA:1$' + smdpAddress + '$' + activationCode;
-  var encoded = encodeURIComponent(lpa);
   if (isIOS) {
-    document.getElementById('modalDirectLink').href = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + encoded;
+    document.getElementById('modalDirectLink').href = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + lpa;
     document.getElementById('modalDirectBtns').style.display = 'block';
   } else if (isAndroid) {
-    document.getElementById('modalDirectLink').href = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + encoded;
+    document.getElementById('modalDirectLink').href = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + lpa;
     document.getElementById('modalDirectBtns').style.display = 'block';
   } else {
     document.getElementById('modalDirectBtns').style.display = 'none';

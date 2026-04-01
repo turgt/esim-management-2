@@ -158,8 +158,8 @@
   <% if (isQrReady && esim && esim.smdpAddress && esim.activationCode) { %>
   <%
     var lpaStr = 'LPA:1$' + esim.smdpAddress + '$' + esim.activationCode;
-    var appleUrl = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + encodeURIComponent(lpaStr);
-    var androidUrl = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + encodeURIComponent(lpaStr);
+    var appleUrl = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + lpaStr;
+    var androidUrl = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + lpaStr;
   %>
   <!-- Install on This Phone -->
   <div class="card">
