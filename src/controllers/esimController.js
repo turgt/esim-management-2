@@ -290,13 +290,31 @@ export async function debugEsimData(req, res) {
     const dbLpa = `LPA:1$${esim.smdpAddress}$${esim.activationCode}`;
     const apiLpa = `LPA:1$${confirmation.smdpAddress || ''}$${confirmation.activationCode || ''}`;
 
+    // Decode Zendit QR code to see actual LPA string
+    let qrContent = null;
+    try {
+      const qrData = await getPurchaseQrCode(txId);
+      if (qrData && qrData.imageBase64) {
+        const sharp = (await import('sharp')).default;
+        const jsQR = (await import('jsqr')).default;
+        const imgBuffer = Buffer.from(qrData.imageBase64, 'base64');
+        const { data, info } = await sharp(imgBuffer).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+        const decoded = jsQR(new Uint8ClampedArray(data), info.width, info.height);
+        qrContent = decoded ? decoded.data : 'QR decode failed';
+      }
+    } catch (e) {
+      qrContent = 'Error: ' + e.message;
+    }
+
     res.json({
       db: { smdpAddress: esim.smdpAddress, activationCode: esim.activationCode, lpa: dbLpa },
       api: { smdpAddress: confirmation.smdpAddress, activationCode: confirmation.activationCode, lpa: apiLpa, fullConfirmation: confirmation },
+      qrContent,
       match: dbLpa === apiLpa,
+      qrMatchesDb: qrContent === dbLpa,
       deepLinks: {
-        apple: 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + apiLpa,
-        android: 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + apiLpa
+        apple: 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + (qrContent && qrContent.startsWith('LPA:') ? qrContent : apiLpa),
+        android: 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + (qrContent && qrContent.startsWith('LPA:') ? qrContent : apiLpa)
       }
     });
   } catch (err) {
