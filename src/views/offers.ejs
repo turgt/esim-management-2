@@ -19,7 +19,6 @@
     var price = offer.price && offer.price.fixed ? (offer.price.fixed / (offer.price.currencyDivisor || 100)).toFixed(2) : null;
     var currency = offer.price ? (offer.price.currency || 'USD') : 'USD';
     var dataLabel = offer.dataGB ? offer.dataGB : null;
-    var dataUnit = offer.dataGB ? 'GB' : 'Unlimited';
     var durationLabel = offer.durationDays ? offer.durationDays + ' days' : '';
     var regionShort = '';
     if (offer.regions && offer.regions.length > 0) {
@@ -29,25 +28,33 @@
       regionShort = offer.country;
     }
     var speeds = offer.dataSpeeds || [];
+    // Pick best speed only (e.g. "5G" instead of "2G 3G 4G 5G")
+    var bestSpeed = speeds.length ? speeds[speeds.length - 1] : '';
     var hasVoice = offer.voiceUnlimited || (offer.voiceMinutes && offer.voiceMinutes > 0);
     var hasSms = offer.smsUnlimited || (offer.smsNumber && offer.smsNumber > 0);
     var shortNotes = offer.shortNotes || '';
     // Build detail string for modal
     var detailParts = [];
-    if (speeds.length) detailParts.push(speeds.join('/'));
+    if (speeds.length) detailParts.push(speeds.join(' / '));
     if (offer.dataUnlimited) detailParts.push('Unlimited Data');
     if (offer.voiceUnlimited) detailParts.push('Unlimited Voice');
     else if (offer.voiceMinutes > 0) detailParts.push(offer.voiceMinutes + ' min voice');
     if (offer.smsUnlimited) detailParts.push('Unlimited SMS');
     else if (offer.smsNumber > 0) detailParts.push(offer.smsNumber + ' SMS');
+    if (shortNotes) detailParts.push(shortNotes);
     var detailStr = detailParts.join(' · ');
   %>
   <button type="button" class="offer-card" onclick="confirmPurchase('<%= offer.offerId %>', '<%= (offer.brandName || offer.brand || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>', '<%= detailStr.replace(/'/g, "\\'") %>')" data-price="<%= price || '0.00' %>" data-currency="<%= currency %>">
     <div class="offer-header">
       <span class="offer-region"><%= regionShort || 'Global' %></span>
-      <% if (durationLabel) { %>
-      <span class="offer-duration"><%= durationLabel %></span>
-      <% } %>
+      <div class="flex items-center gap-1.5">
+        <% if (bestSpeed) { %>
+        <span class="offer-tag offer-tag-speed"><%= bestSpeed %></span>
+        <% } %>
+        <% if (durationLabel) { %>
+        <span class="offer-duration"><%= durationLabel %></span>
+        <% } %>
+      </div>
     </div>
     <div class="offer-body">
       <% if (offer.dataUnlimited) { %>
@@ -59,28 +66,24 @@
       <span class="offer-data">Data</span>
       <% } %>
     </div>
-    <% if (speeds.length || offer.dataUnlimited || hasVoice || hasSms) { %>
-    <div class="offer-features">
-      <% speeds.forEach(function(s) { %>
-      <span class="offer-tag offer-tag-speed"><%= s %></span>
-      <% }) %>
-      <% if (offer.dataUnlimited) { %>
-      <span class="offer-tag offer-tag-unlimited">Unlimited</span>
+    <% if (shortNotes || hasVoice || hasSms) { %>
+    <div class="offer-notes">
+      <% if (hasVoice || hasSms) { %>
+      <span class="offer-note-tags">
+        <% if (offer.voiceUnlimited) { %>
+        <span class="offer-tag offer-tag-voice">Voice</span>
+        <% } else if (offer.voiceMinutes && offer.voiceMinutes > 0) { %>
+        <span class="offer-tag offer-tag-voice"><%= offer.voiceMinutes %>m</span>
+        <% } %>
+        <% if (offer.smsUnlimited) { %>
+        <span class="offer-tag offer-tag-sms">SMS</span>
+        <% } else if (offer.smsNumber && offer.smsNumber > 0) { %>
+        <span class="offer-tag offer-tag-sms"><%= offer.smsNumber %> SMS</span>
+        <% } %>
+      </span>
       <% } %>
-      <% if (offer.voiceUnlimited) { %>
-      <span class="offer-tag offer-tag-voice">Unlimited Voice</span>
-      <% } else if (offer.voiceMinutes && offer.voiceMinutes > 0) { %>
-      <span class="offer-tag offer-tag-voice"><%= offer.voiceMinutes %> min</span>
-      <% } %>
-      <% if (offer.smsUnlimited) { %>
-      <span class="offer-tag offer-tag-sms">Unlimited SMS</span>
-      <% } else if (offer.smsNumber && offer.smsNumber > 0) { %>
-      <span class="offer-tag offer-tag-sms"><%= offer.smsNumber %> SMS</span>
-      <% } %>
+      <% if (shortNotes) { %><%= shortNotes %><% } %>
     </div>
-    <% } %>
-    <% if (shortNotes) { %>
-    <div class="offer-notes"><%= shortNotes %></div>
     <% } %>
     <div class="offer-footer">
       <div>

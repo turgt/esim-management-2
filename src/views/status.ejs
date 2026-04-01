@@ -162,26 +162,50 @@
     var androidLink = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + encodeURIComponent(lpaString);
   %>
   <!-- Direct Install -->
-  <div class="card">
+  <div class="card" id="statusDirectInstall">
     <div class="card-header">
       <h3>Install on This Device</h3>
-      <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Recommended</span>
     </div>
     <div class="card-body">
-      <p class="text-sm text-[var(--text-secondary)] mb-4">Tap to install the eSIM directly — no QR scanning needed.</p>
-      <div class="flex flex-col sm:flex-row gap-3">
-        <a href="<%= appleLink %>" class="flex-1 btn btn-primary btn-lg">
-          <i data-lucide="smartphone" class="w-4 h-4"></i>
-          Install on iPhone
-        </a>
-        <a href="<%= androidLink %>" class="flex-1 btn btn-secondary btn-lg">
-          <i data-lucide="smartphone" class="w-4 h-4"></i>
-          Install on Android
-        </a>
+      <div id="statusDesktopMsg" style="display:none">
+        <div class="alert alert-warning mb-0">
+          <i data-lucide="monitor" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+          <div class="text-sm">
+            <p class="font-semibold">You're on a computer</p>
+            <p class="mt-0.5">Open this page on your phone to install directly, or use the QR code.</p>
+          </div>
+        </div>
       </div>
-      <p class="text-xs text-[var(--text-tertiary)] mt-3">iPhone requires iOS 17.4+. Android requires Google Play services 25.14+.</p>
+      <div id="statusMobileBtns" style="display:none">
+        <p class="text-sm text-[var(--text-secondary)] mb-4">Tap to install the eSIM directly — no QR scanning needed.</p>
+        <div class="flex flex-col gap-3">
+          <a href="<%= appleLink %>" id="statusIosBtn" class="btn btn-primary btn-lg" style="display:none">
+            <i data-lucide="smartphone" class="w-4 h-4"></i>
+            Install on iPhone
+          </a>
+          <a href="<%= androidLink %>" id="statusAndroidBtn" class="btn btn-primary btn-lg" style="display:none">
+            <i data-lucide="smartphone" class="w-4 h-4"></i>
+            Install on Android
+          </a>
+        </div>
+        <p class="text-xs text-[var(--text-tertiary)] mt-3">iOS 17.4+ / Android with Google Play 25.14+ required.</p>
+      </div>
     </div>
   </div>
+  <script>
+  (function() {
+    var ua = navigator.userAgent || '';
+    var isIOS = /iPhone|iPad|iPod/.test(ua);
+    var isAndroid = /Android/.test(ua);
+    if (isIOS || isAndroid) {
+      document.getElementById('statusMobileBtns').style.display = 'block';
+      if (isIOS) document.getElementById('statusIosBtn').style.display = 'flex';
+      if (isAndroid) document.getElementById('statusAndroidBtn').style.display = 'flex';
+    } else {
+      document.getElementById('statusDesktopMsg').style.display = 'block';
+    }
+  })();
+  </script>
   <% } %>
 
   <!-- Actions -->
