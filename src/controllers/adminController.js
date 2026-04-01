@@ -647,6 +647,32 @@ export async function showEmailDetail(req, res) {
     });
     if (!email) return res.render('error', { message: 'Email not found' });
 
+    // If inbound email has no body, try fetching from Resend API
+    if (email.type === 'inbound' && email.resendId && email.metadata && !email.metadata.htmlBody && !email.metadata.textBody && !email.metadata.body) {
+      try {
+        const axios = (await import('axios')).default;
+        const apiKey = process.env.RESEND_API_KEY;
+        if (apiKey) {
+          const resp = await axios.get(`https://api.resend.com/emails/receiving/${email.resendId}`, {
+            headers: { Authorization: `Bearer ${apiKey}` }
+          });
+          if (resp.data) {
+            const updates = {
+              metadata: {
+                ...email.metadata,
+                htmlBody: resp.data.html || null,
+                textBody: resp.data.text || null
+              }
+            };
+            await email.update(updates);
+            log.info({ emailId: email.resendId }, 'Fetched missing inbound email body');
+          }
+        }
+      } catch (e) {
+        log.warn({ err: e.message, emailId: email.resendId }, 'Could not fetch inbound email body on detail view');
+      }
+    }
+
     res.render('admin/email-detail', { title: 'Email Detail', email });
   } catch (err) {
     log.error({ err }, 'showEmailDetail error');
