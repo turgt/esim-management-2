@@ -277,6 +277,34 @@ export async function listUserPurchases(req, res) {
   }
 }
 
+// Debug: show unique subTypes from offers (admin only)
+export async function debugOfferFields(req, res) {
+  try {
+    const country = process.env.COUNTRY || 'TR';
+    let offers = cacheService.getOffers(country);
+    if (!offers) {
+      offers = await listOffers(country);
+      cacheService.setOffers(country, offers);
+    }
+    const activeOffers = offers.list.filter(o => o.enabled);
+    const subTypes = [...new Set(activeOffers.flatMap(o => o.subTypes || []))];
+    const sample = activeOffers.slice(0, 3).map(o => ({
+      offerId: o.offerId,
+      brand: o.brand,
+      dataGB: o.dataGB,
+      dataUnlimited: o.dataUnlimited,
+      durationDays: o.durationDays,
+      subTypes: o.subTypes,
+      dataSpeeds: o.dataSpeeds,
+      shortNotes: o.shortNotes,
+      notes: o.notes
+    }));
+    res.json({ totalOffers: activeOffers.length, uniqueSubTypes: subTypes, sampleOffers: sample });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
 // Kullanım detayı
 export async function showUsage(req, res) {
   try {

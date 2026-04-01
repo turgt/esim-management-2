@@ -1,6 +1,6 @@
 import express from 'express';
 import { ensureAuth, ensureAdmin } from '../middleware/auth.js';
-import { showOffers, createPurchase, showStatus, showQrCode, listUserPurchases, showUsage } from '../controllers/esimController.js';
+import { showOffers, createPurchase, showStatus, showQrCode, listUserPurchases, showUsage, debugOfferFields } from '../controllers/esimController.js';
 
 const router = express.Router();
 
@@ -10,5 +10,6 @@ router.get('/purchases', ensureAuth, listUserPurchases);
 router.get('/status/:txId', ensureAuth, showStatus);
 router.get('/qrcode/:txId', ensureAuth, showQrCode);
 router.get('/usage/:txId', ensureAuth, showUsage);
+router.get('/debug/offers', ensureAuth, ensureAdmin, debugOfferFields);
 
 export default router;

@@ -17,7 +17,7 @@
 <!-- Filters & Sort Bar -->
 <div class="flex flex-col sm:flex-row gap-3 mb-6">
   <!-- Data Type Filter -->
-  <div class="flex gap-1.5 flex-wrap flex-1">
+  <div class="flex gap-1.5 flex-wrap flex-1" id="filterChips">
     <button type="button" class="filter-chip active" data-filter="all" onclick="filterOffers('all', this)">All</button>
     <button type="button" class="filter-chip" data-filter="unlimited" onclick="filterOffers('unlimited', this)">Unlimited</button>
     <button type="button" class="filter-chip" data-filter="gb" onclick="filterOffers('gb', this)">Fixed GB</button>
@@ -57,8 +57,10 @@
     var speeds = offer.dataSpeeds || [];
     var bestSpeed = speeds.length ? speeds[speeds.length - 1] : '';
     var shortNotes = offer.shortNotes || '';
+    var subTypes = offer.subTypes || [];
     var detailParts = [];
     if (speeds.length) detailParts.push('Network: ' + speeds.join(' / '));
+    if (subTypes.length) detailParts.push('Type: ' + subTypes.join(', '));
     if (offer.dataUnlimited) detailParts.push('Unlimited Data');
     if (offer.voiceUnlimited) detailParts.push('Unlimited Voice');
     else if (offer.voiceMinutes > 0) detailParts.push(offer.voiceMinutes + ' min voice');
@@ -69,18 +71,25 @@
     var priceNum = price ? parseFloat(price) : 0;
     var dataNum = offer.dataUnlimited ? 99999 : (offer.dataGB || 0);
     var durationNum = offer.durationDays || 0;
+    var subTypesStr = JSON.stringify(subTypes);
   %>
   <button type="button" class="offer-card"
     data-price="<%= priceNum %>"
     data-data="<%= dataNum %>"
     data-duration="<%= durationNum %>"
     data-unlimited="<%= offer.dataUnlimited ? '1' : '0' %>"
+    data-subtypes="<%= subTypes.join(',') %>"
     onclick="confirmPurchase('<%= offer.offerId %>', '<%= (offer.brandName || offer.brand || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>', '<%= detailStr.replace(/'/g, "\\'") %>')">
     <div class="offer-header">
       <span class="offer-region"><%= regionShort || 'Global' %></span>
-      <% if (bestSpeed) { %>
-      <span class="offer-speed-badge"><%= bestSpeed %></span>
-      <% } %>
+      <div class="flex items-center gap-1">
+        <% subTypes.forEach(function(st) { %>
+        <span class="offer-subtype-badge"><%= st %></span>
+        <% }) %>
+        <% if (bestSpeed) { %>
+        <span class="offer-speed-badge"><%= bestSpeed %></span>
+        <% } %>
+      </div>
     </div>
     <div class="offer-body">
       <% if (offer.dataUnlimited) { %>
@@ -174,9 +183,32 @@
 <script>
 var _currentFilter = 'all';
 
+// Build dynamic subType filter chips
+(function() {
+  var grid = document.getElementById('offersGrid');
+  if (!grid) return;
+  var cards = Array.from(grid.querySelectorAll('.offer-card'));
+  var allSubTypes = new Set();
+  cards.forEach(function(c) {
+    var st = c.dataset.subtypes;
+    if (st) st.split(',').forEach(function(s) { if (s.trim()) allSubTypes.add(s.trim()); });
+  });
+  var container = document.getElementById('filterChips');
+  if (container && allSubTypes.size > 0) {
+    allSubTypes.forEach(function(st) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'filter-chip';
+      btn.dataset.filter = 'subtype:' + st;
+      btn.textContent = st.charAt(0).toUpperCase() + st.slice(1);
+      btn.onclick = function() { filterOffers('subtype:' + st, btn); };
+      container.appendChild(btn);
+    });
+  }
+})();
+
 function filterOffers(type, btn) {
   _currentFilter = type;
-  // Update active chip
   document.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
   btn.classList.add('active');
   applyFilterAndSort();
@@ -195,9 +227,14 @@ function applyFilterAndSort() {
   // Filter
   cards.forEach(function(card) {
     var isUnlimited = card.dataset.unlimited === '1';
+    var subtypes = card.dataset.subtypes || '';
     var show = true;
     if (_currentFilter === 'unlimited') show = isUnlimited;
     else if (_currentFilter === 'gb') show = !isUnlimited;
+    else if (_currentFilter.startsWith('subtype:')) {
+      var target = _currentFilter.split(':')[1];
+      show = subtypes.split(',').indexOf(target) !== -1;
+    }
     card.style.display = show ? '' : 'none';
     card._visible = show;
     if (show) visibleCount++;
