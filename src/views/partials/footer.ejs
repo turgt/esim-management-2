@@ -45,6 +45,17 @@
 
 <script>
   if (typeof lucide !== 'undefined') lucide.createIcons();
+  // Prevent double-submit on all forms
+  document.querySelectorAll('form').forEach(function(form) {
+    if (form.dataset.noProtect) return;
+    form.addEventListener('submit', function() {
+      var btn = form.querySelector('button[type="submit"]');
+      if (btn && !btn.disabled) {
+        btn.disabled = true;
+        setTimeout(function() { btn.disabled = false; }, 5000);
+      }
+    });
+  });
 </script>
 </body>
 </html>
