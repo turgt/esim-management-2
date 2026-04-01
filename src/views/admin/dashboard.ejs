@@ -152,7 +152,7 @@
               <span class="badge badge-danger"><span class="badge-dot bg-rose-500"></span><%= esim.status %></span>
               <% } %>
             </td>
-            <td class="text-xs text-[var(--text-tertiary)]"><%= new Date(esim.createdAt).toLocaleDateString() %></td>
+            <td class="text-xs text-[var(--text-tertiary)]"><%= new Date(esim.createdAt).toLocaleDateString('en-GB') %></td>
           </tr>
           <% }) %>
           <% } else { %>
@@ -247,7 +247,7 @@
             <span class="badge badge-danger"><span class="badge-dot bg-rose-500"></span>Failed</span>
             <% } %>
           </td>
-          <td class="text-xs text-[var(--text-tertiary)]"><%= new Date(p.createdAt).toLocaleDateString() %></td>
+          <td class="text-xs text-[var(--text-tertiary)]"><%= new Date(p.createdAt).toLocaleDateString('en-GB') %></td>
         </tr>
         <% }) %>
         <% } else { %>

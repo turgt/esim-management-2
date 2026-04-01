@@ -131,7 +131,7 @@
             <span class="text-[var(--text-tertiary)]">-</span>
             <% } %>
           </td>
-          <td class="text-xs text-[var(--text-tertiary)]"><%= new Date(payment.createdAt).toLocaleDateString() %></td>
+          <td class="text-xs text-[var(--text-tertiary)]"><%= new Date(payment.createdAt).toLocaleDateString('en-GB') %></td>
           <td>
             <div class="flex items-center gap-2">
               <% if (!payment.resolvedAt && payment.metadata && payment.metadata.esimPurchaseFailed) { %>
@@ -211,7 +211,7 @@
           <i data-lucide="smartphone" class="w-3 h-3"></i> <%= payment.Esim.iccid ? payment.Esim.iccid.substring(0, 12) + '...' : 'Data #' + payment.Esim.id %>
         </a>
         <% } %>
-        <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> <%= new Date(payment.createdAt).toLocaleDateString() %></span>
+        <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> <%= new Date(payment.createdAt).toLocaleDateString('en-GB') %></span>
       </div>
       <div class="flex items-center gap-2 pt-3 border-t border-[var(--border-subtle)]">
         <% if (!payment.resolvedAt && payment.metadata && payment.metadata.esimPurchaseFailed) { %>

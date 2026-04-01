@@ -47,6 +47,7 @@
           <div class="password-strength" id="pwStrength">
             <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
           </div>
+          <p class="text-xs mt-1" id="pwLabel" style="display:none"></p>
         </div>
         <button type="submit" class="btn btn-primary btn-block btn-lg">Create Account</button>
       </form>
@@ -59,12 +60,21 @@
 <script>
 function checkPasswordStrength(pw) {
   var el = document.getElementById('pwStrength');
+  var label = document.getElementById('pwLabel');
   var s = 0;
   if (pw.length >= 8) s++;
   if (/[A-Z]/.test(pw)) s++;
   if (/[0-9]/.test(pw)) s++;
   if (/[^A-Za-z0-9]/.test(pw)) s++;
   el.className = 'password-strength' + (s > 0 ? ' str-' + s : '');
+  var labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+  var colors = ['', 'color:var(--danger)', 'color:#f59e0b', 'color:#22c55e', 'color:#10b981'];
+  if (pw.length > 0) {
+    label.textContent = labels[s] || 'Too short';
+    label.style.cssText = (colors[s] || 'color:var(--text-tertiary)') + ';display:block';
+  } else {
+    label.style.display = 'none';
+  }
 }
 </script>
 

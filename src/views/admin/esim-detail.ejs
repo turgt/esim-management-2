@@ -139,9 +139,9 @@
               <% } %>
             </td>
             <td class="text-xs text-[var(--text-tertiary)]">
-              <% if (plan.startAt) { %><%= new Date(plan.startAt).toLocaleDateString() %><% } %>
+              <% if (plan.startAt) { %><%= new Date(plan.startAt).toLocaleDateString('en-GB') %><% } %>
               <% if (plan.startAt && plan.endAt) { %> — <% } %>
-              <% if (plan.endAt) { %><%= new Date(plan.endAt).toLocaleDateString() %><% } %>
+              <% if (plan.endAt) { %><%= new Date(plan.endAt).toLocaleDateString('en-GB') %><% } %>
             </td>
           </tr>
           <% }) %>

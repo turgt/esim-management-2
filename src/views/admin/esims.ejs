@@ -82,7 +82,7 @@
             <% } %>
           </td>
           <td class="text-[var(--text-secondary)]"><%= esim.country || '-' %></td>
-          <td class="text-xs text-[var(--text-tertiary)]"><%= new Date(esim.createdAt).toLocaleDateString() %></td>
+          <td class="text-xs text-[var(--text-tertiary)]"><%= new Date(esim.createdAt).toLocaleDateString('en-GB') %></td>
           <td>
             <div class="flex items-center gap-2">
               <a href="/admin/esims/<%= esim.id %>" class="btn btn-sm btn-ghost text-[var(--brand-primary)]">
@@ -137,7 +137,7 @@
         <% if (esim.country) { %>
         <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> <%= esim.country %></span>
         <% } %>
-        <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> <%= new Date(esim.createdAt).toLocaleDateString() %></span>
+        <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> <%= new Date(esim.createdAt).toLocaleDateString('en-GB') %></span>
       </div>
       <div class="flex items-center gap-2 pt-3 border-t border-[var(--border-subtle)]">
         <a href="/admin/esims/<%= esim.id %>" class="btn btn-sm btn-secondary flex-1">

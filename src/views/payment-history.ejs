@@ -65,7 +65,7 @@
         </span>
         <span class="flex items-center gap-1.5">
           <i data-lucide="calendar" class="w-3.5 h-3.5 text-[var(--text-tertiary)]"></i>
-          <%= new Date(payment.createdAt).toLocaleDateString() %>
+          <%= new Date(payment.createdAt).toLocaleDateString('en-GB') %>
         </span>
         <% if (payment.type === 'topup') { %>
         <span class="badge badge-neutral text-xs">

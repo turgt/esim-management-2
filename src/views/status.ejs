@@ -146,7 +146,7 @@
           <div class="min-w-0 -mt-0.5">
             <p class="text-sm font-semibold text-[var(--text-primary)]"><%= entry.status %></p>
             <p class="text-xs text-[var(--text-secondary)] mt-0.5"><%= entry.statusMessage %></p>
-            <p class="text-xs text-[var(--text-tertiary)] mt-0.5"><%= new Date(entry.dateTime).toLocaleString() %></p>
+            <p class="text-xs text-[var(--text-tertiary)] mt-0.5"><%= new Date(entry.dateTime).toLocaleString('en-GB') %></p>
           </div>
         </div>
         <% }) %>
@@ -221,9 +221,29 @@
       Refresh Status
     </button>
   </div>
+
+  <!-- Auto-refresh countdown (pending only) -->
+  <div id="refreshBar" style="display:none" class="card p-3 mt-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+        <i data-lucide="timer" class="w-4 h-4 text-[var(--text-tertiary)]"></i>
+        <span>Auto-refresh in <strong id="refreshCountdown" class="text-[var(--text-primary)]">30</strong>s</span>
+      </div>
+      <button onclick="stopAutoRefresh()" class="text-xs font-medium text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">Stop</button>
+    </div>
+  </div>
 </div>
 
 <script>
+var _refreshTimer = null;
+var _countdownTimer = null;
+
+function stopAutoRefresh() {
+  clearInterval(_refreshTimer);
+  clearInterval(_countdownTimer);
+  document.getElementById('refreshBar').style.display = 'none';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   var params = new URLSearchParams(window.location.search);
   if (params.get('purchased') === 'true') {
@@ -234,10 +254,21 @@ document.addEventListener('DOMContentLoaded', function() {
   var currentStatus = '<%= status.status %>';
   var pendingStates = ['pending', 'processing', 'installing', 'PENDING', 'AUTHORIZED', 'IN_PROGRESS'];
   if (pendingStates.includes(currentStatus)) {
-    var count = 0;
-    var timer = setInterval(function() {
-      count++;
-      if (count >= 10) { clearInterval(timer); return; }
+    var refreshCount = 0;
+    var seconds = 30;
+    var countdownEl = document.getElementById('refreshCountdown');
+    document.getElementById('refreshBar').style.display = 'block';
+    lucide.createIcons();
+
+    _countdownTimer = setInterval(function() {
+      seconds--;
+      if (countdownEl) countdownEl.textContent = seconds;
+    }, 1000);
+
+    _refreshTimer = setInterval(function() {
+      refreshCount++;
+      if (refreshCount >= 10) { stopAutoRefresh(); return; }
+      seconds = 30;
       window.location.reload();
     }, 30000);
   }

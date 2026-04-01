@@ -63,7 +63,7 @@
               <span class="text-[var(--text-tertiary)]"> / <%= plan.initialDataGB || '-' %> GB remaining</span>
               <% } %>
               <% if (plan.endAt) { %>
-              <span class="text-[var(--text-tertiary)] ml-2">expires <%= new Date(plan.endAt).toLocaleDateString() %></span>
+              <span class="text-[var(--text-tertiary)] ml-2">expires <%= new Date(plan.endAt).toLocaleDateString('en-GB') %></span>
               <% } %>
             </div>
             <% if (plan.status === 'ACTIVE') { %>

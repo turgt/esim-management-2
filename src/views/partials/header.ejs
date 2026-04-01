@@ -48,6 +48,7 @@
             lucide.createIcons();
           }, 1500);
         }
+        showToast('Copied to clipboard!', 'success');
       });
     }
 
@@ -185,7 +186,7 @@
           </button>
         </div>
 
-        <nav class="sidebar-nav space-y-0.5 flex-1">
+        <nav class="sidebar-nav space-y-0.5 flex-1" onclick="closeSidebar()">
           <a href="/offers" class="sidebar-link <%= typeof title !== 'undefined' && title === 'Offers' ? 'active' : '' %>">
             <i data-lucide="globe" class="w-[1.125rem] h-[1.125rem]"></i> Plans
           </a>

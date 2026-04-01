@@ -154,12 +154,20 @@
       <input type="hidden" name="planName" id="modalPlanNameHidden" value="">
       <div class="flex gap-3">
         <button type="button" class="btn btn-secondary flex-1" onclick="closeModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary flex-1">
+        <button type="submit" class="btn btn-primary flex-1" id="confirmBtn">
           <i data-lucide="check" class="w-4 h-4"></i>
           Confirm
         </button>
       </div>
     </form>
+    <script>
+    document.getElementById('purchaseForm').addEventListener('submit', function() {
+      var btn = document.getElementById('confirmBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Processing...';
+      lucide.createIcons();
+    });
+    </script>
   </div>
 </div>
 
