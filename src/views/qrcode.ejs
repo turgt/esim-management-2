@@ -28,117 +28,44 @@
   </div>
 
   <% if (esim && esim.smdpAddress && esim.activationCode) { %>
-  <%
-    var lpaString = 'LPA:1$' + esim.smdpAddress + '$' + esim.activationCode;
-    var appleLink = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + encodeURIComponent(lpaString);
-    var androidLink = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + encodeURIComponent(lpaString);
-  %>
-  <!-- Direct Install (Same Device) -->
-  <div class="card" id="directInstallCard">
-    <div class="card-header">
-      <h3>Install on This Device</h3>
-      <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Recommended</span>
-    </div>
-    <div class="card-body">
-      <!-- Desktop -->
-      <div id="desktopInstallMsg" style="display:none">
-        <div class="alert alert-warning mb-0">
-          <i data-lucide="monitor" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
-          <div class="text-sm">
-            <p class="font-semibold">You're on a computer</p>
-            <p class="mt-0.5">Open this page on your iPhone (Safari) or Android to install directly, or scan the QR code above.</p>
-          </div>
-        </div>
-      </div>
-      <!-- iOS Safari -->
-      <div id="iosSafariInstall" style="display:none">
-        <p class="text-sm text-[var(--text-secondary)] mb-4">Tap below to install the eSIM directly — no QR scanning needed.</p>
-        <a href="<%= appleLink %>" class="btn btn-primary btn-lg btn-block">
-          <i data-lucide="smartphone" class="w-4 h-4"></i>
-          Install eSIM Now
-        </a>
-        <p class="text-xs text-[var(--text-tertiary)] mt-3">Requires iOS 17.4 or later.</p>
-      </div>
-      <!-- iOS non-Safari (Chrome, Firefox etc.) -->
-      <div id="iosNonSafariInstall" style="display:none">
-        <div class="alert alert-warning mb-4">
-          <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
-          <div class="text-sm">
-            <p class="font-semibold">Safari required</p>
-            <p class="mt-0.5">eSIM direct install only works in Safari on iPhone. Copy the link below and open it in Safari.</p>
-          </div>
-        </div>
-        <div class="bg-[var(--surface-1)] rounded-lg p-3 border border-[var(--border-subtle)] mb-3">
-          <div class="detail-label mb-1">Install Link</div>
-          <div class="flex items-center gap-1.5">
-            <span class="text-xs font-mono text-[var(--text-secondary)] break-all flex-1" id="iosLinkText"><%= appleLink %></span>
-            <button onclick="copyToClipboard(document.getElementById('iosLinkText').textContent.trim(), this)" class="copy-btn flex-shrink-0" title="Copy link">
-              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-            </button>
-          </div>
-        </div>
-        <p class="text-xs text-[var(--text-tertiary)]">Copy this link, open Safari, paste it in the address bar and go.</p>
-      </div>
-      <!-- Android -->
-      <div id="androidInstall" style="display:none">
-        <p class="text-sm text-[var(--text-secondary)] mb-4">Tap below to install the eSIM directly — no QR scanning needed.</p>
-        <a href="<%= androidLink %>" class="btn btn-primary btn-lg btn-block">
-          <i data-lucide="smartphone" class="w-4 h-4"></i>
-          Install eSIM Now
-        </a>
-        <p class="text-xs text-[var(--text-tertiary)] mt-3">Requires Google Play services 25.14 or later.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Manual Entry -->
+  <!-- Install on Same Device -->
   <div class="card">
     <div class="card-header">
-      <h3>Manual Entry</h3>
+      <h3>Install on This Phone</h3>
+      <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Same Device</span>
     </div>
-    <div class="card-body space-y-3">
-      <p class="text-sm text-[var(--text-secondary)]">You can also enter these details manually: Settings > Cellular > Add eSIM > Enter Details Manually.</p>
-      <div class="bg-[var(--surface-1)] rounded-lg p-3 border border-[var(--border-subtle)]">
-        <div class="detail-label mb-1">SM-DP+ Address</div>
-        <div class="flex items-center gap-1.5">
-          <span class="text-sm font-mono text-[var(--text-primary)] break-all"><%= esim.smdpAddress %></span>
-          <button onclick="copyToClipboard('<%= esim.smdpAddress %>', this)" class="copy-btn flex-shrink-0" title="Copy">
-            <i data-lucide="copy" class="w-3 h-3"></i>
+    <div class="card-body space-y-4">
+      <p class="text-sm text-[var(--text-secondary)]">Go to <strong>Settings → Cellular → Add eSIM → Use QR Code → Enter Details Manually</strong> and paste the info below.</p>
+
+      <div class="bg-[var(--surface-1)] rounded-lg p-3.5 border border-[var(--border-subtle)]">
+        <div class="flex items-center justify-between mb-1">
+          <span class="detail-label">SM-DP+ Address</span>
+          <button onclick="copyToClipboard('<%= esim.smdpAddress %>', this)" class="copy-btn" title="Copy">
+            <i data-lucide="copy" class="w-3 h-3"></i> <span class="text-[0.6875rem]">Copy</span>
           </button>
         </div>
+        <p class="text-sm font-mono text-[var(--text-primary)] break-all"><%= esim.smdpAddress %></p>
       </div>
-      <div class="bg-[var(--surface-1)] rounded-lg p-3 border border-[var(--border-subtle)]">
-        <div class="detail-label mb-1">Activation Code</div>
-        <div class="flex items-center gap-1.5">
-          <span class="text-sm font-mono text-[var(--text-primary)] break-all"><%= esim.activationCode %></span>
-          <button onclick="copyToClipboard('<%= esim.activationCode %>', this)" class="copy-btn flex-shrink-0" title="Copy">
-            <i data-lucide="copy" class="w-3 h-3"></i>
+
+      <div class="bg-[var(--surface-1)] rounded-lg p-3.5 border border-[var(--border-subtle)]">
+        <div class="flex items-center justify-between mb-1">
+          <span class="detail-label">Activation Code</span>
+          <button onclick="copyToClipboard('<%= esim.activationCode %>', this)" class="copy-btn" title="Copy">
+            <i data-lucide="copy" class="w-3 h-3"></i> <span class="text-[0.6875rem]">Copy</span>
           </button>
+        </div>
+        <p class="text-sm font-mono text-[var(--text-primary)] break-all"><%= esim.activationCode %></p>
+      </div>
+
+      <div class="alert alert-warning">
+        <i data-lucide="info" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+        <div class="text-sm">
+          <p><strong>iPhone:</strong> Settings → Cellular → Add eSIM → Use QR Code → Enter Details Manually</p>
+          <p class="mt-1"><strong>Android:</strong> Settings → Connections → SIM Manager → Add eSIM → Enter Activation Code</p>
         </div>
       </div>
     </div>
   </div>
-
-  <script>
-  (function() {
-    var ua = navigator.userAgent || '';
-    var isIOS = /iPhone|iPad|iPod/.test(ua);
-    var isAndroid = /Android/.test(ua);
-    // Safari on iOS: has Safari in UA but NOT CriOS (Chrome) / FxiOS (Firefox) / EdgiOS (Edge) / OPiOS (Opera)
-    var isSafari = isIOS && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA/.test(ua);
-
-    if (isIOS && isSafari) {
-      document.getElementById('iosSafariInstall').style.display = 'block';
-    } else if (isIOS) {
-      document.getElementById('iosNonSafariInstall').style.display = 'block';
-    } else if (isAndroid) {
-      document.getElementById('androidInstall').style.display = 'block';
-    } else {
-      document.getElementById('desktopInstallMsg').style.display = 'block';
-    }
-    lucide.createIcons();
-  })();
-  </script>
   <% } %>
 
   <!-- Installation Steps (QR) -->

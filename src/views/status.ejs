@@ -156,69 +156,32 @@
   <% } %>
 
   <% if (isQrReady && esim && esim.smdpAddress && esim.activationCode) { %>
-  <%
-    var lpaString = 'LPA:1$' + esim.smdpAddress + '$' + esim.activationCode;
-    var appleLink = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + encodeURIComponent(lpaString);
-    var androidLink = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + encodeURIComponent(lpaString);
-  %>
-  <!-- Direct Install -->
-  <div class="card" id="statusDirectInstall">
+  <!-- Install on Same Device -->
+  <div class="card">
     <div class="card-header">
-      <h3>Install on This Device</h3>
+      <h3>Install on This Phone</h3>
     </div>
     <div class="card-body">
-      <div id="statusDesktopMsg" style="display:none">
-        <div class="alert alert-warning mb-0">
-          <i data-lucide="monitor" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
-          <div class="text-sm">
-            <p class="font-semibold">You're on a computer</p>
-            <p class="mt-0.5">Open this page on your iPhone (Safari) or Android to install directly, or use the QR code.</p>
+      <p class="text-sm text-[var(--text-secondary)] mb-3">Copy the details below and enter them manually in your phone's eSIM settings.</p>
+      <div class="space-y-2.5 mb-3">
+        <div class="bg-[var(--surface-1)] rounded-lg p-3 border border-[var(--border-subtle)]">
+          <div class="flex items-center justify-between mb-1">
+            <span class="detail-label">SM-DP+ Address</span>
+            <button onclick="copyToClipboard('<%= esim.smdpAddress %>', this)" class="copy-btn"><i data-lucide="copy" class="w-3 h-3"></i> <span class="text-[0.6875rem]">Copy</span></button>
           </div>
+          <p class="text-sm font-mono text-[var(--text-primary)] break-all"><%= esim.smdpAddress %></p>
+        </div>
+        <div class="bg-[var(--surface-1)] rounded-lg p-3 border border-[var(--border-subtle)]">
+          <div class="flex items-center justify-between mb-1">
+            <span class="detail-label">Activation Code</span>
+            <button onclick="copyToClipboard('<%= esim.activationCode %>', this)" class="copy-btn"><i data-lucide="copy" class="w-3 h-3"></i> <span class="text-[0.6875rem]">Copy</span></button>
+          </div>
+          <p class="text-sm font-mono text-[var(--text-primary)] break-all"><%= esim.activationCode %></p>
         </div>
       </div>
-      <div id="statusIosSafari" style="display:none">
-        <p class="text-sm text-[var(--text-secondary)] mb-4">Tap to install the eSIM directly.</p>
-        <a href="<%= appleLink %>" class="btn btn-primary btn-lg btn-block">
-          <i data-lucide="smartphone" class="w-4 h-4"></i>
-          Install eSIM Now
-        </a>
-      </div>
-      <div id="statusIosNonSafari" style="display:none">
-        <div class="alert alert-warning mb-3">
-          <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
-          <div class="text-sm">
-            <p class="font-semibold">Safari required</p>
-            <p class="mt-0.5">eSIM direct install only works in Safari. Open the QR Code page in Safari to install.</p>
-          </div>
-        </div>
-      </div>
-      <div id="statusAndroid" style="display:none">
-        <p class="text-sm text-[var(--text-secondary)] mb-4">Tap to install the eSIM directly.</p>
-        <a href="<%= androidLink %>" class="btn btn-primary btn-lg btn-block">
-          <i data-lucide="smartphone" class="w-4 h-4"></i>
-          Install eSIM Now
-        </a>
-      </div>
+      <p class="text-xs text-[var(--text-tertiary)]"><strong>iPhone:</strong> Settings → Cellular → Add eSIM → Enter Details Manually</p>
     </div>
   </div>
-  <script>
-  (function() {
-    var ua = navigator.userAgent || '';
-    var isIOS = /iPhone|iPad|iPod/.test(ua);
-    var isAndroid = /Android/.test(ua);
-    var isSafari = isIOS && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA/.test(ua);
-    if (isIOS && isSafari) {
-      document.getElementById('statusIosSafari').style.display = 'block';
-    } else if (isIOS) {
-      document.getElementById('statusIosNonSafari').style.display = 'block';
-    } else if (isAndroid) {
-      document.getElementById('statusAndroid').style.display = 'block';
-    } else {
-      document.getElementById('statusDesktopMsg').style.display = 'block';
-    }
-    lucide.createIcons();
-  })();
-  </script>
   <% } %>
 
   <!-- Actions -->
