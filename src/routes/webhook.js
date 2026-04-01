@@ -1,5 +1,4 @@
 import express from 'express';
-import { Resend } from 'resend';
 import db from '../db/models/index.js';
 import logger from '../lib/logger.js';
 
@@ -19,19 +18,21 @@ router.post('/resend', express.json(), async (req, res) => {
 
     // === INBOUND: email.received ===
     if (type === 'email.received') {
-      // Fetch full email body from Resend API
+      // Fetch full email body from Resend Received Emails API
       let body = null;
       try {
         const apiKey = process.env.RESEND_API_KEY;
         if (apiKey && data.email_id) {
-          const resend = new Resend(apiKey);
-          const email = await resend.emails.get(data.email_id);
-          if (email.data) {
-            body = email.data.html || email.data.text || null;
+          const axios = (await import('axios')).default;
+          const resp = await axios.get(`https://api.resend.com/emails/received/${data.email_id}`, {
+            headers: { Authorization: `Bearer ${apiKey}` }
+          });
+          if (resp.data) {
+            body = resp.data.html || resp.data.text || null;
           }
         }
       } catch (e) {
-        log.warn({ err: e, emailId: data.email_id }, 'Could not fetch inbound email body');
+        log.warn({ err: e.message, emailId: data.email_id }, 'Could not fetch inbound email body');
       }
 
       await db.EmailLog.create({
