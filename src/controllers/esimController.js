@@ -277,6 +277,33 @@ export async function listUserPurchases(req, res) {
   }
 }
 
+// Debug: compare DB vs API eSIM data (admin only)
+export async function debugEsimData(req, res) {
+  try {
+    const txId = req.params.txId;
+    const esim = await db.Esim.findOne({ where: { transactionId: txId } });
+    if (!esim) return res.status(404).json({ error: 'eSIM not found' });
+
+    const apiData = await getPurchase(txId);
+    const confirmation = apiData.confirmation || {};
+
+    const dbLpa = `LPA:1$${esim.smdpAddress}$${esim.activationCode}`;
+    const apiLpa = `LPA:1$${confirmation.smdpAddress || ''}$${confirmation.activationCode || ''}`;
+
+    res.json({
+      db: { smdpAddress: esim.smdpAddress, activationCode: esim.activationCode, lpa: dbLpa },
+      api: { smdpAddress: confirmation.smdpAddress, activationCode: confirmation.activationCode, lpa: apiLpa, fullConfirmation: confirmation },
+      match: dbLpa === apiLpa,
+      deepLinks: {
+        apple: 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + apiLpa,
+        android: 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + apiLpa
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
 // Debug: show unique subTypes from offers (admin only)
 export async function debugOfferFields(req, res) {
   try {
