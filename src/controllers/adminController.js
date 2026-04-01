@@ -661,7 +661,10 @@ export async function showEmailDetail(req, res) {
               metadata: {
                 ...email.metadata,
                 htmlBody: resp.data.html || null,
-                textBody: resp.data.text || null
+                textBody: resp.data.text || null,
+                attachments: resp.data.attachments || email.metadata.attachments || [],
+                rawDownloadUrl: resp.data.raw?.download_url || null,
+                rawExpiresAt: resp.data.raw?.expires_at || null
               }
             };
             await email.update(updates);

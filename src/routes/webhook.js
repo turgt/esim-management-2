@@ -18,9 +18,8 @@ router.post('/resend', express.json(), async (req, res) => {
 
     // === INBOUND: email.received ===
     if (type === 'email.received') {
-      // Fetch full email body from Resend Received Emails API
-      let htmlBody = null;
-      let textBody = null;
+      // Fetch full email content from Resend Received Emails API
+      let emailContent = { htmlBody: null, textBody: null, attachments: [], rawDownloadUrl: null };
       try {
         const apiKey = process.env.RESEND_API_KEY;
         if (apiKey && data.email_id) {
@@ -29,8 +28,13 @@ router.post('/resend', express.json(), async (req, res) => {
             headers: { Authorization: `Bearer ${apiKey}` }
           });
           if (resp.data) {
-            htmlBody = resp.data.html || null;
-            textBody = resp.data.text || null;
+            emailContent.htmlBody = resp.data.html || null;
+            emailContent.textBody = resp.data.text || null;
+            emailContent.attachments = resp.data.attachments || [];
+            if (resp.data.raw) {
+              emailContent.rawDownloadUrl = resp.data.raw.download_url || null;
+              emailContent.rawExpiresAt = resp.data.raw.expires_at || null;
+            }
           }
         }
       } catch (e) {
@@ -48,9 +52,7 @@ router.post('/resend', express.json(), async (req, res) => {
           cc: data.cc || [],
           bcc: data.bcc || [],
           messageId: data.message_id,
-          attachments: data.attachments || [],
-          htmlBody,
-          textBody
+          ...emailContent
         }
       });
 
