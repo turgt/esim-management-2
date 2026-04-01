@@ -911,6 +911,28 @@ html {
 .password-strength.str-3 .bar:nth-child(-n+3) { background: #22c55e; }
 .password-strength.str-4 .bar { background: #10b981; }
 
+/* ===== OFFER FILTERS ===== */
+.filter-chip {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-default);
+  background: var(--surface-0);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover {
+  border-color: var(--brand-primary);
+  color: var(--text-primary);
+}
+.filter-chip.active {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: #fff;
+}
+
 /* ===== OFFER CARD ===== */
 .offer-card {
   background: var(--surface-0);
