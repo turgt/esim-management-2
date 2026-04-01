@@ -94,17 +94,46 @@
   </div>
 
   <!-- Email Body (inbound) -->
-  <% if (email.metadata && email.metadata.body) { %>
+  <% if (email.metadata && (email.metadata.htmlBody || email.metadata.textBody || email.metadata.body)) { %>
   <div class="card">
     <div class="card-header">
       <h3>Email Body</h3>
+      <% if (email.metadata.htmlBody && email.metadata.textBody) { %>
+      <div class="flex gap-1">
+        <button onclick="showBodyTab('html')" id="tabHtml" class="text-xs font-medium px-2 py-1 rounded bg-[var(--brand-primary)] text-white">HTML</button>
+        <button onclick="showBodyTab('text')" id="tabText" class="text-xs font-medium px-2 py-1 rounded bg-[var(--surface-2)] text-[var(--text-secondary)]">Text</button>
+      </div>
+      <% } %>
     </div>
     <div class="card-body">
+      <% if (email.metadata.htmlBody) { %>
+      <div id="bodyHtml" class="bg-white dark:bg-slate-900 rounded-lg p-4 border border-[var(--border-subtle)] text-sm overflow-auto max-h-[500px]">
+        <%- email.metadata.htmlBody %>
+      </div>
+      <% } %>
+      <% if (email.metadata.textBody) { %>
+      <div id="bodyText" class="bg-[var(--surface-1)] rounded-lg p-4 border border-[var(--border-subtle)] text-sm overflow-auto max-h-[500px] whitespace-pre-wrap font-mono" <%= email.metadata.htmlBody ? 'style="display:none"' : '' %>>
+        <%= email.metadata.textBody %>
+      </div>
+      <% } %>
+      <%/* Legacy: old body field */ %>
+      <% if (!email.metadata.htmlBody && !email.metadata.textBody && email.metadata.body) { %>
       <div class="bg-white dark:bg-slate-900 rounded-lg p-4 border border-[var(--border-subtle)] text-sm overflow-auto max-h-[500px]">
         <%- email.metadata.body %>
       </div>
+      <% } %>
     </div>
   </div>
+  <% if (email.metadata.htmlBody && email.metadata.textBody) { %>
+  <script>
+  function showBodyTab(tab) {
+    document.getElementById('bodyHtml').style.display = tab === 'html' ? '' : 'none';
+    document.getElementById('bodyText').style.display = tab === 'text' ? '' : 'none';
+    document.getElementById('tabHtml').className = 'text-xs font-medium px-2 py-1 rounded ' + (tab === 'html' ? 'bg-[var(--brand-primary)] text-white' : 'bg-[var(--surface-2)] text-[var(--text-secondary)]');
+    document.getElementById('tabText').className = 'text-xs font-medium px-2 py-1 rounded ' + (tab === 'text' ? 'bg-[var(--brand-primary)] text-white' : 'bg-[var(--surface-2)] text-[var(--text-secondary)]');
+  }
+  </script>
+  <% } %>
   <% } %>
 
   <!-- Attachments (inbound) -->
