@@ -152,6 +152,15 @@
         <p class="text-xs text-[var(--text-secondary)]">Copy and enter in your phone's eSIM settings</p>
       </div>
     </div>
+    <!-- One-tap button (mobile only) -->
+    <div id="modalDirectBtns" style="display:none" class="mb-4">
+      <a href="#" id="modalDirectLink" class="btn btn-primary btn-lg btn-block">
+        <i data-lucide="smartphone" class="w-4 h-4"></i> Install eSIM Now
+      </a>
+      <p class="text-xs text-[var(--text-tertiary)] mt-2 mb-3">If the button doesn't work, use manual entry below.</p>
+      <div class="border-t border-[var(--border-subtle)] pt-3"></div>
+    </div>
+    <!-- Manual entry -->
     <div class="space-y-2.5 mb-4">
       <div class="bg-[var(--surface-1)] rounded-lg p-3 border border-[var(--border-subtle)]">
         <div class="flex items-center justify-between mb-1">
@@ -179,6 +188,22 @@ function showInstallModal(smdpAddress, activationCode) {
   document.getElementById('modalCode').textContent = activationCode;
   document.getElementById('copySmdp').onclick = function() { copyToClipboard(smdpAddress, this); };
   document.getElementById('copyCode').onclick = function() { copyToClipboard(activationCode, this); };
+
+  var ua = navigator.userAgent || '';
+  var isIOS = /iPhone|iPad|iPod/.test(ua);
+  var isAndroid = /Android/.test(ua);
+  var lpa = 'LPA:1$' + smdpAddress + '$' + activationCode;
+  var encoded = encodeURIComponent(lpa);
+  if (isIOS) {
+    document.getElementById('modalDirectLink').href = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + encoded;
+    document.getElementById('modalDirectBtns').style.display = 'block';
+  } else if (isAndroid) {
+    document.getElementById('modalDirectLink').href = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + encoded;
+    document.getElementById('modalDirectBtns').style.display = 'block';
+  } else {
+    document.getElementById('modalDirectBtns').style.display = 'none';
+  }
+
   var modal = document.getElementById('installModal');
   modal.classList.remove('hidden');
   modal.style.display = 'flex';

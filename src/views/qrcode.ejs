@@ -28,14 +28,55 @@
   </div>
 
   <% if (esim && esim.smdpAddress && esim.activationCode) { %>
-  <!-- Install on Same Device -->
+  <%
+    var lpaString = 'LPA:1$' + esim.smdpAddress + '$' + esim.activationCode;
+    var appleLink = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + encodeURIComponent(lpaString);
+    var androidLink = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + encodeURIComponent(lpaString);
+  %>
+  <!-- One-Tap Install (iOS 17.4+ / Android 10+) -->
+  <div class="card" id="directInstallCard" style="display:none">
+    <div class="card-header">
+      <h3>One-Tap Install</h3>
+      <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Easiest</span>
+    </div>
+    <div class="card-body">
+      <p class="text-sm text-[var(--text-secondary)] mb-4">Tap the button below to install the eSIM directly on this phone.</p>
+      <a href="<%= appleLink %>" id="iosDirectBtn" class="btn btn-primary btn-lg btn-block mb-2" style="display:none">
+        <i data-lucide="smartphone" class="w-4 h-4"></i>
+        Install eSIM Now
+      </a>
+      <a href="<%= androidLink %>" id="androidDirectBtn" class="btn btn-primary btn-lg btn-block mb-2" style="display:none">
+        <i data-lucide="smartphone" class="w-4 h-4"></i>
+        Install eSIM Now
+      </a>
+      <p class="text-xs text-[var(--text-tertiary)]" id="directNote"></p>
+    </div>
+  </div>
+  <script>
+  (function() {
+    var ua = navigator.userAgent || '';
+    var isIOS = /iPhone|iPad|iPod/.test(ua);
+    var isAndroid = /Android/.test(ua);
+    if (isIOS) {
+      document.getElementById('directInstallCard').style.display = 'block';
+      document.getElementById('iosDirectBtn').style.display = 'flex';
+      document.getElementById('directNote').textContent = 'Requires iOS 17.4+ and Safari. If it doesn\'t work, use manual entry below.';
+    } else if (isAndroid) {
+      document.getElementById('directInstallCard').style.display = 'block';
+      document.getElementById('androidDirectBtn').style.display = 'flex';
+      document.getElementById('directNote').textContent = 'Requires Android 10+ with Google Play services. If it doesn\'t work, use manual entry below.';
+    }
+    lucide.createIcons();
+  })();
+  </script>
+
+  <!-- Manual Entry (Always works) -->
   <div class="card">
     <div class="card-header">
-      <h3>Install on This Phone</h3>
-      <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Same Device</span>
+      <h3>Manual Install</h3>
     </div>
     <div class="card-body space-y-4">
-      <p class="text-sm text-[var(--text-secondary)]">Go to <strong>Settings → Cellular → Add eSIM → Use QR Code → Enter Details Manually</strong> and paste the info below.</p>
+      <p class="text-sm text-[var(--text-secondary)]">Copy the details below and enter them in your phone's eSIM settings.</p>
 
       <div class="bg-[var(--surface-1)] rounded-lg p-3.5 border border-[var(--border-subtle)]">
         <div class="flex items-center justify-between mb-1">
