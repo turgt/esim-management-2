@@ -23,7 +23,7 @@
     <% } else if (status.status === 'PENDING' || status.status === 'pending') { %>
     <div class="status-banner status-banner-pending">
       <div class="status-icon">
-        <i data-lucide="loader" class="w-5 h-5 animate-spin"></i>
+        <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
       </div>
       <div>
         <p class="text-sm font-bold text-amber-700 dark:text-amber-400">Processing</p>
@@ -43,7 +43,7 @@
     <% } else { %>
     <div class="status-banner status-banner-progress">
       <div class="status-icon">
-        <i data-lucide="loader" class="w-5 h-5 animate-spin"></i>
+        <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
       </div>
       <div>
         <p class="text-sm font-bold text-indigo-700 dark:text-indigo-400"><%= status.status %></p>
@@ -108,9 +108,9 @@
       <span class="badge badge-neutral"><%= status.log.length %></span>
     </div>
     <div class="card-body">
-      <div class="relative">
+      <div class="relative" role="list" aria-label="Activity timeline">
         <% status.log.forEach(function(entry, index) { %>
-        <div class="flex gap-3.5 <%= index < status.log.length - 1 ? 'pb-5' : '' %>">
+        <div class="flex gap-3.5 <%= index < status.log.length - 1 ? 'pb-5' : '' %>" role="listitem">
           <div class="flex flex-col items-center">
             <%
               var isDone = ['DONE','ACCEPTED','completed'].includes(entry.status);
@@ -273,6 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 30000);
   }
 });
+window.addEventListener('beforeunload', stopAutoRefresh);
 </script>
 
 <%- include('partials/footer') %>

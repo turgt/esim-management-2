@@ -107,7 +107,7 @@
           Details
         </a>
         <% if (purchase.status === 'completed' && purchase.smdpAddress && purchase.activationCode) { %>
-        <button type="button" onclick="showInstallModal('<%= purchase.smdpAddress %>', '<%= purchase.activationCode %>')" class="btn btn-primary btn-sm flex-1">
+        <button type="button" data-smdp="<%= purchase.smdpAddress %>" data-code="<%= purchase.activationCode %>" onclick="showInstallModal(this.dataset.smdp, this.dataset.code)" class="btn btn-primary btn-sm flex-1">
           <i data-lucide="download" class="w-3.5 h-3.5"></i>
           Install
         </button>

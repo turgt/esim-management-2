@@ -1,6 +1,6 @@
 <%- include('partials/header', {title: 'Login', user: null}) %>
 
-    <div class="card p-7">
+    <div class="card p-5 sm:p-7">
       <div class="text-center mb-6">
         <h1 class="text-xl font-bold text-[var(--text-primary)]">Welcome back</h1>
         <p class="text-sm text-[var(--text-secondary)] mt-1.5">Sign in to manage your Datas</p>
@@ -45,9 +45,12 @@
             <label for="password" class="input-label mb-0">Password</label>
             <a href="/auth/forgot-password" class="text-xs font-medium text-[var(--brand-primary)] hover:underline">Forgot password?</a>
           </div>
-          <div class="input-icon-wrapper">
+          <div class="input-icon-wrapper relative">
             <i data-lucide="lock" class="input-icon w-4 h-4"></i>
-            <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Enter your password" class="input">
+            <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Enter your password" class="input !pr-10">
+            <button type="button" onclick="togglePw()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]" aria-label="Toggle password visibility">
+              <i data-lucide="eye" class="w-4 h-4" id="pwEyeIcon"></i>
+            </button>
           </div>
         </div>
         <button type="submit" class="btn btn-primary btn-block btn-lg">Sign In</button>
@@ -57,5 +60,15 @@
     <p class="mt-5 text-center text-sm text-[var(--text-tertiary)]">
       Don't have an account? <a href="/auth/register" class="font-semibold text-[var(--brand-primary)] hover:underline">Create account</a>
     </p>
+
+<script>
+function togglePw() {
+  var input = document.getElementById('password');
+  var icon = document.getElementById('pwEyeIcon');
+  if (input.type === 'password') { input.type = 'text'; icon.setAttribute('data-lucide', 'eye-off'); }
+  else { input.type = 'password'; icon.setAttribute('data-lucide', 'eye'); }
+  lucide.createIcons();
+}
+</script>
 
 <%- include('partials/footer') %>

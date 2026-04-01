@@ -77,10 +77,23 @@
 }
 
 /* ===== BASE ===== */
-* {
+a, button, .btn, .input, select, .sidebar-link, .offer-card, .badge, .copy-btn, .filter-chip {
   transition-property: background-color, border-color, color, box-shadow, opacity;
   transition-duration: 150ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 .no-transition,
@@ -1303,9 +1316,15 @@ html {
 
 /* ===== PREFERS REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
+  .offer-card:hover { transform: none; }
+  .btn:active { transform: none; }
+  @keyframes fadeIn { from, to { opacity: 1; transform: none; } }
+  @keyframes slideInRight { from, to { opacity: 1; transform: none; } }
+  @keyframes scaleIn { from, to { transform: none; } }
 }

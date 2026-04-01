@@ -25,7 +25,8 @@
   <!-- Sort -->
   <div class="flex items-center gap-2">
     <span class="text-xs text-[var(--text-tertiary)]">Sort:</span>
-    <select id="sortSelect" onchange="sortOffers(this.value)" class="input text-sm !py-1.5 !px-3 !w-auto !min-w-0">
+    <label for="sortSelect" class="sr-only">Sort plans</label>
+    <select id="sortSelect" onchange="sortOffers(this.value)" class="input text-sm !py-2 !px-3 !w-auto !min-w-0">
       <option value="price-asc">Price: Low → High</option>
       <option value="price-desc">Price: High → Low</option>
       <option value="data-desc">Data: Most First</option>
@@ -74,6 +75,7 @@
     var subTypesStr = JSON.stringify(subTypes);
   %>
   <button type="button" class="offer-card"
+    aria-label="<%= offer.dataUnlimited ? 'Unlimited' : (dataLabel ? dataLabel + ' GB' : 'Data') %> plan, <%= durationLabel || '' %>, $<%= price || '0' %>"
     data-price="<%= priceNum %>"
     data-data="<%= dataNum %>"
     data-duration="<%= durationNum %>"

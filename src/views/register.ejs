@@ -1,6 +1,6 @@
 <%- include('partials/header', {title: 'Register', user: null}) %>
 
-    <div class="card p-7">
+    <div class="card p-5 sm:p-7">
       <div class="text-center mb-6">
         <h1 class="text-xl font-bold text-[var(--text-primary)]">Create account</h1>
         <p class="text-sm text-[var(--text-secondary)] mt-1.5">Get started with DataPatch</p>
@@ -24,25 +24,28 @@
           <label for="reg-username" class="input-label">Username</label>
           <div class="input-icon-wrapper">
             <i data-lucide="at-sign" class="input-icon w-4 h-4"></i>
-            <input type="text" id="reg-username" name="username" required minlength="3" maxlength="30" placeholder="Choose a username" class="input">
+            <input type="text" id="reg-username" name="username" required minlength="3" maxlength="30" placeholder="Choose a username" autocomplete="username" class="input">
           </div>
         </div>
         <div>
           <label for="reg-email" class="input-label">Email</label>
           <div class="input-icon-wrapper">
             <i data-lucide="mail" class="input-icon w-4 h-4"></i>
-            <input type="email" id="reg-email" name="email" required placeholder="your@email.com" class="input">
+            <input type="email" id="reg-email" name="email" required placeholder="your@email.com" autocomplete="email" class="input">
           </div>
         </div>
         <div>
           <label for="reg-display" class="input-label">Display Name <span class="text-[var(--text-tertiary)] font-normal">(optional)</span></label>
-          <input type="text" id="reg-display" name="displayName" maxlength="50" placeholder="How should we call you?" class="input">
+          <input type="text" id="reg-display" name="displayName" maxlength="50" placeholder="How should we call you?" autocomplete="name" class="input">
         </div>
         <div>
           <label for="regPassword" class="input-label">Password</label>
-          <div class="input-icon-wrapper">
+          <div class="input-icon-wrapper relative">
             <i data-lucide="lock" class="input-icon w-4 h-4"></i>
-            <input type="password" name="password" id="regPassword" required minlength="8" placeholder="Min 8 characters" class="input" oninput="checkPasswordStrength(this.value)">
+            <input type="password" name="password" id="regPassword" required minlength="8" placeholder="Min 8 characters" autocomplete="new-password" class="input !pr-10" oninput="checkPasswordStrength(this.value)">
+            <button type="button" onclick="togglePwVisibility('regPassword', this)" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]" aria-label="Toggle password visibility">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
           </div>
           <div class="password-strength" id="pwStrength">
             <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
@@ -75,6 +78,18 @@ function checkPasswordStrength(pw) {
   } else {
     label.style.display = 'none';
   }
+}
+function togglePwVisibility(inputId, btn) {
+  var input = document.getElementById(inputId);
+  var icon = btn.querySelector('[data-lucide]');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.setAttribute('data-lucide', 'eye-off');
+  } else {
+    input.type = 'password';
+    icon.setAttribute('data-lucide', 'eye');
+  }
+  lucide.createIcons();
 }
 </script>
 

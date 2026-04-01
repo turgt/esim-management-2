@@ -63,7 +63,8 @@
       <i data-lucide="search" class="input-icon w-4 h-4"></i>
       <input type="text" name="search" value="<%= search %>" placeholder="Search by email or subject..." class="input">
     </div>
-    <select name="type" class="input !w-auto">
+    <label for="emailTypeFilter" class="sr-only">Email Type</label>
+    <select name="type" id="emailTypeFilter" class="input !w-auto">
       <option value="">All Types</option>
       <option value="inbound" <%= typeFilter === 'inbound' ? 'selected' : '' %>>Inbound</option>
       <option value="verification" <%= typeFilter === 'verification' ? 'selected' : '' %>>Verification</option>
@@ -74,7 +75,8 @@
       <option value="esim_assigned" <%= typeFilter === 'esim_assigned' ? 'selected' : '' %>>eSIM Assigned</option>
       <option value="esim_activation_failed" <%= typeFilter === 'esim_activation_failed' ? 'selected' : '' %>>Activation Failed</option>
     </select>
-    <select name="status" class="input !w-auto">
+    <label for="emailStatusFilter" class="sr-only">Email Status</label>
+    <select name="status" id="emailStatusFilter" class="input !w-auto">
       <option value="">All Status</option>
       <option value="received" <%= statusFilter === 'received' ? 'selected' : '' %>>Received</option>
       <option value="sent" <%= statusFilter === 'sent' ? 'selected' : '' %>>Sent</option>
@@ -112,9 +114,9 @@
         <tr>
           <td>
             <% if (e.type === 'inbound') { %>
-            <span class="badge badge-info"><i data-lucide="inbox" class="w-3 h-3 inline -mt-0.5"></i> In</span>
+            <span class="badge badge-info inline-flex items-center gap-1"><i data-lucide="inbox" class="w-3 h-3"></i>In</span>
             <% } else { %>
-            <span class="badge badge-neutral"><i data-lucide="send" class="w-3 h-3 inline -mt-0.5"></i> Out</span>
+            <span class="badge badge-neutral inline-flex items-center gap-1"><i data-lucide="send" class="w-3 h-3"></i>Out</span>
             <% } %>
           </td>
           <td>
