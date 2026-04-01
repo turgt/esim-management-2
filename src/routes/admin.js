@@ -4,7 +4,8 @@ import {
   showDashboard, listUsers, createUser, editUser,
   showAssignEsim, assignEsim, showTopup, topupEsim,
   showAllEsims, showEsimDetail,
-  listPayments, retryEsimPurchase, resolvePayment
+  listPayments, retryEsimPurchase, resolvePayment,
+  listEmails, showEmailDetail
 } from '../controllers/adminController.js';
 import {
   listVendors, showCreateVendor, createVendor,
@@ -49,5 +50,9 @@ router.get('/vendors/:id/edit', ensureAuth, ensureAdmin, showEditVendor);
 router.post('/vendors/:id/edit', ensureAuth, ensureAdmin, updateVendor);
 router.post('/vendors/:id/delete', ensureAuth, ensureAdmin, deleteVendor);
 router.get('/vendors/:id/qr', ensureAuth, ensureAdmin, downloadQrCode);
+
+// Email Management
+router.get('/emails', ensureAuth, ensureAdmin, listEmails);
+router.get('/emails/:id', ensureAuth, ensureAdmin, showEmailDetail);
 
 export default router;

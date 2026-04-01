@@ -586,3 +586,70 @@ export async function showEsimDetail(req, res) {
     res.render('error', { message: 'Failed to load eSIM detail' });
   }
 }
+
+// List emails (admin)
+export async function listEmails(req, res) {
+  try {
+    const { page, limit, offset } = getPaginationParams(req);
+    const { Op } = db.Sequelize;
+    const search = req.query.search || '';
+    const typeFilter = req.query.type || '';
+    const statusFilter = req.query.status || '';
+    const where = {};
+
+    if (search) {
+      where[Op.or] = [
+        { to: { [Op.iLike]: `%${search}%` } },
+        { subject: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+    if (typeFilter) where.type = typeFilter;
+    if (statusFilter) where.status = statusFilter;
+
+    const { count, rows: emails } = await db.EmailLog.findAndCountAll({
+      where,
+      include: [{ model: db.User, as: 'user', attributes: ['id', 'username', 'displayName'] }],
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
+      distinct: true
+    });
+
+    const pagination = buildPagination(page, limit, count, req.query);
+
+    // Stats
+    const totalAll = await db.EmailLog.count();
+    const totalInbound = await db.EmailLog.count({ where: { type: 'inbound' } });
+    const totalSent = await db.EmailLog.count({ where: { status: 'sent' } });
+    const totalDelivered = await db.EmailLog.count({ where: { status: 'delivered' } });
+    const totalBounced = await db.EmailLog.count({ where: { status: 'bounced' } });
+
+    res.render('admin/emails', {
+      title: 'Emails',
+      emails,
+      pagination,
+      search,
+      typeFilter,
+      statusFilter,
+      stats: { totalAll, totalInbound, totalSent, totalDelivered, totalBounced }
+    });
+  } catch (err) {
+    log.error({ err }, 'listEmails error');
+    res.render('error', { message: 'Failed to load emails' });
+  }
+}
+
+// Show single email detail
+export async function showEmailDetail(req, res) {
+  try {
+    const email = await db.EmailLog.findByPk(req.params.id, {
+      include: [{ model: db.User, as: 'user', attributes: ['id', 'username', 'displayName', 'email'] }]
+    });
+    if (!email) return res.render('error', { message: 'Email not found' });
+
+    res.render('admin/email-detail', { title: 'Email Detail', email });
+  } catch (err) {
+    log.error({ err }, 'showEmailDetail error');
+    res.render('error', { message: 'Failed to load email detail' });
+  }
+}

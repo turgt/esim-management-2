@@ -23,6 +23,7 @@ import esimRoutes from './routes/esim.js';
 import profileRoutes from './routes/profile.js';
 import paymentRoutes from './routes/payment.js';
 import legalRoutes from './routes/legal.js';
+import webhookRoutes from './routes/webhook.js';
 import { cookieParser, doubleCsrfProtection, csrfTokenMiddleware, csrfErrorHandler } from './middleware/csrf.js';
 import { verifyPaddleWebhook, processPaddleWebhook } from './services/paymentService.js';
 
@@ -173,6 +174,9 @@ app.post('/payment/webhook', async (req, res) => {
     res.status(500).json({ error: 'Internal error' });
   }
 });
+
+// Webhook routes (before CSRF - external calls don't have CSRF tokens)
+app.use('/webhooks', webhookRoutes);
 
 // CSRF protection (after session, before routes)
 app.use(doubleCsrfProtection);

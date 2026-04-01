@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import db from '../db/models/index.js';
 import logger from '../lib/logger.js';
 
 const log = logger.child({ module: 'email' });
@@ -18,13 +19,16 @@ function getResendClient() {
   return resendClient;
 }
 
-async function sendMail(to, subject, html) {
+async function sendMail(to, subject, html, { type = 'general', userId = null } = {}) {
   const client = getResendClient();
   const from = process.env.SMTP_FROM || 'DataPatch <noreply@datapatch.net>';
 
   if (!client) {
     log.info({ to, subject }, 'Email logged (no Resend API key)');
     log.debug({ html }, 'Email body');
+    try {
+      await db.EmailLog.create({ to, subject, type, userId, status: 'logged' });
+    } catch (e) { /* ignore log errors */ }
     return { logged: true };
   }
 
@@ -33,13 +37,22 @@ async function sendMail(to, subject, html) {
 
     if (error) {
       log.error({ err: error, to, subject }, 'Resend API error');
+      try {
+        await db.EmailLog.create({ to, subject, type, userId, status: 'failed', metadata: { error: error.message } });
+      } catch (e) { /* ignore */ }
       return { error: error.message, logged: true };
     }
 
     log.info({ to, messageId: data.id }, 'Email sent via Resend');
+    try {
+      await db.EmailLog.create({ to, subject, type, userId, resendId: data.id, status: 'sent' });
+    } catch (e) { /* ignore */ }
     return data;
   } catch (error) {
     log.error({ err: error, to, subject }, 'Email send failed');
+    try {
+      await db.EmailLog.create({ to, subject, type, userId, status: 'failed', metadata: { error: error.message } });
+    } catch (e) { /* ignore */ }
     return { error: error.message, logged: true };
   }
 }
@@ -62,7 +75,7 @@ export async function sendVerificationEmail(user, token) {
       <p style="color: #94a3b8; font-size: 14px;">This link expires in 24 hours.</p>
     </div>
   `;
-  return sendMail(user.email, 'Verify your email - DataPatch', html);
+  return sendMail(user.email, 'Verify your email - DataPatch', html, { type: 'verification', userId: user.id });
 }
 
 export async function sendPasswordResetEmail(user, token) {
@@ -81,7 +94,7 @@ export async function sendPasswordResetEmail(user, token) {
       <p style="color: #94a3b8; font-size: 14px;">This link expires in 1 hour. If you didn't request this, ignore this email.</p>
     </div>
   `;
-  return sendMail(user.email, 'Password Reset - DataPatch', html);
+  return sendMail(user.email, 'Password Reset - DataPatch', html, { type: 'password_reset', userId: user.id });
 }
 
 export async function sendWelcomeEmail(user) {
@@ -97,7 +110,7 @@ export async function sendWelcomeEmail(user) {
       </div>
     </div>
   `;
-  return sendMail(user.email, 'Welcome to DataPatch!', html);
+  return sendMail(user.email, 'Welcome to DataPatch!', html, { type: 'welcome', userId: user.id });
 }
 
 export async function sendEsimAssignedEmail(user, esim) {
@@ -118,7 +131,7 @@ export async function sendEsimAssignedEmail(user, esim) {
       </div>
     </div>
   `;
-  return sendMail(user.email, 'eSIM Assigned - DataPatch', html);
+  return sendMail(user.email, 'eSIM Assigned - DataPatch', html, { type: 'esim_assigned', userId: user.id });
 }
 
 export async function sendPaymentSuccessEmail(user, payment, esim) {
@@ -140,7 +153,7 @@ export async function sendPaymentSuccessEmail(user, payment, esim) {
       </div>
     </div>
   `;
-  return sendMail(user.email, 'Payment Successful - DataPatch', html);
+  return sendMail(user.email, 'Payment Successful - DataPatch', html, { type: 'payment_success', userId: user.id });
 }
 
 export async function sendPaymentFailedEmail(user, payment) {
@@ -161,7 +174,7 @@ export async function sendPaymentFailedEmail(user, payment) {
       </div>
     </div>
   `;
-  return sendMail(user.email, 'Payment Failed - DataPatch', html);
+  return sendMail(user.email, 'Payment Failed - DataPatch', html, { type: 'payment_failed', userId: user.id });
 }
 
 export async function sendEsimActivationFailedEmail(user, payment) {
@@ -178,7 +191,7 @@ export async function sendEsimActivationFailedEmail(user, payment) {
       <p style="color: #475569;">You do not need to take any action. We will contact you once the issue is resolved.</p>
     </div>
   `;
-  await sendMail(user.email, 'eSIM Activation Issue - DataPatch', html);
+  await sendMail(user.email, 'eSIM Activation Issue - DataPatch', html, { type: 'esim_activation_failed', userId: user.id });
 
   // Also notify admin
   const adminEmail = process.env.ADMIN_EMAIL;
@@ -200,7 +213,7 @@ export async function sendEsimActivationFailedEmail(user, payment) {
         </div>
       </div>
     `;
-    await sendMail(adminEmail, 'ALERT: eSIM Purchase Failed After Payment', adminHtml);
+    await sendMail(adminEmail, 'ALERT: eSIM Purchase Failed After Payment', adminHtml, { type: 'admin_alert' });
   }
 }
 
