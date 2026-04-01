@@ -40,30 +40,53 @@
       <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Recommended</span>
     </div>
     <div class="card-body">
-      <!-- Desktop message (hidden on mobile) -->
+      <!-- Desktop -->
       <div id="desktopInstallMsg" style="display:none">
         <div class="alert alert-warning mb-0">
           <i data-lucide="monitor" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
           <div class="text-sm">
             <p class="font-semibold">You're on a computer</p>
-            <p class="mt-0.5">Direct install only works on mobile phones. Open this page on your iPhone or Android to install, or scan the QR code above with another device.</p>
+            <p class="mt-0.5">Open this page on your iPhone (Safari) or Android to install directly, or scan the QR code above.</p>
           </div>
         </div>
       </div>
-      <!-- Mobile buttons (shown by JS on mobile) -->
-      <div id="mobileInstallBtns" style="display:none">
+      <!-- iOS Safari -->
+      <div id="iosSafariInstall" style="display:none">
         <p class="text-sm text-[var(--text-secondary)] mb-4">Tap below to install the eSIM directly — no QR scanning needed.</p>
-        <div class="flex flex-col gap-3">
-          <a href="<%= appleLink %>" id="iosInstallBtn" class="btn btn-primary btn-lg" style="display:none">
-            <i data-lucide="smartphone" class="w-4 h-4"></i>
-            Install on iPhone
-          </a>
-          <a href="<%= androidLink %>" id="androidInstallBtn" class="btn btn-primary btn-lg" style="display:none">
-            <i data-lucide="smartphone" class="w-4 h-4"></i>
-            Install on Android
-          </a>
+        <a href="<%= appleLink %>" class="btn btn-primary btn-lg btn-block">
+          <i data-lucide="smartphone" class="w-4 h-4"></i>
+          Install eSIM Now
+        </a>
+        <p class="text-xs text-[var(--text-tertiary)] mt-3">Requires iOS 17.4 or later.</p>
+      </div>
+      <!-- iOS non-Safari (Chrome, Firefox etc.) -->
+      <div id="iosNonSafariInstall" style="display:none">
+        <div class="alert alert-warning mb-4">
+          <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+          <div class="text-sm">
+            <p class="font-semibold">Safari required</p>
+            <p class="mt-0.5">eSIM direct install only works in Safari on iPhone. Copy the link below and open it in Safari.</p>
+          </div>
         </div>
-        <p class="text-xs text-[var(--text-tertiary)] mt-3">iPhone requires iOS 17.4+. Android requires Google Play services 25.14+.</p>
+        <div class="bg-[var(--surface-1)] rounded-lg p-3 border border-[var(--border-subtle)] mb-3">
+          <div class="detail-label mb-1">Install Link</div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-mono text-[var(--text-secondary)] break-all flex-1" id="iosLinkText"><%= appleLink %></span>
+            <button onclick="copyToClipboard(document.getElementById('iosLinkText').textContent.trim(), this)" class="copy-btn flex-shrink-0" title="Copy link">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+        <p class="text-xs text-[var(--text-tertiary)]">Copy this link, open Safari, paste it in the address bar and go.</p>
+      </div>
+      <!-- Android -->
+      <div id="androidInstall" style="display:none">
+        <p class="text-sm text-[var(--text-secondary)] mb-4">Tap below to install the eSIM directly — no QR scanning needed.</p>
+        <a href="<%= androidLink %>" class="btn btn-primary btn-lg btn-block">
+          <i data-lucide="smartphone" class="w-4 h-4"></i>
+          Install eSIM Now
+        </a>
+        <p class="text-xs text-[var(--text-tertiary)] mt-3">Requires Google Play services 25.14 or later.</p>
       </div>
     </div>
   </div>
@@ -74,7 +97,7 @@
       <h3>Manual Entry</h3>
     </div>
     <div class="card-body space-y-3">
-      <p class="text-sm text-[var(--text-secondary)]">You can also enter these details manually in Settings > Cellular > Add eSIM > Enter Details Manually.</p>
+      <p class="text-sm text-[var(--text-secondary)]">You can also enter these details manually: Settings > Cellular > Add eSIM > Enter Details Manually.</p>
       <div class="bg-[var(--surface-1)] rounded-lg p-3 border border-[var(--border-subtle)]">
         <div class="detail-label mb-1">SM-DP+ Address</div>
         <div class="flex items-center gap-1.5">
@@ -101,19 +124,19 @@
     var ua = navigator.userAgent || '';
     var isIOS = /iPhone|iPad|iPod/.test(ua);
     var isAndroid = /Android/.test(ua);
-    var isMobile = isIOS || isAndroid;
-    if (isMobile) {
-      document.getElementById('mobileInstallBtns').style.display = 'block';
-      if (isIOS) document.getElementById('iosInstallBtn').style.display = 'flex';
-      if (isAndroid) document.getElementById('androidInstallBtn').style.display = 'flex';
-      // Show both if can't determine
-      if (!isIOS && !isAndroid) {
-        document.getElementById('iosInstallBtn').style.display = 'flex';
-        document.getElementById('androidInstallBtn').style.display = 'flex';
-      }
+    // Safari on iOS: has Safari in UA but NOT CriOS (Chrome) / FxiOS (Firefox) / EdgiOS (Edge) / OPiOS (Opera)
+    var isSafari = isIOS && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA/.test(ua);
+
+    if (isIOS && isSafari) {
+      document.getElementById('iosSafariInstall').style.display = 'block';
+    } else if (isIOS) {
+      document.getElementById('iosNonSafariInstall').style.display = 'block';
+    } else if (isAndroid) {
+      document.getElementById('androidInstall').style.display = 'block';
     } else {
       document.getElementById('desktopInstallMsg').style.display = 'block';
     }
+    lucide.createIcons();
   })();
   </script>
   <% } %>

@@ -162,46 +162,70 @@
         </div>
       </div>
     </div>
-    <!-- Mobile buttons -->
-    <div id="installMobileBtns" style="display:none" class="flex flex-col gap-3 mb-4">
-      <a id="installAppleLink" href="#" class="btn btn-primary btn-lg" style="display:none">
+    <!-- iOS non-Safari warning -->
+    <div id="installIosNonSafari" style="display:none" class="mb-4">
+      <div class="alert alert-warning mb-3">
+        <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+        <div class="text-sm">
+          <p class="font-semibold">Safari required</p>
+          <p class="mt-0.5">eSIM direct install only works in Safari on iPhone. Open this page in Safari.</p>
+        </div>
+      </div>
+    </div>
+    <!-- iOS Safari button -->
+    <div id="installIosSafari" style="display:none" class="mb-4">
+      <a id="installAppleLink" href="#" class="btn btn-primary btn-lg btn-block">
         <i data-lucide="smartphone" class="w-4 h-4"></i>
-        Install on iPhone
+        Install eSIM Now
       </a>
-      <a id="installAndroidLink" href="#" class="btn btn-primary btn-lg" style="display:none">
+      <p class="text-xs text-[var(--text-tertiary)] mt-2">Requires iOS 17.4 or later.</p>
+    </div>
+    <!-- Android button -->
+    <div id="installAndroidDiv" style="display:none" class="mb-4">
+      <a id="installAndroidLink" href="#" class="btn btn-primary btn-lg btn-block">
         <i data-lucide="smartphone" class="w-4 h-4"></i>
-        Install on Android
+        Install eSIM Now
       </a>
-      <p class="text-xs text-[var(--text-tertiary)]">iOS 17.4+ / Android with Google Play 25.14+ required.</p>
+      <p class="text-xs text-[var(--text-tertiary)] mt-2">Requires Google Play services 25.14+.</p>
     </div>
     <button type="button" class="btn btn-secondary btn-block" onclick="closeInstallModal()">Close</button>
   </div>
 </div>
 
 <script>
-var _isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent || '');
-var _isAndroid = /Android/.test(navigator.userAgent || '');
-var _isMobile = _isIOS || _isAndroid;
+var _ua = navigator.userAgent || '';
+var _isIOS = /iPhone|iPad|iPod/.test(_ua);
+var _isAndroid = /Android/.test(_ua);
+var _isSafari = _isIOS && /Safari/.test(_ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA/.test(_ua);
 
 function showInstallModal(smdpAddress, activationCode) {
   var lpa = 'LPA:1$' + smdpAddress + '$' + activationCode;
   var encoded = encodeURIComponent(lpa);
-  document.getElementById('installAppleLink').href = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + encoded;
-  document.getElementById('installAndroidLink').href = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + encoded;
+  var appleUrl = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + encoded;
+  var androidUrl = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + encoded;
 
-  if (_isMobile) {
-    document.getElementById('installMobileBtns').style.display = 'flex';
-    document.getElementById('installDesktopMsg').style.display = 'none';
-    if (_isIOS) document.getElementById('installAppleLink').style.display = 'flex';
-    if (_isAndroid) document.getElementById('installAndroidLink').style.display = 'flex';
+  // Hide all
+  document.getElementById('installDesktopMsg').style.display = 'none';
+  document.getElementById('installIosNonSafari').style.display = 'none';
+  document.getElementById('installIosSafari').style.display = 'none';
+  document.getElementById('installAndroidDiv').style.display = 'none';
+
+  if (_isIOS && _isSafari) {
+    document.getElementById('installAppleLink').href = appleUrl;
+    document.getElementById('installIosSafari').style.display = 'block';
+  } else if (_isIOS) {
+    document.getElementById('installIosNonSafari').style.display = 'block';
+  } else if (_isAndroid) {
+    document.getElementById('installAndroidLink').href = androidUrl;
+    document.getElementById('installAndroidDiv').style.display = 'block';
   } else {
-    document.getElementById('installMobileBtns').style.display = 'none';
     document.getElementById('installDesktopMsg').style.display = 'block';
   }
 
   var modal = document.getElementById('installModal');
   modal.classList.remove('hidden');
   modal.style.display = 'flex';
+  lucide.createIcons();
 }
 function closeInstallModal() {
   var modal = document.getElementById('installModal');
