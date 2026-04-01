@@ -682,3 +682,65 @@ export async function showEmailDetail(req, res) {
     res.render('error', { message: 'Failed to load email detail' });
   }
 }
+
+// Download individual attachment from inbound email
+export async function downloadAttachment(req, res) {
+  try {
+    const email = await db.EmailLog.findByPk(req.params.id);
+    if (!email || email.type !== 'inbound') {
+      return res.render('error', { message: 'Email not found' });
+    }
+
+    const attachmentIndex = parseInt(req.params.attachmentIndex);
+    if (isNaN(attachmentIndex)) {
+      return res.render('error', { message: 'Invalid attachment' });
+    }
+
+    const rawUrl = email.metadata?.rawDownloadUrl;
+    if (!rawUrl) {
+      // Try to fetch from API
+      const apiKey = process.env.RESEND_API_KEY;
+      if (!apiKey || !email.resendId) {
+        return res.render('error', { message: 'Raw email not available' });
+      }
+      const axios = (await import('axios')).default;
+      const resp = await axios.get(`https://api.resend.com/emails/receiving/${email.resendId}`, {
+        headers: { Authorization: `Bearer ${apiKey}` }
+      });
+      if (!resp.data?.raw?.download_url) {
+        return res.render('error', { message: 'Raw email not available' });
+      }
+      // Save for future use
+      await email.update({
+        metadata: { ...email.metadata, rawDownloadUrl: resp.data.raw.download_url, rawExpiresAt: resp.data.raw.expires_at }
+      });
+      return await parseAndServeAttachment(res, resp.data.raw.download_url, attachmentIndex);
+    }
+
+    return await parseAndServeAttachment(res, rawUrl, attachmentIndex);
+  } catch (err) {
+    log.error({ err }, 'downloadAttachment error');
+    res.render('error', { message: 'Failed to download attachment' });
+  }
+}
+
+async function parseAndServeAttachment(res, rawUrl, attachmentIndex) {
+  const axios = (await import('axios')).default;
+  const { simpleParser } = await import('mailparser');
+
+  // Download raw email
+  const rawResp = await axios.get(rawUrl, { responseType: 'arraybuffer' });
+  const parsed = await simpleParser(Buffer.from(rawResp.data));
+
+  if (!parsed.attachments || attachmentIndex >= parsed.attachments.length) {
+    return res.render('error', { message: 'Attachment not found' });
+  }
+
+  const att = parsed.attachments[attachmentIndex];
+  res.set({
+    'Content-Type': att.contentType || 'application/octet-stream',
+    'Content-Disposition': `attachment; filename="${att.filename || 'attachment'}"`,
+    'Content-Length': att.size || att.content.length
+  });
+  res.send(att.content);
+}

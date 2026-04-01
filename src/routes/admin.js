@@ -5,7 +5,7 @@ import {
   showAssignEsim, assignEsim, showTopup, topupEsim,
   showAllEsims, showEsimDetail,
   listPayments, retryEsimPurchase, resolvePayment,
-  listEmails, showEmailDetail
+  listEmails, showEmailDetail, downloadAttachment
 } from '../controllers/adminController.js';
 import {
   listVendors, showCreateVendor, createVendor,
@@ -54,5 +54,6 @@ router.get('/vendors/:id/qr', ensureAuth, ensureAdmin, downloadQrCode);
 // Email Management
 router.get('/emails', ensureAuth, ensureAdmin, listEmails);
 router.get('/emails/:id', ensureAuth, ensureAdmin, showEmailDetail);
+router.get('/emails/:id/attachment/:attachmentIndex', ensureAuth, ensureAdmin, downloadAttachment);
 
 export default router;

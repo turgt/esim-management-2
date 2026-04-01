@@ -145,13 +145,16 @@
     </div>
     <div class="card-body">
       <div class="space-y-2">
-        <% email.metadata.attachments.forEach(function(att) { %>
+        <% email.metadata.attachments.forEach(function(att, idx) { %>
         <div class="flex items-center gap-3 p-2.5 rounded-lg bg-[var(--surface-1)] border border-[var(--border-subtle)]">
           <i data-lucide="paperclip" class="w-4 h-4 text-[var(--text-tertiary)]"></i>
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium text-[var(--text-primary)] truncate"><%= att.filename %></p>
             <p class="text-xs text-[var(--text-tertiary)]"><%= att.content_type %></p>
           </div>
+          <a href="/admin/emails/<%= email.id %>/attachment/<%= idx %>" class="btn btn-secondary btn-sm" title="Download">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+          </a>
         </div>
         <% }) %>
       </div>
