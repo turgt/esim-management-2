@@ -25,7 +25,7 @@ router.post('/resend', express.json(), async (req, res) => {
         const apiKey = process.env.RESEND_API_KEY;
         if (apiKey && data.email_id) {
           const axios = (await import('axios')).default;
-          const resp = await axios.get(`https://api.resend.com/emails/received/${data.email_id}`, {
+          const resp = await axios.get(`https://api.resend.com/emails/receiving/${data.email_id}`, {
             headers: { Authorization: `Bearer ${apiKey}` }
           });
           if (resp.data) {
