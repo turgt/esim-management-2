@@ -44,8 +44,8 @@
   <button type="button" class="offer-card" onclick="confirmPurchase('<%= offer.offerId %>', '<%= (offer.brandName || offer.brand || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>', '<%= detailStr.replace(/'/g, "\\'") %>')" data-price="<%= price || '0.00' %>" data-currency="<%= currency %>">
     <div class="offer-header">
       <span class="offer-region"><%= regionShort || 'Global' %></span>
-      <% if (durationLabel) { %>
-      <span class="offer-duration"><%= durationLabel %></span>
+      <% if (bestSpeed) { %>
+      <span class="offer-speed-badge"><%= bestSpeed %></span>
       <% } %>
     </div>
     <div class="offer-body">
@@ -57,8 +57,8 @@
       <% } else { %>
       <span class="offer-data">Data</span>
       <% } %>
-      <% if (bestSpeed) { %>
-      <span class="offer-speed-badge"><%= bestSpeed %></span>
+      <% if (durationLabel) { %>
+      <span class="offer-duration"><%= durationLabel %></span>
       <% } %>
     </div>
     <div class="offer-footer">

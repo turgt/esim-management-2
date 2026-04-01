@@ -946,6 +946,8 @@ html {
   padding: 0.125rem 0.5rem;
   background: var(--surface-2);
   border-radius: 9999px;
+  margin-left: auto;
+  align-self: center;
 }
 .offer-card .offer-body {
   padding: 0.75rem 1.125rem 1rem;
