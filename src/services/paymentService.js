@@ -275,7 +275,7 @@ export async function purchaseEsimAfterPayment(payment) {
     status: normalizeStatus(purchase.status),
     iccid: confirmation.iccid || null,
     smdpAddress: confirmation.smdpAddress || null,
-    activationCode: confirmation.activationCode || null,
+    activationCode: confirmation.externalReferenceId || confirmation.activationCode || null,
     country: purchase.country || process.env.COUNTRY || 'TR',
     dataGB: purchase.dataGB || null,
     durationDays: purchase.durationDays || null,

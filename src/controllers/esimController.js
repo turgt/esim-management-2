@@ -71,7 +71,7 @@ export async function createPurchase(req, res) {
       status: normalizeStatus(purchase.status),
       iccid: confirmation.iccid || null,
       smdpAddress: confirmation.smdpAddress || null,
-      activationCode: confirmation.activationCode || null,
+      activationCode: confirmation.externalReferenceId || confirmation.activationCode || null,
       country: purchase.country || process.env.COUNTRY || 'TR',
       dataGB: purchase.dataGB || null,
       durationDays: purchase.durationDays || null,
@@ -135,8 +135,8 @@ export async function showStatus(req, res) {
     if (!esimRecord.smdpAddress && confirmation.smdpAddress) {
       updateData.smdpAddress = confirmation.smdpAddress;
     }
-    if (!esimRecord.activationCode && confirmation.activationCode) {
-      updateData.activationCode = confirmation.activationCode;
+    if (!esimRecord.activationCode && (confirmation.externalReferenceId || confirmation.activationCode)) {
+      updateData.activationCode = confirmation.externalReferenceId || confirmation.activationCode;
     }
 
     let statusUpdated = false;
