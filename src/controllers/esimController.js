@@ -260,9 +260,11 @@ export async function listUserPurchases(req, res) {
     const uniqueIccids = [...new Set(purchases.filter(p => p.iccid).map(p => p.iccid))];
     await Promise.all(uniqueIccids.map(async (iccid) => {
       try {
-        plansMap[iccid] = await getEsimPlans(iccid);
+        const plans = await getEsimPlans(iccid);
+        plansMap[iccid] = plans;
+        log.debug({ iccid, planCount: plans?.list?.length || 0 }, 'Fetched eSIM plans');
       } catch (e) {
-        // silently skip
+        log.warn({ iccid, err: e.message }, 'Failed to fetch eSIM plans');
       }
     }));
 
@@ -329,7 +331,8 @@ export async function debugEsimData(req, res) {
       deepLinks: {
         apple: 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + (qrContent && qrContent.startsWith('LPA:') ? qrContent : apiLpa),
         android: 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + (qrContent && qrContent.startsWith('LPA:') ? qrContent : apiLpa)
-      }
+      },
+      plans: esim.iccid ? await getEsimPlans(esim.iccid).catch(e => ({ error: e.message })) : null
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
