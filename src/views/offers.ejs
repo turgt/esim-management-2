@@ -28,14 +28,11 @@
       regionShort = offer.country;
     }
     var speeds = offer.dataSpeeds || [];
-    // Pick best speed only (e.g. "5G" instead of "2G 3G 4G 5G")
     var bestSpeed = speeds.length ? speeds[speeds.length - 1] : '';
-    var hasVoice = offer.voiceUnlimited || (offer.voiceMinutes && offer.voiceMinutes > 0);
-    var hasSms = offer.smsUnlimited || (offer.smsNumber && offer.smsNumber > 0);
     var shortNotes = offer.shortNotes || '';
-    // Build detail string for modal
+    // Build detail string for modal (all details go here)
     var detailParts = [];
-    if (speeds.length) detailParts.push(speeds.join(' / '));
+    if (speeds.length) detailParts.push('Network: ' + speeds.join(' / '));
     if (offer.dataUnlimited) detailParts.push('Unlimited Data');
     if (offer.voiceUnlimited) detailParts.push('Unlimited Voice');
     else if (offer.voiceMinutes > 0) detailParts.push(offer.voiceMinutes + ' min voice');
@@ -47,49 +44,28 @@
   <button type="button" class="offer-card" onclick="confirmPurchase('<%= offer.offerId %>', '<%= (offer.brandName || offer.brand || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>', '<%= detailStr.replace(/'/g, "\\'") %>')" data-price="<%= price || '0.00' %>" data-currency="<%= currency %>">
     <div class="offer-header">
       <span class="offer-region"><%= regionShort || 'Global' %></span>
-      <div class="flex items-center gap-1.5">
-        <% if (bestSpeed) { %>
-        <span class="offer-tag offer-tag-speed"><%= bestSpeed %></span>
-        <% } %>
-        <% if (durationLabel) { %>
-        <span class="offer-duration"><%= durationLabel %></span>
-        <% } %>
-      </div>
+      <% if (durationLabel) { %>
+      <span class="offer-duration"><%= durationLabel %></span>
+      <% } %>
     </div>
     <div class="offer-body">
       <% if (offer.dataUnlimited) { %>
       <span class="offer-data">Unlimited</span>
       <% } else if (dataLabel) { %>
       <span class="offer-data"><%= dataLabel %></span>
-      <span class="offer-data-unit ml-1">GB</span>
+      <span class="offer-data-unit">GB</span>
       <% } else { %>
       <span class="offer-data">Data</span>
       <% } %>
-    </div>
-    <% if (shortNotes || hasVoice || hasSms) { %>
-    <div class="offer-notes">
-      <% if (hasVoice || hasSms) { %>
-      <span class="offer-note-tags">
-        <% if (offer.voiceUnlimited) { %>
-        <span class="offer-tag offer-tag-voice">Voice</span>
-        <% } else if (offer.voiceMinutes && offer.voiceMinutes > 0) { %>
-        <span class="offer-tag offer-tag-voice"><%= offer.voiceMinutes %>m</span>
-        <% } %>
-        <% if (offer.smsUnlimited) { %>
-        <span class="offer-tag offer-tag-sms">SMS</span>
-        <% } else if (offer.smsNumber && offer.smsNumber > 0) { %>
-        <span class="offer-tag offer-tag-sms"><%= offer.smsNumber %> SMS</span>
-        <% } %>
-      </span>
+      <% if (bestSpeed) { %>
+      <span class="offer-speed-badge"><%= bestSpeed %></span>
       <% } %>
-      <% if (shortNotes) { %><%= shortNotes %><% } %>
     </div>
-    <% } %>
     <div class="offer-footer">
       <div>
         <% if (price) { %>
         <span class="offer-price">$<%= price %></span>
-        <span class="offer-price-currency ml-0.5"><%= currency %></span>
+        <span class="offer-price-currency"><%= currency %></span>
         <% } %>
       </div>
       <span class="offer-cta">
