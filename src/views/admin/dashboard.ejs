@@ -19,7 +19,7 @@
     </div>
     <div class="stat-content">
       <p class="stat-label">Zendit Balance</p>
-      <p class="stat-value text-[var(--brand-primary)]"><%= typeof balance !== 'undefined' && balance ? '$' + (balance.availableBalance / (balance.currencyDivisor || 100)).toFixed(2) : '-' %></p>
+      <p class="stat-value text-[var(--brand-primary)]"><%= typeof balance !== 'undefined' && balance ? '$' + Number((balance.availableBalance / (balance.currencyDivisor || 100)).toFixed(2)).toLocaleString('en-US', {minimumFractionDigits: 2}) : '-' %></p>
     </div>
   </div>
   <div class="stat-card">
@@ -68,7 +68,7 @@
     </div>
     <div class="stat-content">
       <p class="stat-label">Total Revenue</p>
-      <p class="stat-value text-emerald-600 dark:text-emerald-400">$<%= typeof paymentStats !== 'undefined' ? parseFloat(paymentStats.totalRevenue).toFixed(2) : '0.00' %></p>
+      <p class="stat-value text-emerald-600 dark:text-emerald-400">$<%= typeof paymentStats !== 'undefined' ? Number(parseFloat(paymentStats.totalRevenue).toFixed(2)).toLocaleString('en-US', {minimumFractionDigits: 2}) : '0.00' %></p>
     </div>
   </div>
   <div class="stat-card">

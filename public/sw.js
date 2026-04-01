@@ -1,8 +1,6 @@
 // DataPatch Service Worker
-const CACHE_NAME = 'datapatch-v1';
+const CACHE_NAME = 'datapatch-v2';
 const CACHE_URLS = [
-  '/public/styles.css',
-  '/offers',
   '/offline.html'
 ];
 
@@ -58,46 +56,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Skip API requests (they need to be fresh)
-  if (event.request.url.includes('/api/') || 
-      event.request.url.includes('/health') ||
-      event.request.url.includes('/metrics')) {
-    return;
-  }
-
-  if(!event.request.url.includes('/offers')) {
-    return;
-  }
-  
-  
+  // Network-first: try network, fallback to offline page
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request)
-          .then((fetchResponse) => {
-            // Don't cache non-successful responses
-            if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
-              return fetchResponse;
-            }
-            
-            // Clone the response
-            const responseToCache = fetchResponse.clone();
-            
-            // Add to cache
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-            
-            return fetchResponse;
-          })
-          .catch(() => {
-            // Return offline page for navigation requests
-            if (event.request.mode === 'navigate') {
-              return caches.match('/offline.html');
-            }
-          });
+    fetch(event.request)
+      .catch(() => {
+        if (event.request.mode === 'navigate') {
+          return caches.match('/offline.html');
+        }
       })
   );
 });
