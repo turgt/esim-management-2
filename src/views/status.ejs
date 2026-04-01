@@ -98,6 +98,40 @@
         <% } %>
       </div>
     </div>
+
+    <!-- Active Plans -->
+    <%
+      var planList = typeof activePlans !== 'undefined' && activePlans ? (activePlans.list || []) : [];
+    %>
+    <% if (planList.length > 0) { %>
+    <div class="p-5 pt-0">
+      <p class="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-2">Active Plans</p>
+      <div class="space-y-2">
+        <% planList.forEach(function(plan) { %>
+        <div class="flex items-center justify-between text-sm p-3 rounded-lg bg-[var(--surface-1)] border border-[var(--border-subtle)]">
+          <div class="flex-1 min-w-0">
+            <% if (plan.unlimited) { %>
+            <span class="font-semibold text-[var(--text-primary)]">Unlimited</span>
+            <% } else { %>
+            <span class="font-semibold text-[var(--text-primary)]"><%= plan.remainingDataGB != null ? plan.remainingDataGB.toFixed(2) : '-' %></span>
+            <span class="text-[var(--text-tertiary)]"> / <%= plan.initialDataGB || '-' %> GB remaining</span>
+            <% } %>
+            <% if (plan.endAt) { %>
+            <p class="text-xs text-[var(--text-tertiary)] mt-0.5">Expires: <%= new Date(plan.endAt).toLocaleDateString('en-GB') %></p>
+            <% } %>
+          </div>
+          <% if (plan.status === 'ACTIVE') { %>
+          <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
+          <% } else if (plan.status === 'QUEUED') { %>
+          <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Queued</span>
+          <% } else { %>
+          <span class="badge badge-neutral"><%= plan.status %></span>
+          <% } %>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+    <% } %>
   </div>
 
   <!-- Activity Log -->

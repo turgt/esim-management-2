@@ -155,6 +155,16 @@ export async function showStatus(req, res) {
     const qrReady = isQrReady(apiStatus.status);
     log.debug({ transactionId: txId, qrReady }, 'QR ready check');
 
+    // Fetch active plans if ICCID available
+    let activePlans = null;
+    if (esimRecord.iccid) {
+      try {
+        activePlans = await getEsimPlans(esimRecord.iccid);
+      } catch (e) {
+        log.warn({ err: e.message, iccid: esimRecord.iccid }, 'Could not fetch plans for status page');
+      }
+    }
+
     res.render('status', {
       title: 'Purchase Status',
       status: apiStatus,
@@ -162,7 +172,8 @@ export async function showStatus(req, res) {
       isQrReady: qrReady,
       dbStatus: esimRecord.status,
       statusUpdated: statusUpdated,
-      updatedAt: new Date().toLocaleTimeString()
+      updatedAt: new Date().toLocaleTimeString(),
+      activePlans
     });
 
   } catch (err) {
