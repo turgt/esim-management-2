@@ -5,6 +5,7 @@ export default (sequelize, DataTypes) => {
     static associate(models) {
       User.hasMany(models.Esim, { foreignKey: 'userId' });
       User.hasMany(models.Payment, { foreignKey: 'userId' });
+      User.belongsTo(models.Vendor, { foreignKey: 'vendorId', as: 'vendor' });
     }
   }
   User.init({
@@ -22,7 +23,8 @@ export default (sequelize, DataTypes) => {
     isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
     esimLimit: { type: DataTypes.INTEGER, allowNull: true },
     lastLoginAt: { type: DataTypes.DATE, allowNull: true },
-    theme: { type: DataTypes.STRING, defaultValue: 'light' }
+    theme: { type: DataTypes.STRING, defaultValue: 'light' },
+    vendorId: { type: DataTypes.INTEGER, allowNull: true }
   }, { sequelize, modelName: 'User' });
   return User;
 };

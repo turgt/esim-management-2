@@ -54,7 +54,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.paddle.com", "https://sandbox-cdn.paddle.com", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdn.paddle.com", "https://sandbox-cdn.paddle.com", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdn.paddle.com", "https://sandbox-cdn.paddle.com", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com", "https://buy.paddle.com", "https://sandbox-buy.paddle.com", "https://static.cloudflareinsights.com", "https://public.profitwell.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://cdn.paddle.com", "https://sandbox-cdn.paddle.com", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com", "https://buy.paddle.com", "https://sandbox-buy.paddle.com", "https://static.cloudflareinsights.com", "https://public.profitwell.com"],
       scriptSrcAttr: ["'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'", "https://unpkg.com", "https://cdn.paddle.com", "https://sandbox-cdn.paddle.com", "https://checkout.paddle.com", "https://sandbox-checkout.paddle.com", "https://buy.paddle.com", "https://sandbox-buy.paddle.com", "https://api.paddle.com", "https://sandbox-api.paddle.com", "https://public.profitwell.com"],

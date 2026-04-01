@@ -17,6 +17,9 @@
 
       <form method="post" action="/auth/register" class="space-y-4">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <% if (typeof ref !== 'undefined' && ref) { %>
+        <input type="hidden" name="ref" value="<%= ref %>">
+        <% } %>
         <div>
           <label for="reg-username" class="input-label">Username</label>
           <div class="input-icon-wrapper">

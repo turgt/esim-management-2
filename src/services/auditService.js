@@ -20,7 +20,10 @@ export const ACTIONS = {
   PAYMENT_SUCCESS: 'payment.success',
   PAYMENT_FAILED: 'payment.failed',
   PAYMENT_RETRY: 'admin.payment_retry',
-  PAYMENT_RESOLVED: 'admin.payment_resolved'
+  PAYMENT_RESOLVED: 'admin.payment_resolved',
+  VENDOR_CREATE: 'admin.vendor_create',
+  VENDOR_EDIT: 'admin.vendor_edit',
+  VENDOR_DELETE: 'admin.vendor_delete'
 };
 
 export async function logAudit(action, { userId = null, entity = null, entityId = null, details = null, ipAddress = null } = {}) {

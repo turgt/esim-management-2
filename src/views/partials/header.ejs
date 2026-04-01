@@ -140,6 +140,9 @@
         <a href="/admin/payments" class="sidebar-link <%= typeof title !== 'undefined' && title === 'Admin Payments' ? 'active' : '' %>">
           <i data-lucide="credit-card" class="w-[1.125rem] h-[1.125rem]"></i> Payments
         </a>
+        <a href="/admin/vendors" class="sidebar-link <%= typeof title !== 'undefined' && title.includes && (title === 'Vendors' || title === 'Vendor Detail' || title === 'Create Vendor' || title === 'Edit Vendor') ? 'active' : '' %>">
+          <i data-lucide="store" class="w-[1.125rem] h-[1.125rem]"></i> Vendors
+        </a>
         <% } %>
       </nav>
 

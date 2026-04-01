@@ -27,12 +27,70 @@
     </div>
   </div>
 
-  <!-- Installation Steps -->
+  <% if (esim && esim.smdpAddress && esim.activationCode) { %>
+  <%
+    var lpaString = 'LPA:1$' + esim.smdpAddress + '$' + esim.activationCode;
+    var appleLink = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + encodeURIComponent(lpaString);
+    var androidLink = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + encodeURIComponent(lpaString);
+  %>
+  <!-- Direct Install (Same Device) -->
   <div class="card">
     <div class="card-header">
-      <h3>How to Install</h3>
+      <h3>Install on This Device</h3>
+      <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Recommended</span>
+    </div>
+    <div class="card-body">
+      <p class="text-sm text-[var(--text-secondary)] mb-4">Tap one of the buttons below to install the eSIM directly — no QR scanning needed.</p>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <a href="<%= appleLink %>" class="flex-1 btn btn-primary btn-lg">
+          <i data-lucide="smartphone" class="w-4 h-4"></i>
+          Install on iPhone
+        </a>
+        <a href="<%= androidLink %>" class="flex-1 btn btn-secondary btn-lg">
+          <i data-lucide="smartphone" class="w-4 h-4"></i>
+          Install on Android
+        </a>
+      </div>
+      <p class="text-xs text-[var(--text-tertiary)] mt-3">iPhone requires iOS 17.4+. Android requires Google Play services 25.14+.</p>
+    </div>
+  </div>
+
+  <!-- Manual Entry -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Manual Entry</h3>
+    </div>
+    <div class="card-body space-y-3">
+      <p class="text-sm text-[var(--text-secondary)]">If the buttons above don't work, you can enter these details manually in your device's eSIM settings.</p>
+      <div class="bg-[var(--surface-1)] rounded-lg p-3 border border-[var(--border-subtle)]">
+        <div class="detail-label mb-1">SM-DP+ Address</div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-sm font-mono text-[var(--text-primary)] break-all"><%= esim.smdpAddress %></span>
+          <button onclick="copyToClipboard('<%= esim.smdpAddress %>', this)" class="copy-btn flex-shrink-0" title="Copy">
+            <i data-lucide="copy" class="w-3 h-3"></i>
+          </button>
+        </div>
+      </div>
+      <div class="bg-[var(--surface-1)] rounded-lg p-3 border border-[var(--border-subtle)]">
+        <div class="detail-label mb-1">Activation Code</div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-sm font-mono text-[var(--text-primary)] break-all"><%= esim.activationCode %></span>
+          <button onclick="copyToClipboard('<%= esim.activationCode %>', this)" class="copy-btn flex-shrink-0" title="Copy">
+            <i data-lucide="copy" class="w-3 h-3"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- Installation Steps (QR) -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Install via QR Code</h3>
     </div>
     <div class="card-body space-y-4">
+      <p class="text-sm text-[var(--text-secondary)] mb-2">If you want to install on a different device, scan the QR code above.</p>
       <div class="stepper-item">
         <div class="stepper-number">1</div>
         <div class="pb-3">
@@ -43,15 +101,15 @@
       <div class="stepper-item">
         <div class="stepper-number">2</div>
         <div class="pb-3">
-          <p class="font-semibold text-[var(--text-primary)] text-sm">Add Data</p>
-          <p class="text-sm text-[var(--text-secondary)] mt-0.5">Tap "Add Cellular Plan" or "Add Data"</p>
+          <p class="font-semibold text-[var(--text-primary)] text-sm">Add eSIM</p>
+          <p class="text-sm text-[var(--text-secondary)] mt-0.5">Tap "Add Cellular Plan" or "Add eSIM"</p>
         </div>
       </div>
       <div class="stepper-item">
         <div class="stepper-number">3</div>
         <div class="pb-3">
           <p class="font-semibold text-[var(--text-primary)] text-sm">Scan QR Code</p>
-          <p class="text-sm text-[var(--text-secondary)] mt-0.5">Use your camera to scan this QR code</p>
+          <p class="text-sm text-[var(--text-secondary)] mt-0.5">Use your camera to scan the QR code above</p>
         </div>
       </div>
       <div class="stepper-item">

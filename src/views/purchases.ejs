@@ -106,6 +106,12 @@
           <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
           Details
         </a>
+        <% if (purchase.status === 'completed' && purchase.smdpAddress && purchase.activationCode) { %>
+        <button type="button" onclick="showInstallModal('<%= purchase.smdpAddress %>', '<%= purchase.activationCode %>')" class="btn btn-primary btn-sm flex-1">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i>
+          Install
+        </button>
+        <% } %>
         <% if (purchase.iccid && purchase.status === 'completed') { %>
         <a href="/payment/topup/<%= purchase.id %>" class="btn btn-secondary btn-sm flex-1 text-emerald-600 dark:text-emerald-400">
           <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
@@ -133,5 +139,52 @@
   </a>
 </div>
 <% } %>
+
+<!-- Install eSIM Modal -->
+<div id="installModal" class="modal-backdrop hidden" style="display:none">
+  <div class="confirm-modal">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
+        <i data-lucide="smartphone" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
+      </div>
+      <div>
+        <h3 class="text-base font-semibold text-[var(--text-primary)]">Install eSIM</h3>
+        <p class="text-xs text-[var(--text-secondary)]">Choose your device to install directly</p>
+      </div>
+    </div>
+    <div class="flex flex-col gap-3 mb-4">
+      <a id="installAppleLink" href="#" class="btn btn-primary btn-lg">
+        <i data-lucide="smartphone" class="w-4 h-4"></i>
+        Install on iPhone
+      </a>
+      <a id="installAndroidLink" href="#" class="btn btn-secondary btn-lg">
+        <i data-lucide="smartphone" class="w-4 h-4"></i>
+        Install on Android
+      </a>
+    </div>
+    <p class="text-xs text-[var(--text-tertiary)] mb-4">iPhone requires iOS 17.4+. Android requires Google Play services 25.14+.</p>
+    <button type="button" class="btn btn-secondary btn-block" onclick="closeInstallModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+function showInstallModal(smdpAddress, activationCode) {
+  var lpa = 'LPA:1$' + smdpAddress + '$' + activationCode;
+  var encoded = encodeURIComponent(lpa);
+  document.getElementById('installAppleLink').href = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + encoded;
+  document.getElementById('installAndroidLink').href = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + encoded;
+  var modal = document.getElementById('installModal');
+  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
+}
+function closeInstallModal() {
+  var modal = document.getElementById('installModal');
+  modal.classList.add('hidden');
+  modal.style.display = 'none';
+}
+document.getElementById('installModal').addEventListener('click', function(e) {
+  if (e.target === this) closeInstallModal();
+});
+</script>
 
 <%- include('partials/footer') %>

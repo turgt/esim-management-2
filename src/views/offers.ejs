@@ -28,8 +28,21 @@
     } else if (offer.country) {
       regionShort = offer.country;
     }
+    var speeds = offer.dataSpeeds || [];
+    var hasVoice = offer.voiceUnlimited || (offer.voiceMinutes && offer.voiceMinutes > 0);
+    var hasSms = offer.smsUnlimited || (offer.smsNumber && offer.smsNumber > 0);
+    var shortNotes = offer.shortNotes || '';
+    // Build detail string for modal
+    var detailParts = [];
+    if (speeds.length) detailParts.push(speeds.join('/'));
+    if (offer.dataUnlimited) detailParts.push('Unlimited Data');
+    if (offer.voiceUnlimited) detailParts.push('Unlimited Voice');
+    else if (offer.voiceMinutes > 0) detailParts.push(offer.voiceMinutes + ' min voice');
+    if (offer.smsUnlimited) detailParts.push('Unlimited SMS');
+    else if (offer.smsNumber > 0) detailParts.push(offer.smsNumber + ' SMS');
+    var detailStr = detailParts.join(' · ');
   %>
-  <button type="button" class="offer-card" onclick="confirmPurchase('<%= offer.offerId %>', '<%= (offer.brand || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>')" data-price="<%= price || '0.00' %>" data-currency="<%= currency %>">
+  <button type="button" class="offer-card" onclick="confirmPurchase('<%= offer.offerId %>', '<%= (offer.brandName || offer.brand || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>', '<%= detailStr.replace(/'/g, "\\'") %>')" data-price="<%= price || '0.00' %>" data-currency="<%= currency %>">
     <div class="offer-header">
       <span class="offer-region"><%= regionShort || 'Global' %></span>
       <% if (durationLabel) { %>
@@ -37,13 +50,38 @@
       <% } %>
     </div>
     <div class="offer-body">
-      <% if (dataLabel) { %>
+      <% if (offer.dataUnlimited) { %>
+      <span class="offer-data">Unlimited</span>
+      <% } else if (dataLabel) { %>
       <span class="offer-data"><%= dataLabel %></span>
       <span class="offer-data-unit ml-1">GB</span>
       <% } else { %>
-      <span class="offer-data">Unlimited</span>
+      <span class="offer-data">Data</span>
       <% } %>
     </div>
+    <% if (speeds.length || offer.dataUnlimited || hasVoice || hasSms) { %>
+    <div class="offer-features">
+      <% speeds.forEach(function(s) { %>
+      <span class="offer-tag offer-tag-speed"><%= s %></span>
+      <% }) %>
+      <% if (offer.dataUnlimited) { %>
+      <span class="offer-tag offer-tag-unlimited">Unlimited</span>
+      <% } %>
+      <% if (offer.voiceUnlimited) { %>
+      <span class="offer-tag offer-tag-voice">Unlimited Voice</span>
+      <% } else if (offer.voiceMinutes && offer.voiceMinutes > 0) { %>
+      <span class="offer-tag offer-tag-voice"><%= offer.voiceMinutes %> min</span>
+      <% } %>
+      <% if (offer.smsUnlimited) { %>
+      <span class="offer-tag offer-tag-sms">Unlimited SMS</span>
+      <% } else if (offer.smsNumber && offer.smsNumber > 0) { %>
+      <span class="offer-tag offer-tag-sms"><%= offer.smsNumber %> SMS</span>
+      <% } %>
+    </div>
+    <% } %>
+    <% if (shortNotes) { %>
+    <div class="offer-notes"><%= shortNotes %></div>
+    <% } %>
     <div class="offer-footer">
       <div>
         <% if (price) { %>
@@ -83,6 +121,7 @@
     <div class="p-4 rounded-lg bg-[var(--surface-1)] border border-[var(--border-subtle)] mb-5">
       <p class="text-sm text-[var(--text-secondary)]">Plan: <strong class="text-[var(--text-primary)]" id="modalPlanName"></strong></p>
       <p class="text-lg font-bold text-[var(--brand-primary)] mt-1" id="modalPlanPrice"></p>
+      <p class="text-xs text-[var(--text-tertiary)] mt-1.5" id="modalPlanDetails" style="display:none"></p>
     </div>
     <form id="purchaseForm" method="post" action="/payment/create">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -102,13 +141,20 @@
 </div>
 
 <script>
-function confirmPurchase(offerId, planName, price, currency) {
+function confirmPurchase(offerId, planName, price, currency, details) {
   document.getElementById('modalOfferId').value = offerId;
   document.getElementById('modalAmount').value = price;
   document.getElementById('modalCurrency').value = currency;
   document.getElementById('modalPlanNameHidden').value = planName;
   document.getElementById('modalPlanName').textContent = planName;
   document.getElementById('modalPlanPrice').textContent = price + ' ' + currency;
+  var detailsEl = document.getElementById('modalPlanDetails');
+  if (details) {
+    detailsEl.textContent = details;
+    detailsEl.style.display = 'block';
+  } else {
+    detailsEl.style.display = 'none';
+  }
   var modal = document.getElementById('purchaseModal');
   modal.classList.remove('hidden');
   modal.style.display = 'flex';

@@ -155,12 +155,41 @@
   </div>
   <% } %>
 
+  <% if (isQrReady && esim && esim.smdpAddress && esim.activationCode) { %>
+  <%
+    var lpaString = 'LPA:1$' + esim.smdpAddress + '$' + esim.activationCode;
+    var appleLink = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + encodeURIComponent(lpaString);
+    var androidLink = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + encodeURIComponent(lpaString);
+  %>
+  <!-- Direct Install -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Install on This Device</h3>
+      <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Recommended</span>
+    </div>
+    <div class="card-body">
+      <p class="text-sm text-[var(--text-secondary)] mb-4">Tap to install the eSIM directly — no QR scanning needed.</p>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <a href="<%= appleLink %>" class="flex-1 btn btn-primary btn-lg">
+          <i data-lucide="smartphone" class="w-4 h-4"></i>
+          Install on iPhone
+        </a>
+        <a href="<%= androidLink %>" class="flex-1 btn btn-secondary btn-lg">
+          <i data-lucide="smartphone" class="w-4 h-4"></i>
+          Install on Android
+        </a>
+      </div>
+      <p class="text-xs text-[var(--text-tertiary)] mt-3">iPhone requires iOS 17.4+. Android requires Google Play services 25.14+.</p>
+    </div>
+  </div>
+  <% } %>
+
   <!-- Actions -->
   <div class="flex flex-col sm:flex-row gap-3">
     <% if (isQrReady) { %>
     <a href="/qrcode/<%= status.transactionId %>" class="flex-1 btn btn-primary btn-lg">
       <i data-lucide="qr-code" class="w-4 h-4"></i>
-      Download QR Code
+      QR Code & Details
     </a>
     <% } %>
     <button onclick="location.reload()" class="flex-1 btn btn-secondary btn-lg">

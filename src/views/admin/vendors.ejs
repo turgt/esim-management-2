@@ -1,0 +1,132 @@
+<%- include('../partials/header', {title: 'Vendors', user: locals.user}) %>
+
+<div class="mb-8 flex items-center justify-between">
+  <div>
+    <p class="text-sm text-[var(--text-secondary)] mb-1">Vendor Management</p>
+    <h1 class="text-page-title">Vendors</h1>
+  </div>
+  <a href="/admin/vendors/create" class="btn btn-primary">
+    <i data-lucide="plus" class="w-4 h-4"></i>
+    New Vendor
+  </a>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+  <div class="stat-card">
+    <div class="stat-icon bg-[var(--brand-light)]">
+      <i data-lucide="store" class="w-5 h-5 text-[var(--brand-primary)]"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Total Vendors</p>
+      <p class="stat-value"><%= stats.totalVendors %></p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon bg-emerald-50 dark:bg-emerald-500/10">
+      <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Active Vendors</p>
+      <p class="stat-value text-emerald-600 dark:text-emerald-400"><%= stats.activeVendors %></p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon bg-sky-50 dark:bg-sky-500/10">
+      <i data-lucide="users" class="w-5 h-5 text-sky-600 dark:text-sky-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Referred Users</p>
+      <p class="stat-value"><%= stats.totalReferredUsers %></p>
+    </div>
+  </div>
+</div>
+
+<!-- Search -->
+<form method="get" class="mb-6">
+  <div class="flex gap-3">
+    <div class="flex-1 input-icon-wrapper">
+      <i data-lucide="search" class="input-icon w-4 h-4"></i>
+      <input type="text" name="search" value="<%= search %>" placeholder="Search vendors..." class="input">
+    </div>
+    <button type="submit" class="btn btn-secondary">Search</button>
+    <% if (search) { %>
+    <a href="/admin/vendors" class="btn btn-secondary">Clear</a>
+    <% } %>
+  </div>
+</form>
+
+<!-- Vendors Table -->
+<div class="table-container">
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Vendor</th>
+          <th>Code</th>
+          <th>Commission</th>
+          <th>Users</th>
+          <th>Purchases</th>
+          <th>Revenue</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (vendors.length > 0) { %>
+        <% vendors.forEach(function(v) { %>
+        <tr>
+          <td>
+            <div>
+              <p class="font-medium text-[var(--text-primary)]"><%= v.name %></p>
+              <% if (v.contactInfo) { %>
+              <p class="text-xs text-[var(--text-tertiary)]"><%= v.contactInfo %></p>
+              <% } %>
+            </div>
+          </td>
+          <td>
+            <span class="font-mono text-sm text-[var(--brand-primary)] bg-[var(--brand-light)] px-2 py-0.5 rounded"><%= v.code %></span>
+          </td>
+          <td class="text-sm">%<%= parseFloat(v.commissionRate).toFixed(1) %></td>
+          <td class="font-semibold"><%= v.userCount %></td>
+          <td class="font-semibold"><%= v.purchaseCount %></td>
+          <td>
+            <p class="font-semibold text-[var(--text-primary)]">$<%= parseFloat(v.totalRevenue).toFixed(2) %></p>
+            <% if (v.commission > 0) { %>
+            <p class="text-xs text-emerald-600 dark:text-emerald-400">Commission: $<%= v.commission.toFixed(2) %></p>
+            <% } %>
+          </td>
+          <td>
+            <% if (v.isActive) { %>
+            <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
+            <% } else { %>
+            <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span>Inactive</span>
+            <% } %>
+          </td>
+          <td>
+            <a href="/admin/vendors/<%= v.id %>" class="btn btn-secondary btn-sm">
+              <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+              View
+            </a>
+          </td>
+        </tr>
+        <% }) %>
+        <% } else { %>
+        <tr>
+          <td colspan="8" class="text-center py-12 text-sm text-[var(--text-tertiary)]">
+            <i data-lucide="store" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+            <p>No vendors yet</p>
+            <a href="/admin/vendors/create" class="text-[var(--brand-primary)] hover:underline mt-1 inline-block">Create your first vendor</a>
+          </td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<% if (pagination.totalPages > 1) { %>
+<%- include('../partials/pagination', { pagination }) %>
+<% } %>
+
+<%- include('../partials/footer') %>

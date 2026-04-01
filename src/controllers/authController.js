@@ -74,7 +74,13 @@ export async function showRegister(req, res) {
   const formData = req.session.formData || {};
   delete req.session.validationErrors;
   delete req.session.formData;
-  res.render('register', { title: 'Register', errors, formData });
+
+  // Capture vendor ref code from query param and store in session
+  if (req.query.ref) {
+    req.session.vendorRef = req.query.ref;
+  }
+
+  res.render('register', { title: 'Register', errors, formData, ref: req.session.vendorRef || null });
 }
 
 export async function register(req, res) {
@@ -103,6 +109,15 @@ export async function register(req, res) {
 
     const hash = await bcrypt.hash(password, 10);
 
+    // Look up vendor from ref code stored in session
+    let vendorId = null;
+    const vendorRef = req.session.vendorRef;
+    if (vendorRef) {
+      const vendor = await db.Vendor.findOne({ where: { code: vendorRef, isActive: true } });
+      if (vendor) vendorId = vendor.id;
+      delete req.session.vendorRef;
+    }
+
     const user = await db.User.create({
       username,
       email,
@@ -111,7 +126,8 @@ export async function register(req, res) {
       emailVerificationToken,
       emailVerificationExpires,
       isAdmin: false,
-      isActive: true
+      isActive: true,
+      vendorId
     });
 
     await sendVerificationEmail(user, emailVerificationToken);

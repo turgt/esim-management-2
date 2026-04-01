@@ -1,0 +1,89 @@
+<%- include('../partials/header', {title: vendor ? 'Edit Vendor' : 'Create Vendor', user: locals.user}) %>
+
+<div class="mb-8">
+  <a href="<%= vendor ? '/admin/vendors/' + vendor.id : '/admin/vendors' %>" class="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] inline-flex items-center gap-1 mb-2">
+    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+    Back to <%= vendor ? 'Vendor' : 'Vendors' %>
+  </a>
+  <h1 class="text-page-title"><%= vendor ? 'Edit Vendor' : 'Create Vendor' %></h1>
+</div>
+
+<% if (errors && errors.length > 0) { %>
+<div class="alert alert-error mb-5">
+  <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+  <div class="space-y-1">
+    <% errors.forEach(function(err) { %><p><%= err.msg || err %></p><% }) %>
+  </div>
+</div>
+<% } %>
+
+<% if (success) { %>
+<div class="alert alert-success mb-5">
+  <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+  <p><%= success %></p>
+</div>
+<% } %>
+
+<div class="card p-6 max-w-2xl">
+  <form method="post" action="<%= vendor ? '/admin/vendors/' + vendor.id + '/edit' : '/admin/vendors/create' %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <div class="space-y-5">
+      <div>
+        <label for="name" class="input-label">Vendor Name <span class="text-rose-500">*</span></label>
+        <input type="text" id="name" name="name" required maxlength="100" value="<%= vendor ? vendor.name : '' %>" placeholder="e.g. Ahmet Travel Agency" class="input">
+      </div>
+
+      <div>
+        <label for="contactInfo" class="input-label">Contact Info</label>
+        <input type="text" id="contactInfo" name="contactInfo" maxlength="255" value="<%= vendor ? vendor.contactInfo || '' : '' %>" placeholder="Phone, email or address" class="input">
+      </div>
+
+      <div>
+        <label for="commissionRate" class="input-label">Commission Rate (%)</label>
+        <div class="input-icon-wrapper">
+          <i data-lucide="percent" class="input-icon w-4 h-4"></i>
+          <input type="number" id="commissionRate" name="commissionRate" min="0" max="100" step="0.1" value="<%= vendor ? parseFloat(vendor.commissionRate) : 0 %>" class="input">
+        </div>
+        <p class="text-xs text-[var(--text-tertiary)] mt-1">Percentage of revenue earned as commission</p>
+      </div>
+
+      <div>
+        <label for="notes" class="input-label">Notes</label>
+        <textarea id="notes" name="notes" rows="3" maxlength="1000" placeholder="Internal notes about this vendor..." class="input resize-y"><%= vendor ? vendor.notes || '' : '' %></textarea>
+      </div>
+
+      <% if (vendor) { %>
+      <div>
+        <label class="input-label">Status</label>
+        <div class="flex items-center gap-3">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="isActive" value="true" <%= vendor.isActive ? 'checked' : '' %> class="accent-[var(--brand-primary)]">
+            <span class="text-sm">Active</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="isActive" value="false" <%= !vendor.isActive ? 'checked' : '' %> class="accent-[var(--brand-primary)]">
+            <span class="text-sm">Inactive</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="bg-[var(--surface-2)] rounded-lg p-4">
+        <p class="text-xs text-[var(--text-tertiary)] mb-1">Vendor Code</p>
+        <p class="font-mono text-lg font-bold text-[var(--brand-primary)]"><%= vendor.code %></p>
+        <p class="text-xs text-[var(--text-tertiary)] mt-1">This code cannot be changed</p>
+      </div>
+      <% } %>
+
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="<%= vendor ? 'save' : 'plus' %>" class="w-4 h-4"></i>
+          <%= vendor ? 'Save Changes' : 'Create Vendor' %>
+        </button>
+        <a href="<%= vendor ? '/admin/vendors/' + vendor.id : '/admin/vendors' %>" class="btn btn-secondary">Cancel</a>
+      </div>
+    </div>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>

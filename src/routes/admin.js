@@ -6,6 +6,11 @@ import {
   showAllEsims, showEsimDetail,
   listPayments, retryEsimPurchase, resolvePayment
 } from '../controllers/adminController.js';
+import {
+  listVendors, showCreateVendor, createVendor,
+  showVendorDetail, showEditVendor, updateVendor,
+  deleteVendor, downloadQrCode
+} from '../controllers/vendorController.js';
 import { adminCreateUserRules, assignEsimRules, topupRules, validate } from '../middleware/validation.js';
 
 const router = express.Router();
@@ -34,5 +39,15 @@ router.post('/topup/:esimId', ensureAuth, ensureAdmin, topupRules, validate, top
 router.get('/payments', ensureAuth, ensureAdmin, listPayments);
 router.post('/payments/:id/retry', ensureAuth, ensureAdmin, retryEsimPurchase);
 router.post('/payments/:id/resolve', ensureAuth, ensureAdmin, resolvePayment);
+
+// Vendor Management
+router.get('/vendors', ensureAuth, ensureAdmin, listVendors);
+router.get('/vendors/create', ensureAuth, ensureAdmin, showCreateVendor);
+router.post('/vendors/create', ensureAuth, ensureAdmin, createVendor);
+router.get('/vendors/:id', ensureAuth, ensureAdmin, showVendorDetail);
+router.get('/vendors/:id/edit', ensureAuth, ensureAdmin, showEditVendor);
+router.post('/vendors/:id/edit', ensureAuth, ensureAdmin, updateVendor);
+router.post('/vendors/:id/delete', ensureAuth, ensureAdmin, deleteVendor);
+router.get('/vendors/:id/qr', ensureAuth, ensureAdmin, downloadQrCode);
 
 export default router;
