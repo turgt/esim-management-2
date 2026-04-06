@@ -9,20 +9,31 @@ export async function showVendorDashboard(req, res) {
     const userId = req.session.user.id;
     const { Op } = db.Sequelize;
 
-    const vendor = await db.Vendor.findOne({ where: { userId } });
+    // Find all vendors managed by this user
+    const allVendors = await db.Vendor.findAll({ where: { userId }, order: [['name', 'ASC']] });
 
-    if (!vendor) {
+    if (allVendors.length === 0) {
       return res.render('vendor/dashboard', {
         title: 'Vendor Dashboard',
         inactive: true,
-        message: 'No vendor account is linked to your user.'
+        message: 'No vendor account is linked to your user.',
+        allVendors: []
       });
     }
+
+    // Select vendor: from query param or first active one
+    const selectedId = req.query.vendorId ? parseInt(req.query.vendorId) : null;
+    let vendor = selectedId
+      ? allVendors.find(v => v.id === selectedId)
+      : allVendors.find(v => v.isActive) || allVendors[0];
+
+    if (!vendor) vendor = allVendors[0];
 
     if (!vendor.isActive) {
       return res.render('vendor/dashboard', {
         title: 'Vendor Dashboard',
         inactive: true,
+        allVendors,
         message: 'Your vendor account is currently inactive. Please contact an administrator.'
       });
     }
@@ -137,17 +148,17 @@ export async function showVendorDashboard(req, res) {
       title: 'Vendor Dashboard',
       inactive: false,
       vendor,
+      allVendors,
       refUrl,
       qrDataUrl,
-      stats: { totalUsers, activeUsers, totalPurchases, totalRevenue, commission },
+      stats: { totalUsers, activeUsers, totalPurchases, totalRevenue },
       recentUsers,
       recentSales: recentSales.map(s => ({
         id: s.id,
         amount: s.amount,
         currency: s.currency,
         createdAt: s.createdAt,
-        planName: s.Esim ? `${s.Esim.brandName || ''} ${s.Esim.dataGB ? s.Esim.dataGB + 'GB' : ''} ${s.Esim.country || ''}`.trim() : (s.offerId || 'N/A'),
-        commission: parseFloat(s.amount) * (parseFloat(vendor.commissionRate) / 100)
+        planName: s.Esim ? `${s.Esim.brandName || ''} ${s.Esim.dataGB ? s.Esim.dataGB + 'GB' : ''} ${s.Esim.country || ''}`.trim() : (s.offerId || 'N/A')
       })),
       chartData: JSON.stringify(chartData)
     });

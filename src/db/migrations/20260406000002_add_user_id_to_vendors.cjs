@@ -10,8 +10,7 @@ module.exports = {
       onDelete: 'SET NULL'
     });
     await queryInterface.addIndex('Vendors', ['userId'], {
-      name: 'idx_vendors_user_id',
-      unique: true
+      name: 'idx_vendors_user_id'
     });
   },
 

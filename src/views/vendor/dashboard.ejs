@@ -10,18 +10,30 @@
 </div>
 <% } else { %>
 
-<div class="mb-8">
-  <h1 class="text-page-title flex items-center gap-3">
-    <%= vendor.name %>
-    <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
-  </h1>
-  <% if (vendor.contactInfo) { %>
-  <p class="text-sm text-[var(--text-secondary)] mt-1"><%= vendor.contactInfo %></p>
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+  <div>
+    <h1 class="text-page-title flex items-center gap-3">
+      <%= vendor.name %>
+      <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
+    </h1>
+    <% if (vendor.contactInfo) { %>
+    <p class="text-sm text-[var(--text-secondary)] mt-1"><%= vendor.contactInfo %></p>
+    <% } %>
+  </div>
+  <% if (allVendors && allVendors.length > 1) { %>
+  <div class="flex items-center gap-2">
+    <label for="vendorSwitch" class="text-xs text-[var(--text-tertiary)]">Switch:</label>
+    <select id="vendorSwitch" onchange="window.location.href='/vendor/dashboard?vendorId='+this.value" class="input text-sm !py-2 !px-3 !w-auto !min-w-0">
+      <% allVendors.forEach(function(v) { %>
+      <option value="<%= v.id %>" <%= v.id === vendor.id ? 'selected' : '' %>><%= v.name %></option>
+      <% }) %>
+    </select>
+  </div>
   <% } %>
 </div>
 
 <!-- Stats -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
   <div class="stat-card">
     <div class="stat-icon bg-sky-50 dark:bg-sky-500/10">
       <i data-lucide="users" class="w-5 h-5 text-sky-600 dark:text-sky-400"></i>
@@ -47,15 +59,6 @@
     <div class="stat-content">
       <p class="stat-label">Total Revenue</p>
       <p class="stat-value text-emerald-600 dark:text-emerald-400">$<%= parseFloat(stats.totalRevenue).toFixed(2) %></p>
-    </div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon bg-amber-50 dark:bg-amber-500/10">
-      <i data-lucide="coins" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
-    </div>
-    <div class="stat-content">
-      <p class="stat-label">Commission (<%= parseFloat(vendor.commissionRate) %>%)</p>
-      <p class="stat-value text-amber-600 dark:text-amber-400">$<%= parseFloat(stats.commission).toFixed(2) %></p>
     </div>
   </div>
 </div>
@@ -152,7 +155,6 @@
           <tr>
             <th>Plan</th>
             <th>Amount</th>
-            <th>Commission</th>
             <th>Date</th>
           </tr>
         </thead>
@@ -162,13 +164,12 @@
           <tr>
             <td class="text-sm font-medium text-[var(--text-primary)]"><%= s.planName %></td>
             <td class="text-sm text-[var(--text-secondary)]">$<%= parseFloat(s.amount).toFixed(2) %></td>
-            <td class="text-sm text-amber-600 dark:text-amber-400 font-medium">$<%= s.commission.toFixed(2) %></td>
             <td class="text-xs text-[var(--text-tertiary)]"><%= new Date(s.createdAt).toLocaleDateString('en-GB') %></td>
           </tr>
           <% }) %>
           <% } else { %>
           <tr>
-            <td colspan="4" class="text-center py-6 text-sm text-[var(--text-tertiary)]">
+            <td colspan="3" class="text-center py-6 text-sm text-[var(--text-tertiary)]">
               No sales yet
             </td>
           </tr>
