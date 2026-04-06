@@ -179,6 +179,11 @@ html {
   color: var(--text-primary);
   background: var(--surface-2);
 }
+.sidebar-link:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: -2px;
+  border-radius: 0.5rem;
+}
 .sidebar-link.active {
   color: var(--brand-primary);
   background: var(--brand-light);
@@ -820,8 +825,8 @@ html {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.625rem;
-  height: 1.625rem;
+  width: 2rem;
+  height: 2rem;
   border-radius: 0.375rem;
   color: var(--text-tertiary);
   cursor: pointer;
@@ -947,7 +952,8 @@ html {
 .filter-chip {
   font-size: 0.8125rem;
   font-weight: 500;
-  padding: 0.375rem 0.875rem;
+  padding: 0.5rem 1rem;
+  min-height: 2.5rem;
   border-radius: 9999px;
   border: 1px solid var(--border-default);
   background: var(--surface-0);
@@ -958,6 +964,10 @@ html {
 .filter-chip:hover {
   border-color: var(--brand-primary);
   color: var(--text-primary);
+}
+.filter-chip:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
 }
 .filter-chip.active {
   background: var(--brand-primary);
@@ -981,6 +991,10 @@ html {
   border-color: var(--brand-primary);
   box-shadow: var(--shadow-md), 0 0 0 1px var(--brand-primary);
   transform: translateY(-2px);
+}
+.offer-card:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 3px;
 }
 .offer-card .offer-header {
   padding: 0.875rem 1.125rem 0;
@@ -1316,16 +1330,17 @@ html {
 
 /* ===== LANDING PAGE ===== */
 .landing-nav {
-  background: var(--surface-0);
   border-bottom: 1px solid var(--border-default);
   position: sticky;
   top: 0;
   z-index: 40;
-  backdrop-filter: blur(8px);
-  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(248, 250, 252, 0.92);
 }
 .dark .landing-nav {
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(15, 23, 42, 0.92);
+  border-bottom-color: rgba(51, 65, 85, 0.3);
 }
 
 .landing-hero {
@@ -1420,6 +1435,10 @@ html {
 }
 .brand-accordion-header:hover {
   background: var(--surface-1);
+}
+.brand-accordion-header:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: -2px;
 }
 .brand-accordion-body {
   display: none;

@@ -5,6 +5,22 @@
   <p class="text-subtitle mt-1">Check if your device supports eSIM</p>
 </div>
 
+<!-- Auto-detected device banner -->
+<div id="autoDetectBanner" class="card p-4 mb-4 max-w-2xl" style="display:none">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center flex-shrink-0">
+      <i data-lucide="scan-line" class="w-5 h-5 text-sky-600 dark:text-sky-400"></i>
+    </div>
+    <div class="flex-1 min-w-0">
+      <p class="text-sm font-medium text-[var(--text-primary)]">We detected your device: <strong id="detectedDevice"></strong></p>
+      <p id="detectedStatus" class="text-xs mt-0.5"></p>
+    </div>
+    <button onclick="applyDetectedDevice()" class="btn btn-primary btn-sm flex-shrink-0" id="autoSelectBtn">
+      <i data-lucide="check" class="w-3.5 h-3.5"></i> Check
+    </button>
+  </div>
+</div>
+
 <!-- Checker Card -->
 <div class="card p-6 mb-8 max-w-2xl">
   <h2 class="text-sm font-semibold text-[var(--text-primary)] mb-4">Check Your Device</h2>
@@ -43,7 +59,7 @@
     var compatCount = brand.models.filter(function(m) { return m.esim; }).length;
   %>
   <div class="brand-accordion" id="brand-<%= brandIdx %>">
-    <div class="brand-accordion-header" onclick="toggleAccordion(<%= brandIdx %>)">
+    <div class="brand-accordion-header" role="button" tabindex="0" onclick="toggleAccordion(<%= brandIdx %>)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccordion(<%= brandIdx %>)}">
       <div class="flex items-center gap-3">
         <span><%= brand.name %></span>
         <span class="text-xs text-[var(--text-tertiary)] font-normal"><%= compatCount %> supported</span>
@@ -86,6 +102,7 @@ function onBrandChange() {
   }
 
   modelSelect.disabled = true;
+  modelSelect.innerHTML = '<option value="">Loading...</option>';
 
   fetch('/api/compatibility?brand=' + encodeURIComponent(brand), {
     headers: { 'X-CSRF-Token': '<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>' }
@@ -157,6 +174,92 @@ function toggleAccordion(idx) {
   var el = document.getElementById('brand-' + idx);
   el.classList.toggle('open');
   if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// Device auto-detection
+var _detectedBrand = null;
+var _detectedModel = null;
+
+(function detectDevice() {
+  var ua = navigator.userAgent || '';
+  var brand = null;
+  var model = null;
+
+  // Try modern API first (Chromium browsers)
+  if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+    navigator.userAgentData.getHighEntropyValues(['model', 'platform']).then(function(data) {
+      if (data.platform === 'Android' && data.model) {
+        // Android devices report model via high-entropy hints
+        var m = data.model;
+        if (/^SM-/i.test(m) || /galaxy/i.test(m)) { brand = 'Samsung'; }
+        else if (/pixel/i.test(m)) { brand = 'Google'; }
+        else if (/xiaomi|redmi|poco/i.test(m)) { brand = 'Xiaomi'; }
+        else if (/oneplus/i.test(m)) { brand = 'OnePlus'; }
+        else if (/huawei/i.test(m)) { brand = 'Huawei'; }
+        else if (/moto|motorola/i.test(m)) { brand = 'Motorola'; }
+        else if (/sony|xperia/i.test(m)) { brand = 'Sony'; }
+        else if (/oppo|find|reno/i.test(m)) { brand = 'Oppo'; }
+        if (brand) showDetected(brand, m);
+      }
+    }).catch(function() {});
+  }
+
+  // Fallback: parse UA string
+  if (/iPhone|iPad/.test(ua)) {
+    brand = 'Apple';
+    // Extract iOS device from UA
+    var iosMatch = ua.match(/iPhone|iPad/);
+    if (iosMatch) model = iosMatch[0];
+    showDetected(brand, model || 'iPhone/iPad');
+  } else if (/SM-[A-Z]\d{3}/i.test(ua) || /Samsung/i.test(ua)) {
+    brand = 'Samsung';
+    var smMatch = ua.match(/SM-[A-Z]\d{3}[A-Z]?/i);
+    showDetected(brand, smMatch ? smMatch[0] : 'Galaxy');
+  } else if (/Pixel/i.test(ua)) {
+    brand = 'Google';
+    var pixMatch = ua.match(/Pixel\s*\d*\s*\w*/i);
+    showDetected(brand, pixMatch ? pixMatch[0] : 'Pixel');
+  } else if (/Xiaomi|Redmi|POCO/i.test(ua)) {
+    brand = 'Xiaomi';
+    showDetected(brand, 'Xiaomi Device');
+  } else if (/HUAWEI/i.test(ua)) {
+    brand = 'Huawei';
+    showDetected(brand, 'Huawei Device');
+  } else if (/OnePlus/i.test(ua)) {
+    brand = 'OnePlus';
+    showDetected(brand, 'OnePlus Device');
+  } else if (/motorola|moto/i.test(ua)) {
+    brand = 'Motorola';
+    showDetected(brand, 'Motorola Device');
+  } else if (/Sony/i.test(ua)) {
+    brand = 'Sony';
+    showDetected(brand, 'Sony Device');
+  } else if (/OPPO/i.test(ua)) {
+    brand = 'Oppo';
+    showDetected(brand, 'Oppo Device');
+  }
+})();
+
+function showDetected(brand, modelInfo) {
+  _detectedBrand = brand;
+  _detectedModel = modelInfo;
+  var banner = document.getElementById('autoDetectBanner');
+  var deviceEl = document.getElementById('detectedDevice');
+  var statusEl = document.getElementById('detectedStatus');
+  if (banner && deviceEl) {
+    deviceEl.textContent = brand + (modelInfo ? ' ' + modelInfo : '');
+    statusEl.textContent = 'Click "Check" to see if your device supports eSIM';
+    statusEl.className = 'text-xs text-[var(--text-secondary)] mt-0.5';
+    banner.style.display = 'block';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+}
+
+function applyDetectedDevice() {
+  if (!_detectedBrand) return;
+  var brandSelect = document.getElementById('brandSelect');
+  brandSelect.value = _detectedBrand;
+  onBrandChange();
 }
 </script>
 
