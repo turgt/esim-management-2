@@ -1,0 +1,209 @@
+{
+  "lastUpdated": "2026-04-06",
+  "brands": [
+    {
+      "name": "Apple",
+      "models": [
+        { "name": "iPhone 16 Pro Max", "esim": true, "notes": "Dual eSIM support" },
+        { "name": "iPhone 16 Pro", "esim": true, "notes": "Dual eSIM support" },
+        { "name": "iPhone 16 Plus", "esim": true, "notes": "Dual eSIM support" },
+        { "name": "iPhone 16", "esim": true, "notes": "Dual eSIM support" },
+        { "name": "iPhone 15 Pro Max", "esim": true, "notes": "Dual eSIM support" },
+        { "name": "iPhone 15 Pro", "esim": true, "notes": "Dual eSIM support" },
+        { "name": "iPhone 15 Plus", "esim": true, "notes": "Dual eSIM support" },
+        { "name": "iPhone 15", "esim": true, "notes": "Dual eSIM support" },
+        { "name": "iPhone 14 Pro Max", "esim": true, "notes": "Dual eSIM (US: eSIM only)" },
+        { "name": "iPhone 14 Pro", "esim": true, "notes": "Dual eSIM (US: eSIM only)" },
+        { "name": "iPhone 14 Plus", "esim": true, "notes": "Dual eSIM (US: eSIM only)" },
+        { "name": "iPhone 14", "esim": true, "notes": "Dual eSIM (US: eSIM only)" },
+        { "name": "iPhone 13 Pro Max", "esim": true },
+        { "name": "iPhone 13 Pro", "esim": true },
+        { "name": "iPhone 13 mini", "esim": true },
+        { "name": "iPhone 13", "esim": true },
+        { "name": "iPhone 12 Pro Max", "esim": true },
+        { "name": "iPhone 12 Pro", "esim": true },
+        { "name": "iPhone 12 mini", "esim": true },
+        { "name": "iPhone 12", "esim": true },
+        { "name": "iPhone 11 Pro Max", "esim": true },
+        { "name": "iPhone 11 Pro", "esim": true },
+        { "name": "iPhone 11", "esim": true },
+        { "name": "iPhone XS Max", "esim": true },
+        { "name": "iPhone XS", "esim": true },
+        { "name": "iPhone XR", "esim": true },
+        { "name": "iPhone SE (3rd gen, 2022)", "esim": true },
+        { "name": "iPhone SE (2nd gen, 2020)", "esim": true },
+        { "name": "iPhone SE (1st gen)", "esim": false },
+        { "name": "iPhone X", "esim": false },
+        { "name": "iPhone 8 / 8 Plus", "esim": false },
+        { "name": "iPad Pro (M4, 2024)", "esim": true },
+        { "name": "iPad Pro (M2, 2022)", "esim": true },
+        { "name": "iPad Air (M2, 2024)", "esim": true },
+        { "name": "iPad Air (M1, 2022)", "esim": true },
+        { "name": "iPad mini (6th gen)", "esim": true },
+        { "name": "iPad (10th gen, 2022)", "esim": true },
+        { "name": "iPad (9th gen, 2021)", "esim": true },
+        { "name": "Apple Watch Ultra 2", "esim": true, "notes": "Cellular model only" },
+        { "name": "Apple Watch Series 9", "esim": true, "notes": "Cellular model only" },
+        { "name": "Apple Watch SE (2nd gen)", "esim": true, "notes": "Cellular model only" }
+      ]
+    },
+    {
+      "name": "Samsung",
+      "models": [
+        { "name": "Galaxy S25 Ultra", "esim": true },
+        { "name": "Galaxy S25+", "esim": true },
+        { "name": "Galaxy S25", "esim": true },
+        { "name": "Galaxy S24 Ultra", "esim": true },
+        { "name": "Galaxy S24+", "esim": true },
+        { "name": "Galaxy S24", "esim": true },
+        { "name": "Galaxy S24 FE", "esim": true },
+        { "name": "Galaxy S23 Ultra", "esim": true },
+        { "name": "Galaxy S23+", "esim": true },
+        { "name": "Galaxy S23", "esim": true },
+        { "name": "Galaxy S23 FE", "esim": true },
+        { "name": "Galaxy S22 Ultra", "esim": true },
+        { "name": "Galaxy S22+", "esim": true },
+        { "name": "Galaxy S22", "esim": true },
+        { "name": "Galaxy S21 Ultra 5G", "esim": true },
+        { "name": "Galaxy S21+ 5G", "esim": true },
+        { "name": "Galaxy S21 5G", "esim": true },
+        { "name": "Galaxy S20 Ultra 5G", "esim": true },
+        { "name": "Galaxy S20+ 5G", "esim": true },
+        { "name": "Galaxy S20 5G", "esim": true },
+        { "name": "Galaxy S20", "esim": true },
+        { "name": "Galaxy Z Fold 6", "esim": true },
+        { "name": "Galaxy Z Fold 5", "esim": true },
+        { "name": "Galaxy Z Fold 4", "esim": true },
+        { "name": "Galaxy Z Fold 3", "esim": true },
+        { "name": "Galaxy Z Flip 6", "esim": true },
+        { "name": "Galaxy Z Flip 5", "esim": true },
+        { "name": "Galaxy Z Flip 4", "esim": true },
+        { "name": "Galaxy Z Flip 3", "esim": true },
+        { "name": "Galaxy A55 5G", "esim": true },
+        { "name": "Galaxy A54 5G", "esim": true },
+        { "name": "Galaxy A35 5G", "esim": true },
+        { "name": "Galaxy A34 5G", "esim": true },
+        { "name": "Galaxy Note 20 Ultra 5G", "esim": true },
+        { "name": "Galaxy Note 20 5G", "esim": true },
+        { "name": "Galaxy A15", "esim": false },
+        { "name": "Galaxy A14", "esim": false },
+        { "name": "Galaxy A13", "esim": false }
+      ]
+    },
+    {
+      "name": "Google",
+      "models": [
+        { "name": "Pixel 9 Pro XL", "esim": true },
+        { "name": "Pixel 9 Pro", "esim": true },
+        { "name": "Pixel 9", "esim": true },
+        { "name": "Pixel 8 Pro", "esim": true },
+        { "name": "Pixel 8", "esim": true },
+        { "name": "Pixel 8a", "esim": true },
+        { "name": "Pixel 7 Pro", "esim": true },
+        { "name": "Pixel 7", "esim": true },
+        { "name": "Pixel 7a", "esim": true },
+        { "name": "Pixel 6 Pro", "esim": true },
+        { "name": "Pixel 6", "esim": true },
+        { "name": "Pixel 6a", "esim": true },
+        { "name": "Pixel 5", "esim": true },
+        { "name": "Pixel 5a", "esim": true },
+        { "name": "Pixel 4 XL", "esim": true },
+        { "name": "Pixel 4", "esim": true },
+        { "name": "Pixel 4a", "esim": true },
+        { "name": "Pixel 3 XL", "esim": true, "notes": "Limited carrier support" },
+        { "name": "Pixel 3", "esim": true, "notes": "Limited carrier support" },
+        { "name": "Pixel 3a", "esim": true, "notes": "Limited carrier support" },
+        { "name": "Pixel 2 / 2 XL", "esim": false }
+      ]
+    },
+    {
+      "name": "Huawei",
+      "models": [
+        { "name": "P60 Pro", "esim": true },
+        { "name": "P50 Pro", "esim": true },
+        { "name": "P40 Pro+", "esim": true },
+        { "name": "P40 Pro", "esim": true },
+        { "name": "P40", "esim": true },
+        { "name": "Mate 50 Pro", "esim": true },
+        { "name": "Mate 40 Pro", "esim": true },
+        { "name": "Mate Xs 2", "esim": true },
+        { "name": "P30 Pro", "esim": false },
+        { "name": "P30", "esim": false },
+        { "name": "Mate 30 Pro", "esim": false }
+      ]
+    },
+    {
+      "name": "Xiaomi",
+      "models": [
+        { "name": "Xiaomi 14 Ultra", "esim": true },
+        { "name": "Xiaomi 14 Pro", "esim": true },
+        { "name": "Xiaomi 14", "esim": true },
+        { "name": "Xiaomi 13 Ultra", "esim": true },
+        { "name": "Xiaomi 13 Pro", "esim": true },
+        { "name": "Xiaomi 13", "esim": true },
+        { "name": "Xiaomi 12T Pro", "esim": true },
+        { "name": "Redmi Note 13 Pro+ 5G", "esim": true },
+        { "name": "Redmi Note 12 Pro+ 5G", "esim": true },
+        { "name": "Redmi Note 13 Pro", "esim": false },
+        { "name": "Redmi Note 12", "esim": false },
+        { "name": "Redmi 13C", "esim": false }
+      ]
+    },
+    {
+      "name": "OnePlus",
+      "models": [
+        { "name": "OnePlus 12", "esim": true },
+        { "name": "OnePlus 11", "esim": true },
+        { "name": "OnePlus 10 Pro", "esim": true },
+        { "name": "OnePlus Open", "esim": true },
+        { "name": "OnePlus Nord 3", "esim": true },
+        { "name": "OnePlus Nord CE 3", "esim": true },
+        { "name": "OnePlus 9 Pro", "esim": false },
+        { "name": "OnePlus 9", "esim": false },
+        { "name": "OnePlus Nord 2", "esim": false }
+      ]
+    },
+    {
+      "name": "Motorola",
+      "models": [
+        { "name": "Edge 50 Ultra", "esim": true },
+        { "name": "Edge 50 Pro", "esim": true },
+        { "name": "Edge 40 Pro", "esim": true },
+        { "name": "Edge 40", "esim": true },
+        { "name": "Razr 40 Ultra", "esim": true },
+        { "name": "Razr 40", "esim": true },
+        { "name": "Razr (2023)", "esim": true },
+        { "name": "Moto G Power (2024)", "esim": true },
+        { "name": "Moto G54", "esim": false },
+        { "name": "Moto G34", "esim": false }
+      ]
+    },
+    {
+      "name": "Sony",
+      "models": [
+        { "name": "Xperia 1 VI", "esim": true },
+        { "name": "Xperia 1 V", "esim": true },
+        { "name": "Xperia 5 V", "esim": true },
+        { "name": "Xperia 10 VI", "esim": true },
+        { "name": "Xperia 10 V", "esim": true },
+        { "name": "Xperia 1 IV", "esim": true },
+        { "name": "Xperia 5 IV", "esim": true },
+        { "name": "Xperia 1 III", "esim": false },
+        { "name": "Xperia 5 III", "esim": false }
+      ]
+    },
+    {
+      "name": "Oppo",
+      "models": [
+        { "name": "Find X7 Ultra", "esim": true },
+        { "name": "Find X6 Pro", "esim": true },
+        { "name": "Find N3 Flip", "esim": true },
+        { "name": "Find N3", "esim": true },
+        { "name": "Reno 11 Pro 5G", "esim": true },
+        { "name": "Reno 10 Pro+ 5G", "esim": true },
+        { "name": "A98 5G", "esim": false },
+        { "name": "A78 5G", "esim": false }
+      ]
+    }
+  ]
+}

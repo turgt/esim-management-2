@@ -15,3 +15,10 @@ export function ensureAdmin(req, res, next) {
   }
   res.status(403).render('error', { message: 'Forbidden: Admins only' });
 }
+
+export function ensureVendor(req, res, next) {
+  if (req.session.user && req.session.user.isVendor) {
+    return next();
+  }
+  res.status(403).render('error', { message: 'Forbidden: Vendor access required' });
+}

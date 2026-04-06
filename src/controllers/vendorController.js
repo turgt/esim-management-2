@@ -91,9 +91,16 @@ export async function showCreateVendor(req, res) {
   delete req.session.validationErrors;
   delete req.session.vendorSuccess;
 
+  const users = await db.User.findAll({
+    where: { isActive: true },
+    attributes: ['id', 'username', 'displayName'],
+    order: [['username', 'ASC']]
+  });
+
   res.render('admin/vendor-form', {
     title: 'Create Vendor',
     vendor: null,
+    users,
     errors,
     success
   });
@@ -102,7 +109,7 @@ export async function showCreateVendor(req, res) {
 // Create vendor
 export async function createVendor(req, res) {
   try {
-    const { name, contactInfo, notes, commissionRate } = req.body;
+    const { name, contactInfo, notes, commissionRate, userId } = req.body;
 
     if (!name || !name.trim()) {
       req.session.validationErrors = ['Vendor name is required'];
@@ -110,6 +117,7 @@ export async function createVendor(req, res) {
     }
 
     const code = generateVendorCode();
+    const managerUserId = userId ? parseInt(userId) : null;
 
     const vendor = await db.Vendor.create({
       name: name.trim(),
@@ -117,14 +125,20 @@ export async function createVendor(req, res) {
       commissionRate: parseFloat(commissionRate) || 0,
       contactInfo: contactInfo || null,
       notes: notes || null,
-      isActive: true
+      isActive: true,
+      userId: managerUserId
     });
+
+    // Auto-set isVendor on assigned user
+    if (managerUserId) {
+      await db.User.update({ isVendor: true }, { where: { id: managerUserId } });
+    }
 
     await logAudit(ACTIONS.VENDOR_CREATE, {
       userId: req.session.user.id,
       entity: 'Vendor',
       entityId: vendor.id,
-      details: { name: vendor.name, code: vendor.code },
+      details: { name: vendor.name, code: vendor.code, managerUserId },
       ipAddress: getIp(req)
     });
 
@@ -140,7 +154,9 @@ export async function createVendor(req, res) {
 // Show vendor detail with stats
 export async function showVendorDetail(req, res) {
   try {
-    const vendor = await db.Vendor.findByPk(req.params.id);
+    const vendor = await db.Vendor.findByPk(req.params.id, {
+      include: [{ model: db.User, as: 'manager', attributes: ['id', 'username', 'displayName'] }]
+    });
     if (!vendor) {
       return res.render('error', { message: 'Vendor not found' });
     }
@@ -276,9 +292,16 @@ export async function showEditVendor(req, res) {
     const errors = req.session.validationErrors || [];
     delete req.session.validationErrors;
 
+    const users = await db.User.findAll({
+      where: { isActive: true },
+      attributes: ['id', 'username', 'displayName'],
+      order: [['username', 'ASC']]
+    });
+
     res.render('admin/vendor-form', {
       title: 'Edit Vendor',
       vendor,
+      users,
       errors,
       success: null
     });
@@ -296,26 +319,44 @@ export async function updateVendor(req, res) {
       return res.render('error', { message: 'Vendor not found' });
     }
 
-    const { name, contactInfo, notes, commissionRate, isActive } = req.body;
+    const { name, contactInfo, notes, commissionRate, isActive, userId } = req.body;
 
     if (!name || !name.trim()) {
       req.session.validationErrors = ['Vendor name is required'];
       return res.redirect(`/admin/vendors/${vendor.id}/edit`);
     }
 
+    const oldUserId = vendor.userId;
+    const newUserId = userId ? parseInt(userId) : null;
+
     await vendor.update({
       name: name.trim(),
       commissionRate: parseFloat(commissionRate) || 0,
       contactInfo: contactInfo || null,
       notes: notes || null,
-      isActive: isActive === 'true' || isActive === 'on'
+      isActive: isActive === 'true' || isActive === 'on',
+      userId: newUserId
     });
+
+    // Auto-toggle isVendor: remove from old user, add to new user
+    if (oldUserId !== newUserId) {
+      if (oldUserId) {
+        // Check if old user manages any other vendor
+        const otherVendor = await db.Vendor.findOne({ where: { userId: oldUserId, id: { [db.Sequelize.Op.ne]: vendor.id } } });
+        if (!otherVendor) {
+          await db.User.update({ isVendor: false }, { where: { id: oldUserId } });
+        }
+      }
+      if (newUserId) {
+        await db.User.update({ isVendor: true }, { where: { id: newUserId } });
+      }
+    }
 
     await logAudit(ACTIONS.VENDOR_EDIT, {
       userId: req.session.user.id,
       entity: 'Vendor',
       entityId: vendor.id,
-      details: { name: vendor.name },
+      details: { name: vendor.name, managerUserId: newUserId },
       ipAddress: getIp(req)
     });
 
@@ -336,7 +377,12 @@ export async function deleteVendor(req, res) {
       return res.render('error', { message: 'Vendor not found' });
     }
 
-    // Remove vendor reference from users (don't delete users)
+    // Remove isVendor from manager user
+    if (vendor.userId) {
+      await db.User.update({ isVendor: false }, { where: { id: vendor.userId } });
+    }
+
+    // Remove vendor reference from referred users (don't delete users)
     await db.User.update({ vendorId: null }, { where: { vendorId: vendor.id } });
 
     await vendor.destroy();

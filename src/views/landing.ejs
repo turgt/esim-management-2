@@ -1,0 +1,268 @@
+<%- include('partials/landing-header', {title: title}) %>
+
+<!-- Hero Section -->
+<section class="landing-hero">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+    <div class="text-center max-w-3xl mx-auto">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--brand-light)] text-[var(--brand-primary)] text-sm font-medium mb-6">
+        <i data-lucide="signal" class="w-4 h-4"></i>
+        eSIM Data Plans
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-extrabold text-[var(--text-primary)] tracking-tight leading-tight mb-4">
+        Stay Connected<br>
+        <span class="text-[var(--brand-primary)]">Anywhere in the World</span>
+      </h1>
+      <p class="text-lg text-[var(--text-secondary)] mb-8 max-w-xl mx-auto">
+        Affordable eSIM data plans with instant activation. No roaming fees, no physical SIM needed.
+      </p>
+      <div class="flex items-center justify-center gap-3">
+        <a href="/auth/register" class="btn btn-primary btn-lg">
+          <i data-lucide="zap" class="w-5 h-5"></i>
+          Get Started
+        </a>
+        <a href="#plans" class="btn btn-secondary btn-lg">
+          View Plans
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it Works -->
+<section class="bg-[var(--surface-0)] border-y border-[var(--border-default)]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <h2 class="text-2xl font-bold text-[var(--text-primary)] text-center mb-10">How it Works</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+      <div class="landing-step-card">
+        <div class="landing-step-icon bg-[var(--brand-light)]">
+          <i data-lucide="search" class="w-6 h-6 text-[var(--brand-primary)]"></i>
+        </div>
+        <div class="landing-step-number">1</div>
+        <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">Choose a Plan</h3>
+        <p class="text-sm text-[var(--text-secondary)]">Browse available data plans and pick the one that fits your needs.</p>
+      </div>
+      <div class="landing-step-card">
+        <div class="landing-step-icon bg-emerald-50 dark:bg-emerald-500/10">
+          <i data-lucide="user-plus" class="w-6 h-6 text-emerald-600 dark:text-emerald-400"></i>
+        </div>
+        <div class="landing-step-number">2</div>
+        <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">Create Account</h3>
+        <p class="text-sm text-[var(--text-secondary)]">Sign up in seconds and complete your purchase securely.</p>
+      </div>
+      <div class="landing-step-card">
+        <div class="landing-step-icon bg-sky-50 dark:bg-sky-500/10">
+          <i data-lucide="qr-code" class="w-6 h-6 text-sky-600 dark:text-sky-400"></i>
+        </div>
+        <div class="landing-step-number">3</div>
+        <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">Activate & Go</h3>
+        <p class="text-sm text-[var(--text-secondary)]">Scan the QR code to install your eSIM and connect instantly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Plans Section -->
+<section id="plans" class="scroll-mt-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="text-center mb-8">
+      <h2 class="text-2xl font-bold text-[var(--text-primary)] mb-2">Available Plans</h2>
+      <p class="text-sm text-[var(--text-secondary)]">Choose a data plan for seamless connectivity</p>
+    </div>
+
+    <% if (typeof offers !== 'undefined' && offers && offers.length > 0) { %>
+
+    <!-- Filters & Sort -->
+    <div class="flex flex-col sm:flex-row gap-3 mb-6">
+      <div class="flex gap-1.5 flex-wrap flex-1" id="filterChips">
+        <button type="button" class="filter-chip active" data-filter="all" onclick="filterOffers('all', this)">All</button>
+        <button type="button" class="filter-chip" data-filter="unlimited" onclick="filterOffers('unlimited', this)">Unlimited</button>
+        <button type="button" class="filter-chip" data-filter="gb" onclick="filterOffers('gb', this)">Fixed GB</button>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-[var(--text-tertiary)]">Sort:</span>
+        <label for="sortSelect" class="sr-only">Sort plans</label>
+        <select id="sortSelect" onchange="sortOffers(this.value)" class="input text-sm !py-2 !px-3 !w-auto !min-w-0">
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="data-desc">Data: Most First</option>
+          <option value="duration-desc">Duration: Longest</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="text-xs text-[var(--text-tertiary)] mb-4" id="resultsCount"></p>
+
+    <!-- Offers Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="offersGrid">
+      <% offers.forEach(function(offer) { %>
+      <%
+        var price = offer.price && offer.price.fixed ? (offer.price.fixed / (offer.price.currencyDivisor || 100)).toFixed(2) : null;
+        var currency = offer.price ? (offer.price.currency || 'USD') : 'USD';
+        var dataLabel = offer.dataGB ? offer.dataGB : null;
+        var durationLabel = offer.durationDays ? offer.durationDays + ' days' : '';
+        var regionShort = '';
+        if (offer.regions && offer.regions.length > 0) {
+          regionShort = offer.regions[0];
+          if (regionShort.length > 20) regionShort = offer.country || regionShort.substring(0, 18) + '...';
+        } else if (offer.country) {
+          regionShort = offer.country;
+        }
+        var speeds = offer.dataSpeeds || [];
+        var bestSpeed = speeds.length ? speeds[speeds.length - 1] : '';
+        var subTypes = offer.subTypes || [];
+        var priceNum = price ? parseFloat(price) : 0;
+        var dataNum = offer.dataUnlimited ? 99999 : (offer.dataGB || 0);
+        var durationNum = offer.durationDays || 0;
+      %>
+      <a href="/auth/login" class="offer-card block no-underline"
+        data-price="<%= priceNum %>"
+        data-data="<%= dataNum %>"
+        data-duration="<%= durationNum %>"
+        data-unlimited="<%= offer.dataUnlimited ? '1' : '0' %>"
+        data-subtypes="<%= subTypes.join(',') %>">
+        <div class="offer-header">
+          <span class="offer-region"><%= regionShort || 'Global' %></span>
+          <div class="flex items-center gap-1">
+            <% subTypes.forEach(function(st) { %>
+            <span class="offer-subtype-badge"><%= st %></span>
+            <% }) %>
+            <% if (bestSpeed) { %>
+            <span class="offer-speed-badge"><%= bestSpeed %></span>
+            <% } %>
+          </div>
+        </div>
+        <div class="offer-body">
+          <% if (offer.dataUnlimited) { %>
+          <span class="offer-data">Unlimited</span>
+          <% } else if (dataLabel) { %>
+          <span class="offer-data"><%= dataLabel %></span>
+          <span class="offer-data-unit">GB</span>
+          <% } else { %>
+          <span class="offer-data">Data</span>
+          <% } %>
+          <% if (durationLabel) { %>
+          <span class="offer-duration"><%= durationLabel %></span>
+          <% } %>
+        </div>
+        <div class="offer-footer">
+          <div>
+            <% if (price) { %>
+            <span class="offer-price">$<%= price %></span>
+            <span class="offer-price-currency"><%= currency %></span>
+            <% } %>
+          </div>
+          <span class="offer-cta">
+            Buy <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </span>
+        </div>
+      </a>
+      <% }) %>
+    </div>
+
+    <div id="noResults" class="empty-state" style="display:none">
+      <div class="empty-icon"><i data-lucide="search-x" class="w-6 h-6"></i></div>
+      <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">No matching plans</h3>
+      <p class="text-sm text-[var(--text-secondary)]">Try changing your filters</p>
+    </div>
+
+    <!-- CTA after plans -->
+    <div class="text-center mt-10">
+      <p class="text-sm text-[var(--text-secondary)] mb-3">Ready to get connected?</p>
+      <a href="/auth/register" class="btn btn-primary">
+        <i data-lucide="zap" class="w-4 h-4"></i>
+        Create Account & Buy
+      </a>
+    </div>
+
+    <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon"><i data-lucide="globe" class="w-6 h-6"></i></div>
+      <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">No plans available</h3>
+      <p class="text-sm text-[var(--text-secondary)]">Check back later for new data plans.</p>
+    </div>
+    <% } %>
+  </div>
+</section>
+
+<script>
+var _currentFilter = 'all';
+
+(function() {
+  var grid = document.getElementById('offersGrid');
+  if (!grid) return;
+  var cards = Array.from(grid.querySelectorAll('.offer-card'));
+  var allSubTypes = new Set();
+  cards.forEach(function(c) {
+    var st = c.dataset.subtypes;
+    if (st) st.split(',').forEach(function(s) { if (s.trim()) allSubTypes.add(s.trim()); });
+  });
+  var container = document.getElementById('filterChips');
+  if (container && allSubTypes.size > 0) {
+    allSubTypes.forEach(function(st) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'filter-chip';
+      btn.dataset.filter = 'subtype:' + st;
+      btn.textContent = st.charAt(0).toUpperCase() + st.slice(1);
+      btn.onclick = function() { filterOffers('subtype:' + st, btn); };
+      container.appendChild(btn);
+    });
+  }
+})();
+
+function filterOffers(type, btn) {
+  _currentFilter = type;
+  document.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
+  btn.classList.add('active');
+  applyFilterAndSort();
+}
+
+function sortOffers(value) {
+  applyFilterAndSort();
+}
+
+function applyFilterAndSort() {
+  var grid = document.getElementById('offersGrid');
+  if (!grid) return;
+  var cards = Array.from(grid.querySelectorAll('.offer-card'));
+  var sortVal = document.getElementById('sortSelect').value;
+  var visibleCount = 0;
+
+  cards.forEach(function(card) {
+    var isUnlimited = card.dataset.unlimited === '1';
+    var subtypes = card.dataset.subtypes || '';
+    var show = true;
+    if (_currentFilter === 'unlimited') show = isUnlimited;
+    else if (_currentFilter === 'gb') show = !isUnlimited;
+    else if (_currentFilter.startsWith('subtype:')) {
+      var target = _currentFilter.split(':')[1];
+      show = subtypes.split(',').indexOf(target) !== -1;
+    }
+    card.style.display = show ? '' : 'none';
+    card._visible = show;
+    if (show) visibleCount++;
+  });
+
+  var sortField = sortVal.split('-')[0];
+  var sortDir = sortVal.split('-')[1];
+  cards.sort(function(a, b) {
+    if (!a._visible && !b._visible) return 0;
+    if (!a._visible) return 1;
+    if (!b._visible) return -1;
+    var va = parseFloat(a.dataset[sortField]) || 0;
+    var vb = parseFloat(b.dataset[sortField]) || 0;
+    return sortDir === 'asc' ? va - vb : vb - va;
+  });
+  cards.forEach(function(card) { grid.appendChild(card); });
+
+  document.getElementById('resultsCount').textContent = visibleCount + ' plan' + (visibleCount !== 1 ? 's' : '') + ' available';
+  document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+  grid.style.display = visibleCount === 0 ? 'none' : '';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  applyFilterAndSort();
+});
+</script>
+
+<%- include('partials/landing-footer') %>

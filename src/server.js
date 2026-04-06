@@ -23,6 +23,7 @@ import esimRoutes from './routes/esim.js';
 import profileRoutes from './routes/profile.js';
 import paymentRoutes from './routes/payment.js';
 import legalRoutes from './routes/legal.js';
+import vendorRoutes from './routes/vendor.js';
 import webhookRoutes from './routes/webhook.js';
 import { cookieParser, doubleCsrfProtection, csrfTokenMiddleware, csrfErrorHandler } from './middleware/csrf.js';
 import { verifyPaddleWebhook, processPaddleWebhook } from './services/paymentService.js';
@@ -221,15 +222,16 @@ app.use('/admin', adminRoutes);
 app.use('/profile', profileRoutes);
 app.use('/payment', paymentRoutes);
 app.use('/legal', legalRoutes);
+app.use('/vendor', vendorRoutes);
 app.use('/', esimRoutes);
 
-// Root redirect
+// Root route: landing page for guests, redirect for authenticated users
+import { showLandingPage } from './controllers/esimController.js';
 app.get('/', (req, res) => {
   if (req.session.user) {
-    res.redirect('/offers');
-  } else {
-    res.redirect('/auth/login');
+    return res.redirect('/offers');
   }
+  return showLandingPage(req, res);
 });
 
 // 404 handler

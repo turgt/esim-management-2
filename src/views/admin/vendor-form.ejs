@@ -49,6 +49,19 @@
       </div>
 
       <div>
+        <label for="userId" class="input-label">Manager Account</label>
+        <select id="userId" name="userId" class="input">
+          <option value="">-- No manager assigned --</option>
+          <% if (typeof users !== 'undefined' && users) { %>
+          <% users.forEach(function(u) { %>
+          <option value="<%= u.id %>" <%= (vendor && vendor.userId === u.id) ? 'selected' : '' %>><%= u.displayName || u.username %> (@<%= u.username %>)</option>
+          <% }) %>
+          <% } %>
+        </select>
+        <p class="text-xs text-[var(--text-tertiary)] mt-1">User account that will have vendor dashboard access</p>
+      </div>
+
+      <div>
         <label for="notes" class="input-label">Notes</label>
         <textarea id="notes" name="notes" rows="3" maxlength="1000" placeholder="Internal notes about this vendor..." class="input resize-y"><%= vendor ? vendor.notes || '' : '' %></textarea>
       </div>

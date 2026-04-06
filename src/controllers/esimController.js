@@ -1,4 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { listOffers, purchaseEsim, getPurchase, getPurchaseQrCode, getUsage, getEsimPlans, normalizeStatus, isCompletedStatus } from '../services/zenditClient.js';
 import db from '../db/models/index.js';
 import cacheService from '../services/cacheService.js';
@@ -8,9 +11,74 @@ import logger from '../lib/logger.js';
 
 const log = logger.child({ module: 'esim' });
 
+// Load eSIM device compatibility data
+const __esimFilename = fileURLToPath(import.meta.url);
+const __esimDirname = path.dirname(__esimFilename);
+const esimDevices = JSON.parse(fs.readFileSync(path.join(__esimDirname, '../data/esim-devices.json'), 'utf8'));
+
 // Helper function to check if QR is ready (uses normalized status)
 function isQrReady(status) {
   return isCompletedStatus(status);
+}
+
+// Public landing page with offers
+export async function showLandingPage(req, res) {
+  try {
+    const country = process.env.COUNTRY || 'TR';
+
+    let offers = cacheService.getLandingOffers(country);
+
+    if (!offers) {
+      log.info({ country }, 'Fetching landing offers from API');
+      offers = await listOffers(country);
+      cacheService.setLandingOffers(country, offers);
+    }
+
+    const activeOffers = offers.list.filter(o => o.enabled);
+
+    res.render('landing', {
+      title: 'DataPatch - eSIM Data Plans',
+      offers: activeOffers,
+      user: req.session?.user || null
+    });
+  } catch (err) {
+    log.error({ err }, 'showLandingPage error');
+    res.render('landing', {
+      title: 'DataPatch - eSIM Data Plans',
+      offers: [],
+      user: req.session?.user || null
+    });
+  }
+}
+
+// eSIM compatibility checker page
+export async function showCompatibility(req, res) {
+  res.render('compatibility', {
+    title: 'eSIM Compatibility',
+    brands: esimDevices.brands,
+    lastUpdated: esimDevices.lastUpdated
+  });
+}
+
+// eSIM compatibility API endpoint
+export async function checkCompatibility(req, res) {
+  const { brand, model } = req.query;
+
+  if (!brand) {
+    return res.json({ brands: esimDevices.brands.map(b => b.name) });
+  }
+
+  const brandData = esimDevices.brands.find(b => b.name === brand);
+  if (!brandData) {
+    return res.json({ error: 'Brand not found', models: [] });
+  }
+
+  if (!model) {
+    return res.json({ models: brandData.models });
+  }
+
+  const modelData = brandData.models.find(m => m.name === model);
+  return res.json({ result: modelData || null });
 }
 
 // Teklifleri listele - CACHED

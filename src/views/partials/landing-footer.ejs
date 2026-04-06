@@ -1,0 +1,39 @@
+    </main>
+
+    <footer class="border-t border-[var(--border-default)] bg-[var(--surface-0)]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+          <div class="flex items-center gap-2.5">
+            <div class="sidebar-brand-icon !w-7 !h-7 !rounded-lg" style="box-shadow:none;">
+              <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+            </div>
+            <span class="text-base font-bold text-[var(--text-primary)] tracking-tight">DataPatch</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" class="h-6 w-auto opacity-60"><rect width="48" height="32" rx="4" fill="#1A1F71"/><text x="24" y="20" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="Arial,sans-serif">VISA</text></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" class="h-6 w-auto opacity-60"><rect width="48" height="32" rx="4" fill="#252525"/><circle cx="19" cy="16" r="10" fill="#EB001B"/><circle cx="29" cy="16" r="10" fill="#F79E1B"/><path d="M24 8.8a10 10 0 0 1 0 14.4 10 10 0 0 1 0-14.4z" fill="#FF5F00"/></svg>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mb-4">
+          <a href="/legal/about" class="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">About</a>
+          <a href="/legal/terms" class="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Terms</a>
+          <a href="/legal/privacy" class="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Privacy</a>
+          <a href="/legal/kvkk" class="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">KVKK</a>
+          <a href="/legal/distance-sales" class="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Distance Sales</a>
+          <a href="/legal/refund" class="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Refund Policy</a>
+        </div>
+        <p class="text-xs text-[var(--text-tertiary)] text-center">&copy; <%= new Date().getFullYear() %> DataPatch. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+      var isDark = document.documentElement.classList.contains('dark');
+      document.querySelectorAll('.theme-sun').forEach(function(el) { el.style.display = isDark ? 'block' : 'none'; });
+      document.querySelectorAll('.theme-moon').forEach(function(el) { el.style.display = isDark ? 'none' : 'block'; });
+    }
+  </script>
+</body>
+</html>

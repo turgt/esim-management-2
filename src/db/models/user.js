@@ -20,6 +20,7 @@ export default (sequelize, DataTypes) => {
     displayName: { type: DataTypes.STRING, allowNull: true },
     phone: { type: DataTypes.STRING, allowNull: true },
     isAdmin: { type: DataTypes.BOOLEAN, defaultValue: false },
+    isVendor: { type: DataTypes.BOOLEAN, defaultValue: false },
     isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
     esimLimit: { type: DataTypes.INTEGER, allowNull: true },
     lastLoginAt: { type: DataTypes.DATE, allowNull: true },

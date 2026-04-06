@@ -124,12 +124,22 @@
         <a href="/payment/history" class="sidebar-link <%= typeof title !== 'undefined' && (title === 'My Payments' || title === 'Receipt') ? 'active' : '' %>">
           <i data-lucide="receipt" class="w-[1.125rem] h-[1.125rem]"></i> Payments
         </a>
+        <a href="/compatibility" class="sidebar-link <%= typeof title !== 'undefined' && title === 'eSIM Compatibility' ? 'active' : '' %>">
+          <i data-lucide="smartphone-nfc" class="w-[1.125rem] h-[1.125rem]"></i> Compatibility
+        </a>
 
         <div class="sidebar-divider"></div>
 
         <a href="/profile" class="sidebar-link <%= typeof title !== 'undefined' && title === 'Profile' ? 'active' : '' %>">
           <i data-lucide="user" class="w-[1.125rem] h-[1.125rem]"></i> Profile
         </a>
+
+        <% if (user.isVendor) { %>
+        <div class="sidebar-section">Vendor</div>
+        <a href="/vendor/dashboard" class="sidebar-link <%= typeof title !== 'undefined' && title === 'Vendor Dashboard' ? 'active' : '' %>">
+          <i data-lucide="bar-chart-3" class="w-[1.125rem] h-[1.125rem]"></i> Vendor Panel
+        </a>
+        <% } %>
 
         <% if (user.isAdmin) { %>
         <div class="sidebar-section">Admin</div>
@@ -203,10 +213,20 @@
           <a href="/payment/history" class="sidebar-link <%= typeof title !== 'undefined' && (title === 'My Payments' || title === 'Receipt') ? 'active' : '' %>">
             <i data-lucide="receipt" class="w-[1.125rem] h-[1.125rem]"></i> Payments
           </a>
+          <a href="/compatibility" class="sidebar-link <%= typeof title !== 'undefined' && title === 'eSIM Compatibility' ? 'active' : '' %>">
+            <i data-lucide="smartphone-nfc" class="w-[1.125rem] h-[1.125rem]"></i> Compatibility
+          </a>
           <div class="sidebar-divider"></div>
           <a href="/profile" class="sidebar-link <%= typeof title !== 'undefined' && title === 'Profile' ? 'active' : '' %>">
             <i data-lucide="user" class="w-[1.125rem] h-[1.125rem]"></i> Profile
           </a>
+
+          <% if (user.isVendor) { %>
+          <div class="sidebar-section">Vendor</div>
+          <a href="/vendor/dashboard" class="sidebar-link <%= typeof title !== 'undefined' && title === 'Vendor Dashboard' ? 'active' : '' %>">
+            <i data-lucide="bar-chart-3" class="w-[1.125rem] h-[1.125rem]"></i> Vendor Panel
+          </a>
+          <% } %>
 
           <% if (user.isAdmin) { %>
           <div class="sidebar-section">Admin</div>

@@ -61,6 +61,7 @@ await initializeCache();
 
 export const CACHE_DURATIONS = {
   OFFERS: 300,
+  LANDING_OFFERS: 600,
 };
 
 class CacheService {
@@ -107,6 +108,14 @@ class CacheService {
 
   setOffers(country, offers) {
     return this.set(`offers:${country}`, offers, CACHE_DURATIONS.OFFERS);
+  }
+
+  getLandingOffers(country) {
+    return this.get(`landing:offers:${country}`);
+  }
+
+  setLandingOffers(country, offers) {
+    return this.set(`landing:offers:${country}`, offers, CACHE_DURATIONS.LANDING_OFFERS);
   }
 
   invalidateUser(userId) {

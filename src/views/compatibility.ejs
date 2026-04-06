@@ -1,0 +1,163 @@
+<%- include('partials/header', {title: 'eSIM Compatibility', user: locals.user}) %>
+
+<div class="mb-6">
+  <h1 class="text-page-title">eSIM Compatibility</h1>
+  <p class="text-subtitle mt-1">Check if your device supports eSIM</p>
+</div>
+
+<!-- Checker Card -->
+<div class="card p-6 mb-8 max-w-2xl">
+  <h2 class="text-sm font-semibold text-[var(--text-primary)] mb-4">Check Your Device</h2>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+      <label for="brandSelect" class="input-label">Brand</label>
+      <select id="brandSelect" class="input" onchange="onBrandChange()">
+        <option value="">Select brand...</option>
+        <% brands.forEach(function(b) { %>
+        <option value="<%= b.name %>"><%= b.name %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div>
+      <label for="modelSelect" class="input-label">Model</label>
+      <select id="modelSelect" class="input" disabled onchange="onModelChange()">
+        <option value="">Select model...</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div id="compatResult" style="display:none"></div>
+</div>
+
+<!-- All Supported Devices -->
+<div class="mb-4 flex items-center justify-between">
+  <h2 class="text-lg font-semibold text-[var(--text-primary)]">All Supported Devices</h2>
+  <span class="text-xs text-[var(--text-tertiary)]">Updated: <%= lastUpdated %></span>
+</div>
+
+<div id="deviceList">
+  <% brands.forEach(function(brand, brandIdx) { %>
+  <%
+    var compatCount = brand.models.filter(function(m) { return m.esim; }).length;
+  %>
+  <div class="brand-accordion" id="brand-<%= brandIdx %>">
+    <div class="brand-accordion-header" onclick="toggleAccordion(<%= brandIdx %>)">
+      <div class="flex items-center gap-3">
+        <span><%= brand.name %></span>
+        <span class="text-xs text-[var(--text-tertiary)] font-normal"><%= compatCount %> supported</span>
+      </div>
+      <i data-lucide="chevron-down" class="w-4 h-4 text-[var(--text-tertiary)] accordion-chevron"></i>
+    </div>
+    <div class="brand-accordion-body">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 pt-2">
+        <% brand.models.forEach(function(model) { %>
+        <div class="flex items-center gap-2 py-1">
+          <% if (model.esim) { %>
+          <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+          <% } else { %>
+          <i data-lucide="x-circle" class="w-4 h-4 text-[var(--text-tertiary)] flex-shrink-0"></i>
+          <% } %>
+          <span class="text-sm <%= model.esim ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)]' %>"><%= model.name %></span>
+          <% if (model.notes) { %>
+          <span class="text-xs text-[var(--text-tertiary)]">(<%= model.notes %>)</span>
+          <% } %>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+  <% }) %>
+</div>
+
+<script>
+function onBrandChange() {
+  var brand = document.getElementById('brandSelect').value;
+  var modelSelect = document.getElementById('modelSelect');
+  var resultDiv = document.getElementById('compatResult');
+
+  resultDiv.style.display = 'none';
+  modelSelect.innerHTML = '<option value="">Select model...</option>';
+
+  if (!brand) {
+    modelSelect.disabled = true;
+    return;
+  }
+
+  modelSelect.disabled = true;
+
+  fetch('/api/compatibility?brand=' + encodeURIComponent(brand), {
+    headers: { 'X-CSRF-Token': '<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.models) {
+      data.models.forEach(function(m) {
+        var opt = document.createElement('option');
+        opt.value = m.name;
+        opt.textContent = m.name + (m.esim ? '' : ' (not supported)');
+        modelSelect.appendChild(opt);
+      });
+      modelSelect.disabled = false;
+    }
+  });
+}
+
+function onModelChange() {
+  var brand = document.getElementById('brandSelect').value;
+  var model = document.getElementById('modelSelect').value;
+  var resultDiv = document.getElementById('compatResult');
+
+  if (!model) {
+    resultDiv.style.display = 'none';
+    return;
+  }
+
+  fetch('/api/compatibility?brand=' + encodeURIComponent(brand) + '&model=' + encodeURIComponent(model), {
+    headers: { 'X-CSRF-Token': '<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.result) {
+      if (data.result.esim) {
+        resultDiv.className = 'compat-result compatible';
+        resultDiv.innerHTML =
+          '<i data-lucide="check-circle" class="w-6 h-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0"></i>' +
+          '<div>' +
+            '<p class="font-semibold text-emerald-700 dark:text-emerald-300">' + model + ' supports eSIM!</p>' +
+            (data.result.notes ? '<p class="text-sm text-emerald-600 dark:text-emerald-400 mt-0.5">' + data.result.notes + '</p>' : '') +
+          '</div>';
+      } else {
+        resultDiv.className = 'compat-result incompatible';
+        resultDiv.innerHTML =
+          '<i data-lucide="x-circle" class="w-6 h-6 text-rose-600 dark:text-rose-400 flex-shrink-0"></i>' +
+          '<div>' +
+            '<p class="font-semibold text-rose-700 dark:text-rose-300">' + model + ' does not support eSIM</p>' +
+            '<p class="text-sm text-rose-600 dark:text-rose-400 mt-0.5">This device requires a physical SIM card.</p>' +
+          '</div>';
+      }
+      resultDiv.style.display = 'flex';
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    } else {
+      resultDiv.className = 'compat-result incompatible';
+      resultDiv.innerHTML =
+        '<i data-lucide="help-circle" class="w-6 h-6 text-[var(--text-tertiary)] flex-shrink-0"></i>' +
+        '<div>' +
+          '<p class="font-semibold text-[var(--text-primary)]">Device not found</p>' +
+          '<p class="text-sm text-[var(--text-secondary)] mt-0.5">This model is not in our database yet.</p>' +
+        '</div>';
+      resultDiv.style.display = 'flex';
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+  });
+}
+
+function toggleAccordion(idx) {
+  var el = document.getElementById('brand-' + idx);
+  el.classList.toggle('open');
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+</script>
+
+<%- include('partials/footer') %>
