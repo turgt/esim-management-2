@@ -70,6 +70,8 @@ export async function showVendorDashboard(req, res) {
       }) || 0;
     }
 
+    const commission = totalRevenue * (parseFloat(vendor.commissionRate) / 100);
+
     // Recent users (last 10) - only displayName and date for privacy
     const recentUsers = await db.User.findAll({
       where: { vendorId: vendor.id },
@@ -149,7 +151,7 @@ export async function showVendorDashboard(req, res) {
       allVendors,
       refUrl,
       qrDataUrl,
-      stats: { totalUsers, activeUsers, totalPurchases, totalRevenue },
+      stats: { totalUsers, activeUsers, totalPurchases, totalRevenue, commission },
       recentUsers,
       recentSales: recentSales.map(s => ({
         id: s.id,

@@ -33,7 +33,7 @@
 </div>
 
 <!-- Stats -->
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
   <div class="stat-card">
     <div class="stat-icon bg-sky-50 dark:bg-sky-500/10">
       <i data-lucide="users" class="w-5 h-5 text-sky-600 dark:text-sky-400"></i>
@@ -59,6 +59,15 @@
     <div class="stat-content">
       <p class="stat-label">Total Revenue</p>
       <p class="stat-value text-emerald-600 dark:text-emerald-400">$<%= parseFloat(stats.totalRevenue).toFixed(2) %></p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon bg-amber-50 dark:bg-amber-500/10">
+      <i data-lucide="coins" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Commission</p>
+      <p class="stat-value text-amber-600 dark:text-amber-400">$<%= parseFloat(stats.commission).toFixed(2) %></p>
     </div>
   </div>
 </div>
