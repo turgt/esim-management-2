@@ -445,6 +445,6 @@ export default {
   purchaseEsimAfterPayment,
   topupEsimAfterPayment,
   findByMerchantOid,
-  checkZenditBalance,
+ // checkZenditBalance,
   checkProviderBalance
 };
