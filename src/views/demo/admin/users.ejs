@@ -1,45 +1,47 @@
-<div class="demo-page-title">Kullanıcı Yönetimi</div>
+<div class="v2-page-header">
+  <div class="v2-page-title">Kullanici Yonetimi</div>
+</div>
 
 <!-- Add User Form -->
-<div class="demo-form-card demo-animate-in">
-  <div class="demo-form-title">Yeni Kullanıcı Ekle</div>
-  <form class="demo-form-grid" style="grid-template-columns: 1fr 1fr 1fr auto;">
-    <div class="demo-input-group">
-      <label class="demo-input-label">Kullanıcı Adı</label>
-      <input type="text" class="demo-input" placeholder="Kullanıcı adı">
+<div class="v2-form-card v2-anim">
+  <div class="v2-form-title">Yeni Kullanici Ekle</div>
+  <form class="v2-form-grid" style="grid-template-columns: 1fr 1fr 1fr auto;">
+    <div class="v2-input-group" style="margin-bottom:0;">
+      <label class="v2-input-label">Kullanici Adi</label>
+      <input type="text" class="v2-input" placeholder="Kullanici adi">
     </div>
-    <div class="demo-input-group">
-      <label class="demo-input-label">E-posta</label>
-      <input type="email" class="demo-input" placeholder="E-posta adresi">
+    <div class="v2-input-group" style="margin-bottom:0;">
+      <label class="v2-input-label">E-posta</label>
+      <input type="email" class="v2-input" placeholder="E-posta adresi">
     </div>
-    <div class="demo-input-group">
-      <label class="demo-input-label">Şifre</label>
-      <input type="password" class="demo-input" placeholder="Şifre">
+    <div class="v2-input-group" style="margin-bottom:0;">
+      <label class="v2-input-label">Sifre</label>
+      <input type="password" class="v2-input" placeholder="Sifre">
     </div>
-    <div>
-      <button type="button" class="demo-btn demo-btn-primary demo-btn-sm">Ekle</button>
+    <div style="display:flex;align-items:flex-end;">
+      <button type="button" class="v2-btn v2-btn-primary v2-btn-sm">Ekle</button>
     </div>
   </form>
 </div>
 
 <!-- Search -->
-<div class="demo-search-wrapper">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-  <input type="text" class="demo-search-input" placeholder="Kullanıcı ara...">
+<div class="v2-search-wrap v2-anim">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+  <input type="text" class="v2-search-input" placeholder="Kullanici ara...">
 </div>
 
 <!-- Users Table -->
-<div class="demo-table-card demo-animate-in">
-  <div class="demo-table-responsive">
-    <table class="demo-table">
+<div class="v2-table-wrap v2-anim">
+  <div class="v2-table-responsive">
+    <table class="v2-table">
       <thead>
         <tr>
-          <th>Kullanıcı</th>
+          <th>Kullanici</th>
           <th>E-posta</th>
           <th>Rol</th>
           <th>eSIM</th>
           <th>Durum</th>
-          <th>İşlemler</th>
+          <th>Islemler</th>
         </tr>
       </thead>
       <tbody>
@@ -58,21 +60,21 @@
             <td><%= u.email %></td>
             <td>
               <% if (u.role === 'admin') { %>
-                <span class="demo-badge demo-badge-gradient">Admin</span>
+                <span class="v2-badge v2-badge-info">Admin</span>
               <% } else { %>
-                <span class="demo-badge demo-badge-dark">User</span>
+                <span class="v2-badge v2-badge-neutral">User</span>
               <% } %>
             </td>
             <td><%= u.esimCount %></td>
             <td>
               <% if (u.status === 'active') { %>
-                <span class="demo-badge demo-badge-success">Aktif</span>
+                <span class="v2-badge v2-badge-success">Aktif</span>
               <% } else { %>
-                <span class="demo-badge demo-badge-danger">Askıya Alındı</span>
+                <span class="v2-badge v2-badge-danger">Askiya Alindi</span>
               <% } %>
             </td>
             <td>
-              <a href="/demo/admin/users/<%= u.username %>" class="demo-table-link">Düzenle</a>
+              <a href="/demo/admin/users/<%= u.username %>" class="v2-table-link">Duzenle</a>
             </td>
           </tr>
         <% }); %>

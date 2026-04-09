@@ -1,41 +1,41 @@
-<div class="demo-content">
-  <h1 class="demo-page-title demo-animate-in">Ödeme Geçmişi</h1>
+<div class="v2-content">
+  <h1 class="v2-page-title v2-anim">Odeme Gecmisi</h1>
 
   <!-- Filters -->
-  <div class="demo-filters demo-animate-in">
-    <button class="demo-filter-chip active" onclick="setFilter(this)">Tümü</button>
-    <button class="demo-filter-chip" onclick="setFilter(this)">Tamamlandı</button>
-    <button class="demo-filter-chip" onclick="setFilter(this)">Bekleyen</button>
-    <button class="demo-filter-chip" onclick="setFilter(this)">Başarısız</button>
+  <div class="v2-filters v2-anim">
+    <button class="v2-chip active" onclick="setFilter(this)">Tumu</button>
+    <button class="v2-chip" onclick="setFilter(this)">Tamamlandi</button>
+    <button class="v2-chip" onclick="setFilter(this)">Bekleyen</button>
+    <button class="v2-chip" onclick="setFilter(this)">Basarisiz</button>
   </div>
 
   <!-- Payment List -->
-  <div class="demo-offers-list">
+  <div class="v2-payments">
     <% if (locals.payments && payments.length) { %>
       <% payments.forEach(function(payment) { %>
-    <a href="/demo/receipt" class="demo-offer-row demo-animate-in">
+    <a href="/demo/receipt" class="v2-row v2-anim">
       <div style="width:44px;height:44px;background:var(--gradient-primary);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
       </div>
-      <div class="demo-offer-row-info">
-        <div class="demo-offer-row-name"><%= payment.planName %></div>
-        <div class="demo-offer-row-meta"><%= payment.date %></div>
+      <div class="v2-row-info">
+        <div class="v2-row-name"><%= payment.planName %></div>
+        <div class="v2-row-meta"><%= payment.date %></div>
       </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <div style="font-family:var(--font-heading);font-size:15px;font-weight:700;color:var(--color-text);"><%= payment.amount %></div>
+      <div class="v2-row-right">
+        <div class="v2-row-price"><%= payment.amount %></div>
         <% if (payment.status === 'completed') { %>
-          <span class="demo-badge demo-badge-success">Tamamlandi</span>
+          <span class="v2-badge v2-badge-success">Tamamlandi</span>
         <% } else if (payment.status === 'pending') { %>
-          <span class="demo-badge demo-badge-warning">Bekleyen</span>
+          <span class="v2-badge v2-badge-warning">Bekleyen</span>
         <% } else { %>
-          <span class="demo-badge demo-badge-danger">Basarisiz</span>
+          <span class="v2-badge v2-badge-danger">Basarisiz</span>
         <% } %>
       </div>
     </a>
       <% }) %>
     <% } else { %>
     <div style="text-align:center;padding:40px 20px;color:var(--color-text-muted);font-size:14px;">
-      Henüz ödeme geçmişiniz bulunmuyor.
+      Henuz odeme gecmisiniz bulunmuyor.
     </div>
     <% } %>
   </div>
@@ -43,7 +43,7 @@
 
 <script>
 function setFilter(el) {
-  document.querySelectorAll('.demo-filter-chip').forEach(function(c) { c.classList.remove('active'); });
+  document.querySelectorAll('.v2-chip').forEach(function(c) { c.classList.remove('active'); });
   el.classList.add('active');
 }
 </script>

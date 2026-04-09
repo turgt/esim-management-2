@@ -1,47 +1,47 @@
-<div class="demo-content" style="padding-bottom:40px;">
-  <h1 class="demo-page-title demo-animate-in">Ödeme</h1>
+<div class="v2-content" style="padding-bottom:40px;">
+  <h1 class="v2-page-title v2-anim">Odeme</h1>
 
   <!-- Order Summary -->
-  <div class="demo-order-card demo-animate-in">
-    <div class="demo-order-plan">
-      <div class="demo-offer-flag demo-offer-flag-sm" style="background:<%= locals.order ? order.flagBg : 'var(--gradient-subtle)' %>;">
+  <div class="v2-order v2-anim">
+    <div class="v2-order-plan">
+      <div class="v2-row-flag" style="background:<%= locals.order ? order.flagBg : 'var(--gradient-subtle)' %>;">
         <%= locals.order ? order.flag : '🇹🇷' %>
       </div>
-      <div class="demo-order-details">
-        <div class="demo-order-name"><%= locals.order ? order.planName : 'Turkiye 10GB' %></div>
-        <div class="demo-order-meta">
+      <div class="v2-order-details">
+        <div class="v2-order-name"><%= locals.order ? order.planName : 'Turkiye 10GB' %></div>
+        <div class="v2-order-meta">
           <%= locals.order ? order.data : '10 GB' %> &bull; <%= locals.order ? order.duration : '30 gun' %>
         </div>
       </div>
     </div>
 
-    <div class="demo-receipt-divider"></div>
+    <div class="v2-receipt-hr"></div>
 
     <!-- Price Breakdown -->
     <div style="display:flex;flex-direction:column;gap:10px;">
-      <div class="demo-receipt-line">
-        <span class="demo-receipt-line-label">Ara Toplam</span>
-        <span class="demo-receipt-line-value"><%= locals.order ? order.subtotal : '$4.16' %></span>
+      <div class="v2-receipt-line">
+        <span class="v2-receipt-line-label">Ara Toplam</span>
+        <span class="v2-receipt-line-value"><%= locals.order ? order.subtotal : '$4.16' %></span>
       </div>
-      <div class="demo-receipt-line">
-        <span class="demo-receipt-line-label">KDV (%20)</span>
-        <span class="demo-receipt-line-value"><%= locals.order ? order.tax : '$0.83' %></span>
+      <div class="v2-receipt-line">
+        <span class="v2-receipt-line-label">KDV (%20)</span>
+        <span class="v2-receipt-line-value"><%= locals.order ? order.tax : '$0.83' %></span>
       </div>
-      <div class="demo-receipt-divider"></div>
+      <div class="v2-receipt-hr"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <span style="font-family:var(--font-heading);font-size:16px;font-weight:700;">Toplam</span>
-        <span class="demo-receipt-total demo-gradient-text"><%= locals.order ? order.total : '$4.99' %></span>
+        <span class="v2-receipt-total" style="color: var(--accent);"><%= locals.order ? order.total : '$4.99' %></span>
       </div>
     </div>
   </div>
 
   <!-- Pay Button -->
-  <a href="/demo/status" class="demo-btn demo-btn-primary demo-btn-block demo-btn-lg demo-animate-in">
+  <a href="/demo/status" class="v2-btn v2-btn-primary v2-btn-block v2-btn-lg v2-anim">
     Odemeyi Tamamla
   </a>
 
   <!-- Security Note -->
-  <p class="demo-security-note demo-animate-in">
+  <p class="v2-security v2-anim">
     Guvenli odeme -- Paddle ile islenir
   </p>
 </div>

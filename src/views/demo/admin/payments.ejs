@@ -1,37 +1,39 @@
-<div class="demo-page-title">Ödemeler</div>
+<div class="v2-page-header">
+  <div class="v2-page-title">Odemeler</div>
+</div>
 
 <!-- Filter Chips -->
-<div class="demo-filters">
-  <button class="demo-filter-chip active">Tümü</button>
-  <button class="demo-filter-chip">Tamamlandı</button>
-  <button class="demo-filter-chip">Bekleyen</button>
-  <button class="demo-filter-chip">Başarısız</button>
+<div class="v2-filters v2-anim">
+  <button class="v2-chip active">Tumu</button>
+  <button class="v2-chip">Tamamlandi</button>
+  <button class="v2-chip">Bekleyen</button>
+  <button class="v2-chip">Basarisiz</button>
 </div>
 
 <!-- Payments Table -->
-<div class="demo-table-card demo-animate-in">
-  <div class="demo-table-responsive">
-    <table class="demo-table">
+<div class="v2-table-wrap v2-anim">
+  <div class="v2-table-responsive">
+    <table class="v2-table">
       <thead>
         <tr>
-          <th>Kullanıcı</th>
+          <th>Kullanici</th>
           <th>Plan</th>
           <th>Tutar</th>
           <th>Durum</th>
           <th>Tarih</th>
-          <th>İşlemler</th>
+          <th>Islemler</th>
         </tr>
       </thead>
       <tbody>
         <% const defaultPayments = [
-          { user: 'ahmet.yilmaz', plan: 'Türkiye 5GB / 30 Gün', amount: '$12.99', status: 'completed', date: '2026-04-09' },
-          { user: 'elif.demir', plan: 'Avrupa 10GB / 30 Gün', amount: '$24.99', status: 'completed', date: '2026-04-08' },
-          { user: 'mehmet.kaya', plan: 'ABD 3GB / 15 Gün', amount: '$9.99', status: 'pending', date: '2026-04-08' },
-          { user: 'zeynep.arslan', plan: 'Türkiye 10GB / 30 Gün', amount: '$19.99', status: 'completed', date: '2026-04-07' },
-          { user: 'can.ozturk', plan: 'Asya 5GB / 30 Gün', amount: '$14.99', status: 'failed', date: '2026-04-07' },
-          { user: 'ahmet.yilmaz', plan: 'Avrupa 5GB / 15 Gün', amount: '$17.99', status: 'completed', date: '2026-04-06' },
-          { user: 'elif.demir', plan: 'Türkiye 3GB / 7 Gün', amount: '$7.99', status: 'failed', date: '2026-04-06' },
-          { user: 'zeynep.arslan', plan: 'ABD 10GB / 30 Gün', amount: '$29.99', status: 'pending', date: '2026-04-05' }
+          { user: 'ahmet.yilmaz', plan: 'Turkiye 5GB / 30 Gun', amount: '$12.99', status: 'completed', date: '2026-04-09' },
+          { user: 'elif.demir', plan: 'Avrupa 10GB / 30 Gun', amount: '$24.99', status: 'completed', date: '2026-04-08' },
+          { user: 'mehmet.kaya', plan: 'ABD 3GB / 15 Gun', amount: '$9.99', status: 'pending', date: '2026-04-08' },
+          { user: 'zeynep.arslan', plan: 'Turkiye 10GB / 30 Gun', amount: '$19.99', status: 'completed', date: '2026-04-07' },
+          { user: 'can.ozturk', plan: 'Asya 5GB / 30 Gun', amount: '$14.99', status: 'failed', date: '2026-04-07' },
+          { user: 'ahmet.yilmaz', plan: 'Avrupa 5GB / 15 Gun', amount: '$17.99', status: 'completed', date: '2026-04-06' },
+          { user: 'elif.demir', plan: 'Turkiye 3GB / 7 Gun', amount: '$7.99', status: 'failed', date: '2026-04-06' },
+          { user: 'zeynep.arslan', plan: 'ABD 10GB / 30 Gun', amount: '$29.99', status: 'pending', date: '2026-04-05' }
         ]; %>
         <% const paymentList = locals.adminPayments || defaultPayments; %>
         <% paymentList.forEach(function(p) { %>
@@ -41,19 +43,19 @@
             <td><%= p.amount %></td>
             <td>
               <% if (p.status === 'completed') { %>
-                <span class="demo-badge demo-badge-success">Tamamlandı</span>
+                <span class="v2-badge v2-badge-success">Tamamlandi</span>
               <% } else if (p.status === 'pending') { %>
-                <span class="demo-badge demo-badge-warning">Bekleyen</span>
+                <span class="v2-badge v2-badge-warning">Bekleyen</span>
               <% } else { %>
-                <span class="demo-badge demo-badge-danger">Başarısız</span>
+                <span class="v2-badge v2-badge-danger">Basarisiz</span>
               <% } %>
             </td>
             <td><%= p.date %></td>
             <td>
               <% if (p.status === 'failed') { %>
-                <button class="demo-btn demo-btn-sm demo-btn-outline">Tekrar Dene</button>
+                <button class="v2-btn v2-btn-sm v2-btn-secondary">Tekrar Dene</button>
               <% } else if (p.status === 'pending') { %>
-                <button class="demo-btn demo-btn-sm demo-btn-outline">Çözümle</button>
+                <button class="v2-btn v2-btn-sm v2-btn-secondary">Cozumle</button>
               <% } %>
             </td>
           </tr>

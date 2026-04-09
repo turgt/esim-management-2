@@ -1,35 +1,42 @@
-<div class="demo-page-title"><%= locals.vendorName ? 'Vendor Düzenle' : 'Vendor Ekle' %></div>
+<%
+  const isEdit = locals.isEdit || false;
+  const v = locals.vendor || {};
+%>
 
-<div class="demo-form-card demo-animate-in" style="max-width: 600px;">
+<div class="v2-page-header">
+  <div class="v2-page-title"><%= isEdit ? 'Vendor Duzenle' : 'Vendor Ekle' %></div>
+</div>
+
+<div class="v2-form-card v2-anim" style="max-width: 600px;">
   <form>
-    <div class="demo-input-group">
-      <label class="demo-input-label">Vendor Adı</label>
-      <input type="text" class="demo-input" placeholder="Vendor adını girin" value="<%= locals.vendorName || '' %>">
+    <div class="v2-input-group">
+      <label class="v2-input-label">Vendor Adi</label>
+      <input type="text" class="v2-input" placeholder="Vendor adini girin" value="<%= v.name || '' %>">
     </div>
 
-    <div class="demo-input-group">
-      <label class="demo-input-label">API URL</label>
-      <input type="text" class="demo-input" placeholder="https://api.example.com/v1" value="<%= locals.vendorApiUrl || '' %>">
+    <div class="v2-input-group">
+      <label class="v2-input-label">API URL</label>
+      <input type="text" class="v2-input" placeholder="https://api.example.com/v1" value="<%= v.apiUrl || '' %>">
     </div>
 
-    <div class="demo-input-group">
-      <label class="demo-input-label">API Key</label>
-      <input type="password" class="demo-input" placeholder="API anahtarını girin">
+    <div class="v2-input-group">
+      <label class="v2-input-label">API Key</label>
+      <input type="password" class="v2-input" placeholder="API anahtarini girin">
     </div>
 
-    <div class="demo-input-group">
-      <label class="demo-input-label">Komisyon Oranı (%)</label>
-      <input type="number" class="demo-input" placeholder="12" value="<%= locals.vendorCommission || '' %>">
+    <div class="v2-input-group">
+      <label class="v2-input-label">Komisyon Orani (%)</label>
+      <input type="number" class="v2-input" placeholder="12" value="<%= v.commission || '' %>">
     </div>
 
-    <div class="demo-input-group">
-      <label class="demo-input-label">Durum</label>
-      <select class="demo-input">
-        <option value="active" <%= locals.vendorStatus === 'active' || !locals.vendorStatus ? 'selected' : '' %>>Aktif</option>
-        <option value="passive" <%= locals.vendorStatus === 'passive' ? 'selected' : '' %>>Pasif</option>
+    <div class="v2-input-group">
+      <label class="v2-input-label">Durum</label>
+      <select class="v2-input">
+        <option value="active" <%= v.status === 'active' || !v.status ? 'selected' : '' %>>Aktif</option>
+        <option value="passive" <%= v.status === 'passive' ? 'selected' : '' %>>Pasif</option>
       </select>
     </div>
 
-    <button type="button" class="demo-btn demo-btn-primary demo-btn-block" style="margin-top: 8px;">Kaydet</button>
+    <button type="button" class="v2-btn v2-btn-primary v2-btn-block" style="margin-top: 8px;">Kaydet</button>
   </form>
 </div>

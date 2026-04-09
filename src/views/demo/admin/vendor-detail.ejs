@@ -1,56 +1,86 @@
-<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-  <div class="demo-page-title" style="margin-bottom: 0;">Zendit</div>
-  <span class="demo-badge demo-badge-success">Bağlı</span>
+<%
+  const v = locals.vendor || {
+    name: 'Zendit',
+    apiUrl: 'https://api.zendit.io/v1',
+    apiStatus: 'connected',
+    lastConnection: '2026-04-09 15:42',
+    esimCount: 245,
+    commission: '%12',
+    totalSales: 245,
+    revenue: '$6,240',
+    activeEsims: 198
+  };
+%>
+
+<div class="v2-page-header" style="display:flex;align-items:center;gap:12px;">
+  <div class="v2-page-title" style="margin-bottom:0;"><%= v.name %></div>
+  <% if (v.apiStatus === 'connected') { %>
+    <span class="v2-badge v2-badge-success">Bagli</span>
+  <% } else { %>
+    <span class="v2-badge v2-badge-danger">Bagli Degil</span>
+  <% } %>
 </div>
 
 <!-- Detail Grid -->
-<div class="demo-detail-grid">
-  <div class="demo-detail-item demo-animate-in">
-    <div class="demo-detail-label">Vendor Adı</div>
-    <div class="demo-detail-value">Zendit</div>
+<div class="v2-details v2-anim">
+  <div class="v2-detail">
+    <div class="v2-detail-label">Vendor Adi</div>
+    <div class="v2-detail-value"><%= v.name %></div>
   </div>
-  <div class="demo-detail-item demo-animate-in">
-    <div class="demo-detail-label">API URL</div>
-    <div class="demo-detail-value demo-detail-value-mono">https://api.zendit.io/v1</div>
+  <div class="v2-detail">
+    <div class="v2-detail-label">API URL</div>
+    <div class="v2-detail-value v2-detail-mono"><%= v.apiUrl %></div>
   </div>
-  <div class="demo-detail-item demo-animate-in">
-    <div class="demo-detail-label">API Durumu</div>
-    <div class="demo-detail-value"><span class="demo-badge demo-badge-success">Bağlı</span></div>
+  <div class="v2-detail">
+    <div class="v2-detail-label">API Durumu</div>
+    <div class="v2-detail-value">
+      <% if (v.apiStatus === 'connected') { %>
+        <span class="v2-vendor-status"><span class="v2-dot v2-dot-ok"></span> Bagli</span>
+      <% } else { %>
+        <span class="v2-vendor-status"><span class="v2-dot v2-dot-no"></span> Bagli Degil</span>
+      <% } %>
+    </div>
   </div>
-  <div class="demo-detail-item demo-animate-in">
-    <div class="demo-detail-label">Son Bağlantı</div>
-    <div class="demo-detail-value">2026-04-09 15:42</div>
+  <div class="v2-detail">
+    <div class="v2-detail-label">Son Baglanti</div>
+    <div class="v2-detail-value"><%= v.lastConnection %></div>
   </div>
-  <div class="demo-detail-item demo-animate-in">
-    <div class="demo-detail-label">Toplam eSIM</div>
-    <div class="demo-detail-value">245</div>
+  <div class="v2-detail">
+    <div class="v2-detail-label">Toplam eSIM</div>
+    <div class="v2-detail-value"><%= v.esimCount %></div>
   </div>
-  <div class="demo-detail-item demo-animate-in">
-    <div class="demo-detail-label">Komisyon Oranı</div>
-    <div class="demo-detail-value">%12</div>
+  <div class="v2-detail">
+    <div class="v2-detail-label">Komisyon Orani</div>
+    <div class="v2-detail-value"><%= v.commission %></div>
   </div>
 </div>
 
 <!-- Sales Stats -->
-<div class="demo-form-card demo-animate-in">
-  <div class="demo-form-title">Satış İstatistikleri</div>
-  <div class="demo-stats-row demo-stats-row-3">
-    <div class="demo-stat-card">
-      <div class="demo-stat-label">Satış</div>
-      <div class="demo-stat-value">245</div>
+<div class="v2-stats v2-anim" style="grid-template-columns: repeat(3, 1fr);">
+  <div class="v2-stat">
+    <div class="v2-stat-icon v2-stat-icon-orange">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
     </div>
-    <div class="demo-stat-card">
-      <div class="demo-stat-label">Gelir</div>
-      <div class="demo-stat-value">$6,240</div>
+    <div class="v2-stat-label">Satis</div>
+    <div class="v2-stat-value"><%= v.totalSales %></div>
+  </div>
+  <div class="v2-stat">
+    <div class="v2-stat-icon v2-stat-icon-green">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
     </div>
-    <div class="demo-stat-card">
-      <div class="demo-stat-label">Aktif eSIM</div>
-      <div class="demo-stat-value">198</div>
+    <div class="v2-stat-label">Gelir</div>
+    <div class="v2-stat-value"><%= v.revenue %></div>
+  </div>
+  <div class="v2-stat">
+    <div class="v2-stat-icon v2-stat-icon-green">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>
     </div>
+    <div class="v2-stat-label">Aktif eSIM</div>
+    <div class="v2-stat-value"><%= v.activeEsims %></div>
   </div>
 </div>
 
 <!-- Actions -->
-<div class="demo-action-row">
-  <a href="/demo/admin/vendors/1/edit" class="demo-btn demo-btn-primary">Düzenle</a>
+<div class="v2-actions v2-anim">
+  <a href="/demo/admin/vendors/1/edit" class="v2-btn v2-btn-primary">Duzenle</a>
 </div>

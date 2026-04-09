@@ -1,40 +1,60 @@
-<div class="demo-page-title">eSIM Aktivasyon Bilgileri</div>
+<%
+  const e = locals.email || {
+    recipient: 'ahmet@example.com',
+    sender: 'noreply@datapatch.io',
+    subject: 'eSIM Aktivasyon Bilgileri',
+    date: '2026-04-09 14:35',
+    status: 'sent'
+  };
+%>
+
+<div class="v2-page-header">
+  <div class="v2-page-title"><%= e.subject %></div>
+</div>
 
 <!-- Detail Grid -->
-<div class="demo-detail-grid">
-  <div class="demo-detail-item demo-animate-in">
-    <div class="demo-detail-label">Alıcı</div>
-    <div class="demo-detail-value">ahmet@example.com</div>
+<div class="v2-details v2-anim">
+  <div class="v2-detail">
+    <div class="v2-detail-label">Alici</div>
+    <div class="v2-detail-value"><%= e.recipient %></div>
   </div>
-  <div class="demo-detail-item demo-animate-in">
-    <div class="demo-detail-label">Gönderen</div>
-    <div class="demo-detail-value">noreply@datapatch.io</div>
+  <div class="v2-detail">
+    <div class="v2-detail-label">Gonderen</div>
+    <div class="v2-detail-value"><%= e.sender %></div>
   </div>
-  <div class="demo-detail-item demo-animate-in">
-    <div class="demo-detail-label">Tarih</div>
-    <div class="demo-detail-value">2026-04-09 14:35</div>
+  <div class="v2-detail">
+    <div class="v2-detail-label">Tarih</div>
+    <div class="v2-detail-value"><%= e.date %></div>
   </div>
-  <div class="demo-detail-item demo-animate-in">
-    <div class="demo-detail-label">Durum</div>
-    <div class="demo-detail-value"><span class="demo-badge demo-badge-success">Gönderildi</span></div>
+  <div class="v2-detail">
+    <div class="v2-detail-label">Durum</div>
+    <div class="v2-detail-value">
+      <% if (e.status === 'sent') { %>
+        <span class="v2-badge v2-badge-success">Gonderildi</span>
+      <% } else { %>
+        <span class="v2-badge v2-badge-danger">Basarisiz</span>
+      <% } %>
+    </div>
   </div>
 </div>
 
 <!-- Email Content -->
-<div class="demo-form-card demo-animate-in">
-  <div class="demo-form-title">E-posta İçeriği</div>
-  <div style="font-size: 14px; line-height: 1.7; color: #374151;">
+<div class="v2-form-card v2-anim">
+  <div class="v2-form-title">E-posta Icerigi</div>
+  <div style="font-family: var(--font-body); font-size: 14px; line-height: 1.7; color: var(--text);">
     <p style="margin-bottom: 12px;">Merhaba Ahmet,</p>
-    <p style="margin-bottom: 12px;">eSIM'iniz başarıyla aktive edilmiştir. Aşağıda aktivasyon bilgilerinizi bulabilirsiniz:</p>
-    <div style="background: #fafafa; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
-      <p style="margin-bottom: 4px;"><strong>Plan:</strong> Türkiye 5GB / 30 Gün</p>
-      <p style="margin-bottom: 4px;"><strong>ICCID:</strong> 8901260882168000001</p>
-      <p style="margin-bottom: 4px;"><strong>Geçerlilik:</strong> 2026-04-09 - 2026-05-09</p>
+    <p style="margin-bottom: 12px;">eSIM'iniz basariyla aktive edilmistir. Asagida aktivasyon bilgilerinizi bulabilirsiniz:</p>
+    <div style="background: var(--surface-inset); border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+      <p style="margin-bottom: 4px;"><strong>Plan:</strong> Turkiye 5GB / 30 Gun</p>
+      <p style="margin-bottom: 4px; font-family: var(--font-mono); font-size: 13px;"><strong>ICCID:</strong> 8901260882168000001</p>
+      <p style="margin-bottom: 4px;"><strong>Gecerlilik:</strong> 2026-04-09 - 2026-05-09</p>
     </div>
-    <p style="margin-bottom: 12px;">eSIM'inizi telefonunuza eklemek için uygulamamızdaki QR kodunu tarayabilirsiniz.</p>
-    <p style="margin-bottom: 0;">İyi yolculuklar dileriz,<br>DataPatch Ekibi</p>
+    <p style="margin-bottom: 12px;">eSIM'inizi telefonunuza eklemek icin uygulamizdaki QR kodunu tarayabilirsiniz.</p>
+    <p style="margin-bottom: 0;">Iyi yolculuklar dileriz,<br>DataPatch Ekibi</p>
   </div>
 </div>
 
 <!-- Actions -->
-<button class="demo-btn demo-btn-outline">Tekrar Gönder</button>
+<div class="v2-actions v2-anim">
+  <button class="v2-btn v2-btn-secondary">Tekrar Gonder</button>
+</div>

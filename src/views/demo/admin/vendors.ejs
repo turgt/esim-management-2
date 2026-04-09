@@ -1,19 +1,19 @@
-<div class="demo-page-header-row">
-  <div class="demo-page-title" style="margin-bottom: 0;">Vendorlar</div>
-  <a href="/demo/admin/vendors/new" class="demo-btn demo-btn-primary demo-btn-sm">Yeni Vendor Ekle</a>
+<div class="v2-page-header" style="display:flex;align-items:center;justify-content:space-between;">
+  <div class="v2-page-title" style="margin-bottom:0;">Vendorlar</div>
+  <a href="/demo/admin/vendors/new" class="v2-btn v2-btn-primary v2-btn-sm">Yeni Vendor Ekle</a>
 </div>
 
 <!-- Vendors Table -->
-<div class="demo-table-card demo-animate-in">
-  <div class="demo-table-responsive">
-    <table class="demo-table">
+<div class="v2-table-wrap v2-anim">
+  <div class="v2-table-responsive">
+    <table class="v2-table">
       <thead>
         <tr>
           <th>Vendor</th>
           <th>API Durumu</th>
-          <th>eSIM Sayısı</th>
+          <th>eSIM Sayisi</th>
           <th>Komisyon</th>
-          <th>İşlemler</th>
+          <th>Islemler</th>
         </tr>
       </thead>
       <tbody>
@@ -29,15 +29,15 @@
             <td><%= v.name %></td>
             <td>
               <% if (v.apiStatus === 'connected') { %>
-                <span class="demo-badge demo-badge-success">Bağlı</span>
+                <span class="v2-vendor-status"><span class="v2-dot v2-dot-ok"></span> Bagli</span>
               <% } else { %>
-                <span class="demo-badge demo-badge-danger">Bağlı Değil</span>
+                <span class="v2-vendor-status"><span class="v2-dot v2-dot-no"></span> Bagli Degil</span>
               <% } %>
             </td>
             <td><%= v.esimCount %></td>
             <td><%= v.commission %></td>
             <td>
-              <a href="/demo/admin/vendors/<%= v.id %>" class="demo-table-link">Detay</a>
+              <a href="/demo/admin/vendors/<%= v.id %>" class="v2-table-link">Detay</a>
             </td>
           </tr>
         <% }); %>

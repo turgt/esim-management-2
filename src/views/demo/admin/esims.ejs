@@ -1,59 +1,61 @@
-<div class="demo-page-title">Tüm eSIM'ler</div>
+<div class="v2-page-header">
+  <div class="v2-page-title">Tum eSIM'ler</div>
+</div>
 
 <!-- Filter Chips -->
-<div class="demo-filters">
-  <button class="demo-filter-chip active">Tümü</button>
-  <button class="demo-filter-chip">Aktif</button>
-  <button class="demo-filter-chip">Bekleyen</button>
-  <button class="demo-filter-chip">Süresi Dolmuş</button>
-  <button class="demo-filter-chip">Başarısız</button>
+<div class="v2-filters v2-anim">
+  <button class="v2-chip active">Tumu</button>
+  <button class="v2-chip">Aktif</button>
+  <button class="v2-chip">Bekleyen</button>
+  <button class="v2-chip">Suresi Dolmus</button>
+  <button class="v2-chip">Basarisiz</button>
 </div>
 
 <!-- eSIMs Table -->
-<div class="demo-table-card demo-animate-in">
-  <div class="demo-table-responsive">
-    <table class="demo-table">
+<div class="v2-table-wrap v2-anim">
+  <div class="v2-table-responsive">
+    <table class="v2-table">
       <thead>
         <tr>
           <th>ICCID</th>
-          <th>Kullanıcı</th>
+          <th>Kullanici</th>
           <th>Plan</th>
           <th>Durum</th>
           <th>Tarih</th>
-          <th>İşlemler</th>
+          <th>Islemler</th>
         </tr>
       </thead>
       <tbody>
         <% const defaultEsims = [
-          { id: 1, iccid: '8901260882168000001', user: 'ahmet.yilmaz', plan: 'Türkiye 5GB / 30 Gün', status: 'active', date: '2026-04-09' },
-          { id: 2, iccid: '8901260882168000002', user: 'elif.demir', plan: 'Avrupa 10GB / 30 Gün', status: 'active', date: '2026-04-08' },
-          { id: 3, iccid: '8901260882168000003', user: 'mehmet.kaya', plan: 'ABD 3GB / 15 Gün', status: 'pending', date: '2026-04-08' },
-          { id: 4, iccid: '8901260882168000004', user: 'zeynep.arslan', plan: 'Türkiye 10GB / 30 Gün', status: 'active', date: '2026-04-07' },
-          { id: 5, iccid: '8901260882168000005', user: 'can.ozturk', plan: 'Asya 5GB / 30 Gün', status: 'failed', date: '2026-04-07' },
-          { id: 6, iccid: '8901260882168000006', user: 'ahmet.yilmaz', plan: 'Avrupa 5GB / 15 Gün', status: 'expired', date: '2026-03-15' },
-          { id: 7, iccid: '8901260882168000007', user: 'elif.demir', plan: 'Türkiye 3GB / 7 Gün', status: 'active', date: '2026-04-06' },
-          { id: 8, iccid: '8901260882168000008', user: 'zeynep.arslan', plan: 'ABD 10GB / 30 Gün', status: 'pending', date: '2026-04-06' }
+          { id: 1, iccid: '8901260882168000001', user: 'ahmet.yilmaz', plan: 'Turkiye 5GB / 30 Gun', status: 'active', date: '2026-04-09' },
+          { id: 2, iccid: '8901260882168000002', user: 'elif.demir', plan: 'Avrupa 10GB / 30 Gun', status: 'active', date: '2026-04-08' },
+          { id: 3, iccid: '8901260882168000003', user: 'mehmet.kaya', plan: 'ABD 3GB / 15 Gun', status: 'pending', date: '2026-04-08' },
+          { id: 4, iccid: '8901260882168000004', user: 'zeynep.arslan', plan: 'Turkiye 10GB / 30 Gun', status: 'active', date: '2026-04-07' },
+          { id: 5, iccid: '8901260882168000005', user: 'can.ozturk', plan: 'Asya 5GB / 30 Gun', status: 'failed', date: '2026-04-07' },
+          { id: 6, iccid: '8901260882168000006', user: 'ahmet.yilmaz', plan: 'Avrupa 5GB / 15 Gun', status: 'expired', date: '2026-03-15' },
+          { id: 7, iccid: '8901260882168000007', user: 'elif.demir', plan: 'Turkiye 3GB / 7 Gun', status: 'active', date: '2026-04-06' },
+          { id: 8, iccid: '8901260882168000008', user: 'zeynep.arslan', plan: 'ABD 10GB / 30 Gun', status: 'pending', date: '2026-04-06' }
         ]; %>
         <% const esimList = locals.esims || defaultEsims; %>
         <% esimList.forEach(function(e) { %>
           <tr>
-            <td class="demo-table-mono"><%= e.iccid %></td>
+            <td class="v2-table-mono"><%= e.iccid %></td>
             <td><%= e.user %></td>
             <td><%= e.plan %></td>
             <td>
               <% if (e.status === 'active') { %>
-                <span class="demo-badge demo-badge-success">Aktif</span>
+                <span class="v2-badge v2-badge-success">Aktif</span>
               <% } else if (e.status === 'pending') { %>
-                <span class="demo-badge demo-badge-warning">Bekleyen</span>
+                <span class="v2-badge v2-badge-warning">Bekleyen</span>
               <% } else if (e.status === 'expired') { %>
-                <span class="demo-badge demo-badge-neutral">Süresi Dolmuş</span>
+                <span class="v2-badge v2-badge-neutral">Suresi Dolmus</span>
               <% } else { %>
-                <span class="demo-badge demo-badge-danger">Başarısız</span>
+                <span class="v2-badge v2-badge-danger">Basarisiz</span>
               <% } %>
             </td>
             <td><%= e.date %></td>
             <td>
-              <a href="/demo/admin/esims/<%= e.id %>" class="demo-table-link">Detay</a>
+              <a href="/demo/admin/esims/<%= e.id %>" class="v2-table-link">Detay</a>
             </td>
           </tr>
         <% }); %>

@@ -1,34 +1,42 @@
-<div class="demo-page-title">eSIM Ata</div>
+<div class="v2-page-header">
+  <div class="v2-page-title">eSIM Ata</div>
+</div>
 
-<div class="demo-form-card demo-animate-in" style="max-width: 600px;">
+<div class="v2-form-card v2-anim" style="max-width: 600px;">
   <form>
-    <div class="demo-input-group">
-      <label class="demo-input-label">Kullanıcı Seçin</label>
-      <select class="demo-input">
-        <option value="">Kullanıcı seçin...</option>
-        <option value="1">ahmet.yilmaz - ahmet@example.com</option>
-        <option value="2">elif.demir - elif@example.com</option>
-        <option value="3">mehmet.kaya - mehmet@example.com</option>
-        <option value="4">zeynep.arslan - zeynep@example.com</option>
-        <option value="5">can.ozturk - can@example.com</option>
+    <div class="v2-input-group">
+      <label class="v2-input-label">Kullanici Secin</label>
+      <select class="v2-input">
+        <option value="">Kullanici secin...</option>
+        <% const defaultAssignUsers = [
+          { id: 1, username: 'ahmet.yilmaz', email: 'ahmet@example.com' },
+          { id: 2, username: 'elif.demir', email: 'elif@example.com' },
+          { id: 3, username: 'mehmet.kaya', email: 'mehmet@example.com' },
+          { id: 4, username: 'zeynep.arslan', email: 'zeynep@example.com' },
+          { id: 5, username: 'can.ozturk', email: 'can@example.com' }
+        ]; %>
+        <% const assignUserList = locals.users || defaultAssignUsers; %>
+        <% assignUserList.forEach(function(u) { %>
+          <option value="<%= u.id %>"><%= u.username %> - <%= u.email %></option>
+        <% }); %>
       </select>
     </div>
 
-    <div class="demo-input-group">
-      <label class="demo-input-label">ICCID</label>
-      <input type="text" class="demo-input" placeholder="8901260882168XXXXXX">
+    <div class="v2-input-group">
+      <label class="v2-input-label">ICCID</label>
+      <input type="text" class="v2-input" placeholder="8901260882168XXXXXX">
     </div>
 
-    <div class="demo-input-group">
-      <label class="demo-input-label">SM-DP+ Adresi</label>
-      <input type="text" class="demo-input" placeholder="smdp.example.com">
+    <div class="v2-input-group">
+      <label class="v2-input-label">SM-DP+ Adresi</label>
+      <input type="text" class="v2-input" placeholder="smdp.example.com">
     </div>
 
-    <div class="demo-input-group">
-      <label class="demo-input-label">Aktivasyon Kodu</label>
-      <input type="text" class="demo-input" placeholder="Aktivasyon kodunu girin">
+    <div class="v2-input-group">
+      <label class="v2-input-label">Aktivasyon Kodu</label>
+      <input type="text" class="v2-input" placeholder="Aktivasyon kodunu girin">
     </div>
 
-    <button type="button" class="demo-btn demo-btn-primary demo-btn-block" style="margin-top: 8px;">eSIM Ata</button>
+    <button type="button" class="v2-btn v2-btn-primary v2-btn-block" style="margin-top: 8px;">eSIM Ata</button>
   </form>
 </div>

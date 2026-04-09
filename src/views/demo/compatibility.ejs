@@ -1,27 +1,27 @@
-<div class="demo-content">
-  <h1 class="demo-page-title demo-animate-in">Cihaz Uyumluluğu</h1>
+<div class="v2-content">
+  <h1 class="v2-page-title v2-anim">Cihaz Uyumlulugu</h1>
 
   <!-- Search -->
-  <div class="demo-search-wrapper demo-animate-in">
+  <div class="v2-search-wrap v2-anim">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-    <input type="text" class="demo-search-input" placeholder="Cihaz ara...">
+    <input type="text" class="v2-search-input" placeholder="Cihaz ara...">
   </div>
 
   <!-- Brand Filters -->
-  <div class="demo-filters demo-animate-in">
-    <button class="demo-filter-chip active" onclick="setFilter(this)">Tümü</button>
-    <button class="demo-filter-chip" onclick="setFilter(this)">Apple</button>
-    <button class="demo-filter-chip" onclick="setFilter(this)">Samsung</button>
-    <button class="demo-filter-chip" onclick="setFilter(this)">Google</button>
-    <button class="demo-filter-chip" onclick="setFilter(this)">Huawei</button>
-    <button class="demo-filter-chip" onclick="setFilter(this)">Xiaomi</button>
+  <div class="v2-filters v2-anim">
+    <button class="v2-chip active" onclick="setFilter(this)">Tumu</button>
+    <button class="v2-chip" onclick="setFilter(this)">Apple</button>
+    <button class="v2-chip" onclick="setFilter(this)">Samsung</button>
+    <button class="v2-chip" onclick="setFilter(this)">Google</button>
+    <button class="v2-chip" onclick="setFilter(this)">Huawei</button>
+    <button class="v2-chip" onclick="setFilter(this)">Xiaomi</button>
   </div>
 
   <!-- Device Accordion -->
-  <div class="demo-accordion">
+  <div class="v2-accordion">
     <% if (locals.brands && brands.length) { %>
       <% brands.forEach(function(brand) { %>
-    <details class="demo-animate-in">
+    <details class="v2-anim">
       <summary>
         <div style="display:flex;align-items:center;gap:12px;flex:1;">
           <div style="width:40px;height:40px;background:var(--gradient-subtle);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;"><%= brand.icon || '📱' %></div>
@@ -29,13 +29,13 @@
           <span style="font-size:12px;color:var(--color-text-muted);font-weight:500;"><%= brand.models.length %> model</span>
         </div>
       </summary>
-      <div class="demo-accordion-body">
+      <div class="v2-accordion-body">
         <% brand.models.forEach(function(model) { %>
-        <div class="demo-device-item">
+        <div class="v2-device">
           <% if (model.compatible) { %>
-            <span class="demo-device-dot demo-device-dot-ok"></span>
+            <span class="v2-dot v2-dot-ok"></span>
           <% } else { %>
-            <span class="demo-device-dot demo-device-dot-no"></span>
+            <span class="v2-dot v2-dot-no"></span>
           <% } %>
           <span><%= model.name %></span>
         </div>
@@ -49,7 +49,7 @@
 
 <script>
 function setFilter(el) {
-  document.querySelectorAll('.demo-filter-chip').forEach(function(c) { c.classList.remove('active'); });
+  document.querySelectorAll('.v2-chip').forEach(function(c) { c.classList.remove('active'); });
   el.classList.add('active');
 }
 </script>

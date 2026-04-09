@@ -1,33 +1,35 @@
-<div class="demo-page-title">E-posta Logları</div>
+<div class="v2-page-header">
+  <div class="v2-page-title">E-posta Loglari</div>
+</div>
 
 <!-- Filter Chips -->
-<div class="demo-filters">
-  <button class="demo-filter-chip active">Tümü</button>
-  <button class="demo-filter-chip">Gönderildi</button>
-  <button class="demo-filter-chip">Başarısız</button>
+<div class="v2-filters v2-anim">
+  <button class="v2-chip active">Tumu</button>
+  <button class="v2-chip">Gonderildi</button>
+  <button class="v2-chip">Basarisiz</button>
 </div>
 
 <!-- Emails Table -->
-<div class="demo-table-card demo-animate-in">
-  <div class="demo-table-responsive">
-    <table class="demo-table">
+<div class="v2-table-wrap v2-anim">
+  <div class="v2-table-responsive">
+    <table class="v2-table">
       <thead>
         <tr>
-          <th>Alıcı</th>
+          <th>Alici</th>
           <th>Konu</th>
           <th>Durum</th>
           <th>Tarih</th>
-          <th>İşlemler</th>
+          <th>Islemler</th>
         </tr>
       </thead>
       <tbody>
         <% const defaultEmails = [
           { id: 1, recipient: 'ahmet@example.com', subject: 'eSIM Aktivasyon Bilgileri', status: 'sent', date: '2026-04-09 14:35' },
-          { id: 2, recipient: 'elif@example.com', subject: 'Hoş Geldiniz - DataPatch', status: 'sent', date: '2026-04-08 10:22' },
-          { id: 3, recipient: 'mehmet@example.com', subject: 'Ödeme Onayı', status: 'failed', date: '2026-04-08 09:15' },
-          { id: 4, recipient: 'zeynep@example.com', subject: 'eSIM Top-up Başarılı', status: 'sent', date: '2026-04-07 16:48' },
-          { id: 5, recipient: 'can@example.com', subject: 'Şifre Sıfırlama', status: 'sent', date: '2026-04-07 11:30' },
-          { id: 6, recipient: 'ahmet@example.com', subject: 'eSIM Süresi Dolmak Üzere', status: 'failed', date: '2026-04-06 08:00' }
+          { id: 2, recipient: 'elif@example.com', subject: 'Hos Geldiniz - DataPatch', status: 'sent', date: '2026-04-08 10:22' },
+          { id: 3, recipient: 'mehmet@example.com', subject: 'Odeme Onayi', status: 'failed', date: '2026-04-08 09:15' },
+          { id: 4, recipient: 'zeynep@example.com', subject: 'eSIM Top-up Basarili', status: 'sent', date: '2026-04-07 16:48' },
+          { id: 5, recipient: 'can@example.com', subject: 'Sifre Sifirlama', status: 'sent', date: '2026-04-07 11:30' },
+          { id: 6, recipient: 'ahmet@example.com', subject: 'eSIM Suresi Dolmak Uzere', status: 'failed', date: '2026-04-06 08:00' }
         ]; %>
         <% const emailList = locals.emails || defaultEmails; %>
         <% emailList.forEach(function(e) { %>
@@ -36,14 +38,14 @@
             <td><%= e.subject %></td>
             <td>
               <% if (e.status === 'sent') { %>
-                <span class="demo-badge demo-badge-success">Gönderildi</span>
+                <span class="v2-badge v2-badge-success">Gonderildi</span>
               <% } else { %>
-                <span class="demo-badge demo-badge-danger">Başarısız</span>
+                <span class="v2-badge v2-badge-danger">Basarisiz</span>
               <% } %>
             </td>
             <td><%= e.date %></td>
             <td>
-              <a href="/demo/admin/emails/<%= e.id %>" class="demo-table-link">Detay</a>
+              <a href="/demo/admin/emails/<%= e.id %>" class="v2-table-link">Detay</a>
             </td>
           </tr>
         <% }); %>

@@ -1,91 +1,91 @@
-<div class="demo-content">
+<div class="v2-content">
 
   <!-- QR Card -->
-  <div class="demo-qr-card demo-animate-in">
-    <div class="demo-qr-image">
-      <div class="demo-qr-placeholder"></div>
+  <div class="v2-qr v2-anim">
+    <div class="v2-qr-image">
+      <div class="v2-qr-img"></div>
     </div>
-    <div class="demo-qr-plan-name">Türkiye 10GB</div>
-    <div class="demo-qr-plan-detail">30 gün • 5G • $4.99</div>
+    <div class="v2-qr-name">Turkiye 10GB</div>
+    <div class="v2-qr-meta">30 gun · 5G · $4.99</div>
   </div>
 
   <!-- Tab Toggle -->
-  <div class="demo-tabs demo-animate-in">
-    <button class="demo-tab active" onclick="switchTab('auto', this)">Otomatik Yükleme</button>
-    <button class="demo-tab" onclick="switchTab('manual', this)">Manuel Giriş</button>
+  <div class="v2-tabs v2-anim">
+    <button class="v2-tab active" onclick="switchTab('auto', this)">Otomatik Yukleme</button>
+    <button class="v2-tab" onclick="switchTab('manual', this)">Manuel Giris</button>
   </div>
 
   <!-- Auto Install -->
-  <div id="tab-auto" class="demo-animate-in">
-    <div class="demo-step">
-      <div class="demo-step-number">1</div>
-      <div class="demo-step-text">
-        <strong>Ayarlar</strong> uygulamasını açın ve <strong>Hücresel</strong> (veya Mobil Veri) bölümüne gidin.
+  <div id="tab-auto" class="v2-anim">
+    <div class="v2-step">
+      <div class="v2-step-num">1</div>
+      <div class="v2-step-text">
+        <strong>Ayarlar</strong> uygulamasini acin ve <strong>Hucresel</strong> (veya Mobil Veri) bolumune gidin.
       </div>
     </div>
 
-    <div class="demo-step">
-      <div class="demo-step-number">2</div>
-      <div class="demo-step-text">
-        <strong>eSIM Ekle</strong> seçeneğine dokunun. Cihazınız otomatik olarak QR kod tarama ekranını açacaktır.
+    <div class="v2-step">
+      <div class="v2-step-num">2</div>
+      <div class="v2-step-text">
+        <strong>eSIM Ekle</strong> secenegine dokunun. Cihaziniz otomatik olarak QR kod tarama ekranini acacaktir.
       </div>
     </div>
 
-    <div class="demo-step">
-      <div class="demo-step-number">3</div>
-      <div class="demo-step-text">
-        Yukarıdaki <strong>QR kodu</strong> tarayın. eSIM birkaç saniye içinde yüklenecek ve kullanıma hazır olacaktır.
+    <div class="v2-step">
+      <div class="v2-step-num">3</div>
+      <div class="v2-step-text">
+        Yukaridaki <strong>QR kodu</strong> tarayin. eSIM birkac saniye icinde yuklenecek ve kullanima hazir olacaktir.
       </div>
     </div>
 
-    <div class="demo-platform-row">
-      <a href="#" class="demo-platform-btn">
+    <div class="v2-platforms">
+      <a href="#" class="v2-platform">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z"/><path d="M10 2c1 .5 2 2 2 5"/></svg>
-        iOS Ayarları
+        iOS Ayarlari
       </a>
-      <a href="#" class="demo-platform-btn">
+      <a href="#" class="v2-platform">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 16V9h14V2"/><path d="M2 12h20"/><path d="M18 16l-4-4 4-4"/></svg>
-        Android Ayarları
+        Android Ayarlari
       </a>
     </div>
   </div>
 
   <!-- Manual Install -->
-  <div id="tab-manual" style="display:none;" class="demo-animate-in">
-    <div class="demo-copy-field-label">SM-DP+ Adresi</div>
-    <div class="demo-copy-field">
-      <div class="demo-copy-field-value">smdp.io.globaldata.com</div>
-      <button class="demo-copy-btn" onclick="copyField(this)" data-value="smdp.io.globaldata.com">
+  <div id="tab-manual" style="display:none;" class="v2-anim">
+    <div class="v2-copy-label">SM-DP+ Adresi</div>
+    <div class="v2-copy">
+      <div class="v2-copy-value">smdp.io.globaldata.com</div>
+      <button class="v2-copy-btn" onclick="copyField(this)" data-value="smdp.io.globaldata.com">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
       </button>
     </div>
 
-    <div class="demo-copy-field-label">Aktivasyon Kodu</div>
-    <div class="demo-copy-field">
-      <div class="demo-copy-field-value">$XXXXXX-XXXXX-XXXXX-XXXXX</div>
-      <button class="demo-copy-btn" onclick="copyField(this)" data-value="$XXXXXX-XXXXX-XXXXX-XXXXX">
+    <div class="v2-copy-label">Aktivasyon Kodu</div>
+    <div class="v2-copy">
+      <div class="v2-copy-value">$XXXXXX-XXXXX-XXXXX-XXXXX</div>
+      <button class="v2-copy-btn" onclick="copyField(this)" data-value="$XXXXXX-XXXXX-XXXXX-XXXXX">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
       </button>
     </div>
 
-    <div class="demo-step" style="margin-top:16px;">
-      <div class="demo-step-number">1</div>
-      <div class="demo-step-text">
-        <strong>Ayarlar > Hücresel > eSIM Ekle</strong> bölümüne gidin ve <strong>"Manuel Giriş"</strong> seçeneğini seçin.
+    <div class="v2-step" style="margin-top:16px;">
+      <div class="v2-step-num">1</div>
+      <div class="v2-step-text">
+        <strong>Ayarlar > Hucresel > eSIM Ekle</strong> bolumune gidin ve <strong>"Manuel Giris"</strong> secenegini secin.
       </div>
     </div>
 
-    <div class="demo-step">
-      <div class="demo-step-number">2</div>
-      <div class="demo-step-text">
-        Yukarıdaki <strong>SM-DP+ adresini</strong> ve <strong>aktivasyon kodunu</strong> ilgili alanlara yapıştırın.
+    <div class="v2-step">
+      <div class="v2-step-num">2</div>
+      <div class="v2-step-text">
+        Yukaridaki <strong>SM-DP+ adresini</strong> ve <strong>aktivasyon kodunu</strong> ilgili alanlara yapistirin.
       </div>
     </div>
 
-    <div class="demo-step">
-      <div class="demo-step-number">3</div>
-      <div class="demo-step-text">
-        <strong>Devam</strong> butonuna dokunun. eSIM birkaç saniye içinde yüklenecektir.
+    <div class="v2-step">
+      <div class="v2-step-num">3</div>
+      <div class="v2-step-text">
+        <strong>Devam</strong> butonuna dokunun. eSIM birkac saniye icinde yuklenecektir.
       </div>
     </div>
   </div>
@@ -94,7 +94,7 @@
 
 <script>
 function switchTab(tab, el) {
-  document.querySelectorAll('.demo-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.v2-tab').forEach(function(t) { t.classList.remove('active'); });
   el.classList.add('active');
   document.getElementById('tab-auto').style.display = tab === 'auto' ? 'block' : 'none';
   document.getElementById('tab-manual').style.display = tab === 'manual' ? 'block' : 'none';

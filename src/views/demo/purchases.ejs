@@ -1,49 +1,49 @@
-<div class="demo-content">
-  <h1 class="demo-page-title demo-animate-in">eSIM'lerim</h1>
+<div class="v2-content">
+  <h1 class="v2-page-title v2-anim">eSIM'lerim</h1>
 
   <!-- Stats -->
-  <div class="demo-detail-grid demo-animate-in" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
-    <div class="demo-detail-item" style="border-left:3px solid var(--color-text);">
-      <div class="demo-detail-label">Toplam</div>
-      <div class="demo-detail-value">6</div>
+  <div class="v2-details v2-anim" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
+    <div class="v2-detail" style="border-left:3px solid var(--color-text);">
+      <div class="v2-detail-label">Toplam</div>
+      <div class="v2-detail-value">6</div>
     </div>
-    <div class="demo-detail-item" style="border-left:3px solid var(--color-success);">
-      <div class="demo-detail-label">Aktif</div>
-      <div class="demo-detail-value" style="color:var(--color-success);">3</div>
+    <div class="v2-detail" style="border-left:3px solid var(--color-success);">
+      <div class="v2-detail-label">Aktif</div>
+      <div class="v2-detail-value" style="color:var(--color-success);">3</div>
     </div>
-    <div class="demo-detail-item" style="border-left:3px solid var(--color-warning);">
-      <div class="demo-detail-label">Bekleyen</div>
-      <div class="demo-detail-value" style="color:var(--color-warning);">1</div>
+    <div class="v2-detail" style="border-left:3px solid var(--color-warning);">
+      <div class="v2-detail-label">Bekleyen</div>
+      <div class="v2-detail-value" style="color:var(--color-warning);">1</div>
     </div>
   </div>
 
   <!-- Purchase List -->
-  <div class="demo-purchases-grid">
+  <div class="v2-purchases">
     <% if (locals.purchases && purchases.length) { %>
       <% purchases.forEach(function(purchase) { %>
-    <a href="/demo/status" class="demo-offer-row demo-animate-in">
-      <div class="demo-offer-flag demo-offer-flag-sm" style="background:<%= purchase.flagBg %>;">
+    <a href="/demo/status" class="v2-row v2-anim">
+      <div class="v2-row-flag" style="background:<%= purchase.flagBg %>;">
         <%= purchase.flag %>
       </div>
-      <div class="demo-offer-row-info">
-        <div class="demo-offer-row-name"><%= purchase.country %></div>
-        <div class="demo-offer-row-meta" style="font-family:'SF Mono','Fira Code',monospace;font-size:11px;"><%= purchase.iccid %></div>
+      <div class="v2-row-info">
+        <div class="v2-row-name"><%= purchase.country %></div>
+        <div class="v2-row-meta" style="font-family:'SF Mono','Fira Code',monospace;font-size:11px;"><%= purchase.iccid %></div>
       </div>
       <% if (purchase.status === 'active') { %>
-        <span class="demo-badge demo-badge-success">Aktif</span>
+        <span class="v2-badge v2-badge-success">Aktif</span>
       <% } else if (purchase.status === 'pending') { %>
-        <span class="demo-badge demo-badge-warning">Bekleyen</span>
+        <span class="v2-badge v2-badge-warning">Bekleyen</span>
       <% } else { %>
-        <span class="demo-badge demo-badge-danger">Süresi Dolmus</span>
+        <span class="v2-badge v2-badge-danger">Suresi Dolmus</span>
       <% } %>
-      <div class="demo-offer-arrow">
+      <div class="v2-row-arrow">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
       </div>
     </a>
       <% }) %>
     <% } else { %>
     <div style="text-align:center;padding:40px 20px;color:var(--color-text-muted);font-size:14px;">
-      Henüz eSIM satın almadınız.
+      Henuz eSIM satin almadiniz.
     </div>
     <% } %>
   </div>
