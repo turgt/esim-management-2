@@ -24,7 +24,10 @@ export default (sequelize, DataTypes) => {
     brandName: { type: DataTypes.STRING, allowNull: true },
     parentEsimId: { type: DataTypes.INTEGER, allowNull: true },
     priceAmount: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
-    priceCurrency: { type: DataTypes.STRING, allowNull: true }
+    priceCurrency: { type: DataTypes.STRING, allowNull: true },
+    vendor: { type: DataTypes.STRING, allowNull: false, defaultValue: 'airalo' },
+    vendorOrderId: { type: DataTypes.STRING, allowNull: true },
+    vendorData: { type: DataTypes.JSONB, allowNull: true }
   }, { sequelize, modelName: 'Esim' });
   return Esim;
 };
