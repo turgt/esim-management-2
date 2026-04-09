@@ -1,0 +1,50 @@
+<div class="demo-content">
+  <h1 class="demo-page-title demo-animate-in">eSIM'lerim</h1>
+
+  <!-- Stats -->
+  <div class="demo-detail-grid demo-animate-in" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
+    <div class="demo-detail-item" style="border-left:3px solid var(--color-text);">
+      <div class="demo-detail-label">Toplam</div>
+      <div class="demo-detail-value">6</div>
+    </div>
+    <div class="demo-detail-item" style="border-left:3px solid var(--color-success);">
+      <div class="demo-detail-label">Aktif</div>
+      <div class="demo-detail-value" style="color:var(--color-success);">3</div>
+    </div>
+    <div class="demo-detail-item" style="border-left:3px solid var(--color-warning);">
+      <div class="demo-detail-label">Bekleyen</div>
+      <div class="demo-detail-value" style="color:var(--color-warning);">1</div>
+    </div>
+  </div>
+
+  <!-- Purchase List -->
+  <div class="demo-offers-list">
+    <% if (locals.purchases && purchases.length) { %>
+      <% purchases.forEach(function(purchase) { %>
+    <a href="/demo/status" class="demo-offer-row demo-animate-in" style="text-decoration:none;color:inherit;">
+      <div class="demo-offer-flag demo-offer-flag-sm" style="background:<%= purchase.flagBg %>;">
+        <%= purchase.flag %>
+      </div>
+      <div class="demo-offer-row-info">
+        <div class="demo-offer-row-name"><%= purchase.country %></div>
+        <div class="demo-offer-row-meta" style="font-family:'SF Mono','Fira Code',monospace;font-size:11px;"><%= purchase.iccid %></div>
+      </div>
+      <% if (purchase.status === 'active') { %>
+        <span class="demo-badge" style="background:var(--color-success-bg);color:var(--color-success);padding:4px 10px;border-radius:var(--radius-full);font-size:11px;">Aktif</span>
+      <% } else if (purchase.status === 'pending') { %>
+        <span class="demo-badge" style="background:var(--color-warning-bg);color:var(--color-warning);padding:4px 10px;border-radius:var(--radius-full);font-size:11px;">Bekleyen</span>
+      <% } else { %>
+        <span class="demo-badge" style="background:var(--color-danger-bg);color:var(--color-danger);padding:4px 10px;border-radius:var(--radius-full);font-size:11px;">Süresi Dolmuş</span>
+      <% } %>
+      <div class="demo-offer-arrow">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </div>
+    </a>
+      <% }) %>
+    <% } else { %>
+    <div style="text-align:center;padding:40px 20px;color:var(--color-text-muted);font-size:14px;">
+      Henüz eSIM satın almadınız.
+    </div>
+    <% } %>
+  </div>
+</div>

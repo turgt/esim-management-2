@@ -1,0 +1,48 @@
+<div class="demo-content" style="padding-bottom:40px;">
+  <h1 class="demo-page-title demo-animate-in">Ödeme</h1>
+
+  <!-- Order Summary -->
+  <div class="demo-card demo-animate-in" style="padding:20px;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+      <div class="demo-offer-flag demo-offer-flag-sm" style="background:<%= locals.order ? order.flagBg : 'var(--gradient-subtle)' %>;">
+        <%= locals.order ? order.flag : '🇹🇷' %>
+      </div>
+      <div style="flex:1;">
+        <div style="font-family:var(--font-heading);font-size:15px;font-weight:700;color:var(--color-text);"><%= locals.order ? order.planName : 'Türkiye 10GB' %></div>
+        <div style="font-size:12px;color:var(--color-text-muted);margin-top:2px;">
+          <%= locals.order ? order.data : '10 GB' %> &bull; <%= locals.order ? order.duration : '30 gün' %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div style="height:1px;background:var(--color-border);margin:16px 0;"></div>
+
+    <!-- Price Breakdown -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-secondary);">
+        <span>Ara Toplam</span>
+        <span><%= locals.order ? order.subtotal : '$4.16' %></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-secondary);">
+        <span>KDV (%20)</span>
+        <span><%= locals.order ? order.tax : '$0.83' %></span>
+      </div>
+      <div style="height:1px;background:var(--color-border);"></div>
+      <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;">
+        <span style="font-family:var(--font-heading);">Toplam</span>
+        <span class="demo-gradient-text" style="font-family:var(--font-heading);font-size:18px;font-weight:800;"><%= locals.order ? order.total : '$4.99' %></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pay Button -->
+  <button class="demo-btn demo-btn-primary demo-btn-block demo-btn-lg demo-animate-in" onclick="window.location.href='/demo/status'">
+    Ödemeyi Tamamla
+  </button>
+
+  <!-- Security Note -->
+  <p class="demo-animate-in" style="text-align:center;font-size:12px;color:var(--color-text-muted);margin-top:16px;">
+    🔒 Güvenli ödeme — Paddle ile işlenir
+  </p>
+</div>

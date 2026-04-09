@@ -1,0 +1,45 @@
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+  <div class="demo-page-title" style="margin-bottom: 0;">Vendorlar</div>
+  <a href="/demo/admin/vendors/new" class="demo-btn demo-btn-primary demo-btn-sm">Yeni Vendor Ekle</a>
+</div>
+
+<!-- Vendors Table -->
+<div class="demo-card" style="padding: 0; overflow: hidden;">
+  <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+    <thead>
+      <tr>
+        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Vendor</th>
+        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">API Durumu</th>
+        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">eSIM Sayısı</th>
+        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Komisyon</th>
+        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">İşlemler</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% const defaultVendors = [
+        { id: 1, name: 'Zendit', apiStatus: 'connected', esimCount: 245, commission: '%12' },
+        { id: 2, name: 'Airalo', apiStatus: 'connected', esimCount: 89, commission: '%15' },
+        { id: 3, name: 'eSIMGo', apiStatus: 'disconnected', esimCount: 8, commission: '%10' },
+        { id: 4, name: 'RedteaGo', apiStatus: 'connected', esimCount: 56, commission: '%18' }
+      ]; %>
+      <% const vendorList = locals.vendors || defaultVendors; %>
+      <% vendorList.forEach(function(v) { %>
+        <tr>
+          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-weight: 600;"><%= v.name %></td>
+          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;">
+            <% if (v.apiStatus === 'connected') { %>
+              <span class="demo-badge demo-badge-success">Bağlı</span>
+            <% } else { %>
+              <span class="demo-badge demo-badge-danger">Bağlı Değil</span>
+            <% } %>
+          </td>
+          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;"><%= v.esimCount %></td>
+          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;"><%= v.commission %></td>
+          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;">
+            <a href="/demo/admin/vendors/<%= v.id %>" class="demo-btn demo-btn-outline demo-btn-sm">Detay</a>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
