@@ -1,4 +1,4 @@
-import { getAllPackages,getSimPackages, initialize, isInitialized } from './airaloClient.js';
+import { getAllPackages,getCountryPackages, initialize, isInitialized } from './airaloClient.js';
 import db from '../db/models/index.js';
 import logger from '../lib/logger.js';
 
