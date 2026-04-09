@@ -2,12 +2,13 @@ import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { listOffers, purchaseEsim, getPurchase, getPurchaseQrCode, getUsage, getEsimPlans, normalizeStatus, isCompletedStatus } from '../services/zenditClient.js';
+import { getPurchase, getPurchaseQrCode, getUsage, getEsimPlans, normalizeStatus, isCompletedStatus } from '../services/zenditClient.js';
 import db from '../db/models/index.js';
 import cacheService from '../services/cacheService.js';
 import { getPaginationParams, buildPagination } from '../utils/pagination.js';
 import { logAudit, ACTIONS, getIp } from '../services/auditService.js';
 import logger from '../lib/logger.js';
+import { createOrder as airaloCreateOrder, getUsage as airaloGetUsage } from '../services/airaloClient.js';
 
 const log = logger.child({ module: 'esim' });
 
@@ -24,21 +25,15 @@ function isQrReady(status) {
 // Public landing page with offers
 export async function showLandingPage(req, res) {
   try {
-    const country = process.env.COUNTRY || 'TR';
-
-    let offers = cacheService.getLandingOffers(country);
-
-    if (!offers) {
-      log.info({ country }, 'Fetching landing offers from API');
-      offers = await listOffers(country);
-      cacheService.setLandingOffers(country, offers);
-    }
-
-    const activeOffers = offers.list.filter(o => o.enabled);
+    const featuredOffers = await db.AiraloPackage.findAll({
+      where: { countryCode: process.env.COUNTRY || 'TR' },
+      order: [['price', 'ASC']],
+      limit: 6,
+    });
 
     res.render('landing', {
       title: 'DataPatch - eSIM Data Plans',
-      offers: activeOffers,
+      offers: featuredOffers,
       user: req.session?.user || null
     });
   } catch (err) {
@@ -81,27 +76,31 @@ export async function checkCompatibility(req, res) {
   return res.json({ result: modelData || null });
 }
 
-// Teklifleri listele - CACHED
 export async function showOffers(req, res) {
   try {
-    const country = process.env.COUNTRY || 'TR';
+    const country = req.query.country || process.env.COUNTRY || 'TR';
+    const type = req.query.type || '';
 
-    let offers = cacheService.getOffers(country);
-
-    if (!offers) {
-      log.info({ country }, 'Fetching offers from API');
-      offers = await listOffers(country);
-      cacheService.setOffers(country, offers);
+    const where = {};
+    if (country && country !== 'ALL') {
+      where.countryCode = country;
+    }
+    if (type) {
+      where.type = type;
     }
 
-    const activeOffers = offers.list.filter(o => o.enabled);
+    const packages = await db.AiraloPackage.findAll({
+      where,
+      order: [['price', 'ASC']],
+      limit: parseInt(process.env.OFFERS_LIMIT) || 100,
+    });
 
     res.render('offers', {
       title: 'Offers',
-      offers: activeOffers
+      offers: packages,
     });
   } catch (err) {
-    log.error({ err, apiError: err.response?.data }, 'showOffers error');
+    log.error({ err }, 'showOffers error');
     res.render('error', { message: 'Failed to load offers' });
   }
 }

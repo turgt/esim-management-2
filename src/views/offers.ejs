@@ -44,61 +44,47 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="offersGrid">
   <% offers.forEach(function(offer, idx) { %>
   <%
-    var price = offer.price && offer.price.fixed ? (offer.price.fixed / (offer.price.currencyDivisor || 100)).toFixed(2) : null;
-    var currency = offer.price ? (offer.price.currency || 'USD') : 'USD';
-    var dataLabel = offer.dataGB ? offer.dataGB : null;
-    var durationLabel = offer.durationDays ? offer.durationDays + ' days' : '';
-    var regionShort = '';
-    if (offer.regions && offer.regions.length > 0) {
-      regionShort = offer.regions[0];
-      if (regionShort.length > 20) regionShort = offer.country || regionShort.substring(0, 18) + '...';
-    } else if (offer.country) {
-      regionShort = offer.country;
-    }
-    var speeds = offer.dataSpeeds || [];
-    var bestSpeed = speeds.length ? speeds[speeds.length - 1] : '';
-    var shortNotes = offer.shortNotes || '';
-    var subTypes = offer.subTypes || [];
+    var price = offer.price ? parseFloat(offer.price).toFixed(2) : null;
+    var currency = 'USD';
+    var dataLabel = offer.data || null;
+    var durationLabel = offer.day ? offer.day + ' days' : '';
+    var regionShort = offer.countryCode || '';
+    var operatorTitle = offer.operatorTitle || '';
+    var type = offer.type || '';
     var detailParts = [];
-    if (speeds.length) detailParts.push('Network: ' + speeds.join(' / '));
-    if (subTypes.length) detailParts.push('Type: ' + subTypes.join(', '));
-    if (offer.dataUnlimited) detailParts.push('Unlimited Data');
-    if (offer.voiceUnlimited) detailParts.push('Unlimited Voice');
-    else if (offer.voiceMinutes > 0) detailParts.push(offer.voiceMinutes + ' min voice');
-    if (offer.smsUnlimited) detailParts.push('Unlimited SMS');
-    else if (offer.smsNumber > 0) detailParts.push(offer.smsNumber + ' SMS');
-    if (shortNotes) detailParts.push(shortNotes);
+    if (operatorTitle) detailParts.push(operatorTitle);
+    if (type) detailParts.push('Type: ' + type);
+    if (offer.isUnlimited) detailParts.push('Unlimited Data');
     var detailStr = detailParts.join(' · ');
     var priceNum = price ? parseFloat(price) : 0;
-    var dataNum = offer.dataUnlimited ? 99999 : (offer.dataGB || 0);
-    var durationNum = offer.durationDays || 0;
-    var subTypesStr = JSON.stringify(subTypes);
+    var dataMatch = dataLabel ? dataLabel.match(/(\d+)/) : null;
+    var dataNum = offer.isUnlimited ? 99999 : (dataMatch ? parseInt(dataMatch[1]) : 0);
+    var durationNum = offer.day || 0;
   %>
   <button type="button" class="offer-card"
-    aria-label="<%= offer.dataUnlimited ? 'Unlimited' : (dataLabel ? dataLabel + ' GB' : 'Data') %> plan, <%= durationLabel || '' %>, $<%= price || '0' %>"
+    aria-label="<%= offer.isUnlimited ? 'Unlimited' : (dataLabel || 'Data') %> plan, <%= durationLabel || '' %>, $<%= price || '0' %>"
     data-price="<%= priceNum %>"
     data-data="<%= dataNum %>"
     data-duration="<%= durationNum %>"
-    data-unlimited="<%= offer.dataUnlimited ? '1' : '0' %>"
-    data-subtypes="<%= subTypes.join(',') %>"
-    onclick="confirmPurchase('<%= offer.offerId %>', '<%= (offer.brandName || offer.brand || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>', '<%= detailStr.replace(/'/g, "\\'") %>')">
+    data-unlimited="<%= offer.isUnlimited ? '1' : '0' %>"
+    data-subtypes="<%= type %>"
+    onclick="confirmPurchase('<%= offer.packageId %>', '<%= (operatorTitle || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>', '<%= detailStr.replace(/'/g, "\\'") %>')">
     <div class="offer-header">
-      <span class="offer-region"><%= regionShort || 'Global' %></span>
+      <div class="flex items-center gap-2">
+        <% if (offer.imageUrl) { %><img src="<%= offer.imageUrl %>" alt="" class="w-10 h-10 rounded-lg"><% } %>
+        <span class="offer-region"><%= regionShort || 'Global' %></span>
+      </div>
       <div class="flex items-center gap-1">
-        <% subTypes.forEach(function(st) { %>
-        <span class="offer-subtype-badge"><%= st %></span>
-        <% }) %>
-        <% if (bestSpeed) { %>
-        <span class="offer-speed-badge"><%= bestSpeed %></span>
+        <% if (type) { %>
+        <span class="offer-subtype-badge"><%= type %></span>
         <% } %>
       </div>
     </div>
     <div class="offer-body">
-      <% if (offer.dataUnlimited) { %>
+      <% if (offer.isUnlimited) { %>
       <span class="offer-data">Unlimited</span>
       <% } else if (dataLabel) { %>
       <span class="offer-data"><%= dataLabel %></span>
-      <span class="offer-data-unit">GB</span>
       <% } else { %>
       <span class="offer-data">Data</span>
       <% } %>
@@ -159,7 +145,7 @@
     </div>
     <form id="purchaseForm" method="post" action="/payment/create">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <input type="hidden" name="offerId" id="modalOfferId" value="">
+      <input type="hidden" name="packageId" id="modalOfferId" value="">
       <input type="hidden" name="amount" id="modalAmount" value="">
       <input type="hidden" name="currency" id="modalCurrency" value="">
       <input type="hidden" name="planName" id="modalPlanNameHidden" value="">
