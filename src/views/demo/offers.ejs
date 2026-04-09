@@ -64,6 +64,51 @@
     </a>
     <% }) %>
   </div>
+
+  <!-- Desktop Grid Layout (visible on 1024px+) -->
+  <div class="demo-offers-grid">
+    <!-- Featured card (full width) -->
+    <a href="/demo/status" class="demo-offer-featured demo-animate-in" style="text-decoration:none;color:inherit;margin-bottom:16px;display:block;">
+      <div class="demo-offer-featured-badge">POPÜLER</div>
+      <div class="demo-offer-featured-inner">
+        <div class="demo-offer-flag" style="background: <%= plans[0].flagBg %>;">
+          <%= plans[0].flag %>
+        </div>
+        <div class="demo-offer-info">
+          <div class="demo-offer-name">
+            <%= plans[0].country %>
+            <span class="demo-badge demo-badge-<%= plans[0].network.toLowerCase() %>"><%= plans[0].network %></span>
+          </div>
+          <div class="demo-offer-meta">
+            <span><strong><%= plans[0].data %></strong> data</span>
+            <span><strong><%= plans[0].durationNum %></strong> gün</span>
+          </div>
+        </div>
+        <div class="demo-offer-price-area">
+          <div class="demo-offer-price demo-gradient-text"><%= plans[0].price %></div>
+          <div class="demo-offer-cta">Satın Al →</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- Grid of other plans -->
+    <div class="demo-offers-grid-cards">
+      <% plans.slice(1).forEach((plan, i) => { %>
+      <a href="/demo/status" class="demo-offer-grid-card demo-animate-in">
+        <div class="demo-offer-grid-flag"><%= plan.flag %></div>
+        <div class="demo-offer-grid-name">
+          <%= plan.country %>
+          <span class="demo-badge demo-badge-<%= plan.network.toLowerCase() %>"><%= plan.network %></span>
+        </div>
+        <div class="demo-offer-grid-meta"><%= plan.data %> • <%= plan.duration %></div>
+        <div class="demo-offer-grid-footer">
+          <div class="demo-offer-grid-price demo-gradient-text"><%= plan.price %></div>
+          <div class="demo-offer-grid-cta">Satın Al →</div>
+        </div>
+      </a>
+      <% }) %>
+    </div>
+  </div>
 </div>
 
 <script>

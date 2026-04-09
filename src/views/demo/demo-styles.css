@@ -131,6 +131,97 @@ body.demo-body {
   color: var(--color-text-secondary);
 }
 
+/* Desktop nav links (hidden on mobile, shown on desktop) */
+.demo-topbar-nav {
+  display: none;
+  align-items: center;
+  gap: 24px;
+  margin-left: 24px;
+}
+
+.demo-topbar-nav a {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.demo-topbar-nav a:hover {
+  color: #f97316;
+}
+
+.demo-topbar-nav a.active {
+  color: #f97316;
+  border-bottom-color: #f97316;
+}
+
+/* Desktop search in topbar */
+.demo-topbar-search {
+  display: none;
+  margin-left: auto;
+  margin-right: 12px;
+}
+
+.demo-topbar-search input {
+  background: #f1f5f9;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px 8px 36px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-text);
+  width: 220px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.demo-topbar-search input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.demo-topbar-search input:focus {
+  border-color: #f97316;
+  background: var(--color-surface);
+  box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+}
+
+.demo-topbar-search svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-muted);
+}
+
+/* Breadcrumb */
+.demo-breadcrumb {
+  display: none;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  padding: 8px 28px 0;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.demo-breadcrumb a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.demo-breadcrumb a:hover {
+  color: #f97316;
+}
+
+.demo-breadcrumb span {
+  margin: 0 6px;
+  color: var(--color-text-muted);
+}
+
 /* --- Floating Tab Bar --- */
 .demo-tabbar {
   position: fixed;
@@ -188,9 +279,15 @@ body.demo-body {
 
 /* --- Content Area --- */
 .demo-content {
-  max-width: 960px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 20px 20px calc(var(--tab-bar-height) + 24px);
+}
+
+.demo-content-wide {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px 28px calc(var(--tab-bar-height) + 24px);
 }
 
 .demo-content-full {
@@ -576,6 +673,91 @@ body.demo-body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* Desktop offers grid */
+.demo-offers-grid {
+  display: none;
+}
+
+.demo-offers-grid-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.demo-offer-grid-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.demo-offer-grid-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  border-color: rgba(249,115,22,0.15);
+}
+
+.demo-offer-grid-flag {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.demo-offer-grid-name {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.demo-offer-grid-meta {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: 12px;
+}
+
+.demo-offer-grid-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.demo-offer-grid-price {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.demo-offer-grid-cta {
+  background: var(--gradient-primary);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Desktop 2-column layouts */
+.demo-purchases-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.demo-profile-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 /* --- Status Banner --- */
@@ -1907,9 +2089,110 @@ body.demo-body {
   }
 }
 
-@media (min-width: 769px) {
+@media (min-width: 769px) and (max-width: 1023px) {
   .demo-tabbar {
     max-width: 360px;
+  }
+}
+
+/* --- Desktop: 1024px+ --- */
+@media (min-width: 1024px) {
+  /* Hide floating tab bar on desktop */
+  .demo-tabbar {
+    display: none;
+  }
+
+  /* Remove bottom padding for tab bar */
+  .demo-content {
+    padding-bottom: 24px;
+  }
+
+  .demo-content-wide {
+    padding-bottom: 24px;
+  }
+
+  /* Show desktop nav in topbar */
+  .demo-topbar-nav {
+    display: flex;
+  }
+
+  .demo-topbar-search {
+    display: block;
+    position: relative;
+  }
+
+  .demo-breadcrumb {
+    display: block;
+  }
+
+  /* Topbar gets a bottom border on desktop */
+  .demo-topbar {
+    background: var(--color-surface);
+    border-bottom: 1px solid #f1f5f9;
+    padding: 0 28px;
+  }
+
+  /* Offers: show grid layout, hide mobile list */
+  .demo-offers-list {
+    display: none;
+  }
+
+  .demo-offers-grid {
+    display: block;
+  }
+
+  /* Purchases: 2-column grid */
+  .demo-purchases-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* Profile: 2-column layout */
+  .demo-profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Admin content uses full width */
+  .demo-content-wide {
+    max-width: 100%;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  /* Stats row: more breathing room */
+  .demo-stats-row {
+    gap: 16px;
+  }
+
+  /* Landing sections wider */
+  .demo-section {
+    max-width: 1200px;
+  }
+
+  .demo-landing-plans {
+    max-width: 1200px;
+  }
+
+  .demo-steps-grid {
+    gap: 20px;
+  }
+
+  /* Landing hero bigger */
+  .demo-landing-title {
+    font-size: 44px;
+  }
+
+  .demo-landing-subtitle {
+    font-size: 18px;
+    max-width: 560px;
+  }
+
+  /* Detail page: wider detail grid */
+  .demo-detail-grid {
+    grid-template-columns: 1fr 1fr 1fr;
   }
 }
 

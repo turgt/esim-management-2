@@ -19,11 +19,48 @@
     <% } else { %>
       <a href="/demo" class="demo-topbar-logo demo-gradient-text">DataPatch</a>
     <% } %>
-    <a href="/demo/offers" class="demo-topbar-avatar">T</a>
+
+    <% if (locals.adminMode) { %>
+    <nav class="demo-topbar-nav">
+      <a href="/demo/admin/dashboard" class="<%= locals.activeTab === 'dashboard' ? 'active' : '' %>">Dashboard</a>
+      <a href="/demo/admin/users" class="<%= locals.activeTab === 'users' ? 'active' : '' %>">Kullanıcılar</a>
+      <a href="/demo/admin/esims" class="<%= locals.activeTab === 'esims' ? 'active' : '' %>">eSIM'ler</a>
+      <a href="/demo/admin/payments" class="<%= locals.activeTab === 'payments' ? 'active' : '' %>">Ödemeler</a>
+      <a href="/demo/admin/vendors" class="<%= locals.activeTab === 'vendors' ? 'active' : '' %>">Vendorlar</a>
+      <a href="/demo/admin/emails">E-postalar</a>
+    </nav>
+    <% } else if (!locals.backUrl) { %>
+    <nav class="demo-topbar-nav">
+      <a href="/demo/offers" class="<%= locals.activeTab === 'plans' ? 'active' : '' %>">Planlar</a>
+      <a href="/demo/purchases" class="<%= locals.activeTab === 'esims' ? 'active' : '' %>">eSIM'lerim</a>
+      <a href="/demo/payment-history" class="<%= locals.activeTab === 'payments' ? 'active' : '' %>">Ödemeler</a>
+      <a href="/demo/compatibility">Uyumluluk</a>
+      <a href="/demo/profile" class="<%= locals.activeTab === 'profile' ? 'active' : '' %>">Profil</a>
+    </nav>
+    <% } %>
+
+    <div class="demo-topbar-search">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" placeholder="Ara...">
+    </div>
+
+    <a href="/demo/profile" class="demo-topbar-avatar">T</a>
+  </div>
+
+  <% if (locals.backUrl) { %>
+  <div class="demo-breadcrumb">
+    <a href="/demo">Ana Sayfa</a><span>›</span><%= title %>
   </div>
   <% } %>
+  <% } %>
 
+  <% if (locals.adminMode) { %>
+  <div class="demo-content-wide">
+    <%- body %>
+  </div>
+  <% } else { %>
   <%- body %>
+  <% } %>
 
   <% if (locals.showTabBar !== false) { %>
   <% if (locals.adminMode) { %>
