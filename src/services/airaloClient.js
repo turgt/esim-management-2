@@ -29,6 +29,9 @@ export async function initialize() {
 
     // Get access token for REST calls not covered by SDK
     await refreshToken();
+
+    // Refresh token every 23 hours (tokens typically expire in 24h)
+    setInterval(refreshToken, 23 * 60 * 60 * 1000);
   } catch (err) {
     log.error({ err }, 'Failed to initialize Airalo SDK');
   }
@@ -108,9 +111,7 @@ export async function createTopup(packageId, iccid, description = '') {
   formData.append('iccid', iccid);
   if (description) formData.append('description', description);
 
-  const res = await restApi().post('/orders/topups', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
+  const res = await restApi().post('/orders/topups', formData);
   log.info({ packageId, iccid, orderId: res.data?.data?.id }, 'Airalo top-up order placed');
   return res.data;
 }

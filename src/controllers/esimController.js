@@ -1,10 +1,8 @@
-import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { getPurchase, getPurchaseQrCode, getUsage, getEsimPlans, normalizeStatus, isCompletedStatus } from '../services/zenditClient.js';
 import db from '../db/models/index.js';
-import cacheService from '../services/cacheService.js';
 import { getPaginationParams, buildPagination } from '../utils/pagination.js';
 import { logAudit, ACTIONS, getIp } from '../services/auditService.js';
 import logger from '../lib/logger.js';
@@ -397,29 +395,27 @@ export async function debugEsimData(req, res) {
   }
 }
 
-// Debug: show unique subTypes from offers (admin only)
+// Debug: show package fields from AiraloPackage table (admin only)
 export async function debugOfferFields(req, res) {
   try {
     const country = process.env.COUNTRY || 'TR';
-    let offers = cacheService.getOffers(country);
-    if (!offers) {
-      offers = await listOffers(country);
-      cacheService.setOffers(country, offers);
-    }
-    const activeOffers = offers.list.filter(o => o.enabled);
-    const subTypes = [...new Set(activeOffers.flatMap(o => o.subTypes || []))];
-    const sample = activeOffers.slice(0, 3).map(o => ({
-      offerId: o.offerId,
-      brand: o.brand,
-      dataGB: o.dataGB,
-      dataUnlimited: o.dataUnlimited,
-      durationDays: o.durationDays,
-      subTypes: o.subTypes,
-      dataSpeeds: o.dataSpeeds,
-      shortNotes: o.shortNotes,
-      notes: o.notes
+    const packages = await db.AiraloPackage.findAll({
+      where: { countryCode: country },
+      order: [['price', 'ASC']],
+      limit: 100,
+    });
+    const types = [...new Set(packages.map(p => p.type).filter(Boolean))];
+    const sample = packages.slice(0, 3).map(p => ({
+      packageId: p.packageId,
+      operatorTitle: p.operatorTitle,
+      title: p.title,
+      type: p.type,
+      data: p.data,
+      validity: p.validity,
+      price: p.price,
+      countryCode: p.countryCode,
     }));
-    res.json({ totalOffers: activeOffers.length, uniqueSubTypes: subTypes, sampleOffers: sample });
+    res.json({ totalPackages: packages.length, uniqueTypes: types, samplePackages: sample });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
