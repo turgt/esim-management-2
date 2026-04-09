@@ -174,169 +174,149 @@ export async function createPurchase(req, res) {
   }
 }
 
-// Status sayfası - Her zaman fresh API call
 export async function showStatus(req, res) {
   try {
     const txId = req.params.txId;
-
     log.info({ transactionId: txId }, 'Checking purchase status');
-
-    const apiStatus = await getPurchase(txId);
 
     const esimRecord = await db.Esim.findOne({
       where: { transactionId: txId },
-      include: [{
-        model: db.User,
-        as: 'owner',
-        attributes: ['id', 'username']
-      }]
+      include: [{ model: db.User, as: 'owner', attributes: ['id', 'username'] }]
     });
 
     if (!esimRecord) {
-      log.warn({ transactionId: txId }, 'eSIM record not found');
       return res.render('error', { message: 'eSIM record not found in database' });
     }
 
-    log.debug({ dbStatus: esimRecord.status, apiStatus: apiStatus.status }, 'Status comparison');
+    if (esimRecord.vendor === 'airalo') {
+      let usageData = null;
+      if (esimRecord.iccid) {
+        try {
+          const usage = await airaloGetUsage(esimRecord.iccid);
+          usageData = usage?.data || null;
+        } catch (e) {
+          log.warn({ err: e.message, iccid: esimRecord.iccid }, 'Could not fetch Airalo usage');
+        }
+      }
 
-    const updateData = {};
-    const normalizedApiStatus = normalizeStatus(apiStatus.status);
-    if (esimRecord.status !== normalizedApiStatus) {
-      updateData.status = normalizedApiStatus;
+      return res.render('status', {
+        title: 'Purchase Status',
+        esim: esimRecord,
+        vendor: 'airalo',
+        usageData,
+        isQrReady: !!esimRecord.iccid,
+        dbStatus: esimRecord.status,
+      });
     }
 
-    const confirmation = apiStatus.confirmation || {};
-    if (!esimRecord.iccid && confirmation.iccid) {
-      updateData.iccid = confirmation.iccid;
-    }
-    if (!esimRecord.smdpAddress && confirmation.smdpAddress) {
-      updateData.smdpAddress = confirmation.smdpAddress;
-    }
-    // Update activationCode: prefer externalReferenceId, fix old short codes
-    const correctCode = confirmation.externalReferenceId || confirmation.activationCode;
-    if (correctCode && esimRecord.activationCode !== correctCode) {
-      updateData.activationCode = correctCode;
-    }
-
-    let statusUpdated = false;
-    if (Object.keys(updateData).length > 0) {
+    // Zendit: admin can query API, users see DB only
+    if (req.session.user.isAdmin) {
       try {
-        await esimRecord.update(updateData);
-        statusUpdated = true;
-        log.info({ transactionId: txId, updatedFields: Object.keys(updateData) }, 'Record updated in database');
-      } catch (updateError) {
-        log.error({ err: updateError, transactionId: txId }, 'Failed to update database');
+        const apiStatus = await getPurchase(txId);
+        const updateData = {};
+        const normalizedApiStatus = normalizeStatus(apiStatus.status);
+        if (esimRecord.status !== normalizedApiStatus) updateData.status = normalizedApiStatus;
+        const confirmation = apiStatus.confirmation || {};
+        if (!esimRecord.iccid && confirmation.iccid) updateData.iccid = confirmation.iccid;
+        if (!esimRecord.smdpAddress && confirmation.smdpAddress) updateData.smdpAddress = confirmation.smdpAddress;
+        const correctCode = confirmation.externalReferenceId || confirmation.activationCode;
+        if (correctCode && esimRecord.activationCode !== correctCode) updateData.activationCode = correctCode;
+        if (Object.keys(updateData).length > 0) await esimRecord.update(updateData);
+
+        let activePlans = null;
+        if (esimRecord.iccid) {
+          try { activePlans = await getEsimPlans(esimRecord.iccid); } catch (e) { /* skip */ }
+        }
+
+        return res.render('status', {
+          title: 'Purchase Status',
+          status: apiStatus,
+          esim: esimRecord,
+          vendor: 'zendit',
+          isQrReady: isQrReady(apiStatus.status),
+          dbStatus: esimRecord.status,
+          activePlans,
+        });
+      } catch (err) {
+        log.warn({ err: err.message }, 'Zendit API failed, showing DB status');
       }
     }
 
-    const qrReady = isQrReady(apiStatus.status);
-    log.debug({ transactionId: txId, qrReady }, 'QR ready check');
-
-    // Fetch active plans if ICCID available
-    let activePlans = null;
-    if (esimRecord.iccid) {
-      try {
-        activePlans = await getEsimPlans(esimRecord.iccid);
-      } catch (e) {
-        log.warn({ err: e.message, iccid: esimRecord.iccid }, 'Could not fetch plans for status page');
-      }
-    }
-
+    // Zendit fallback or non-admin
     res.render('status', {
       title: 'Purchase Status',
-      status: apiStatus,
       esim: esimRecord,
-      isQrReady: qrReady,
+      vendor: 'zendit',
+      isQrReady: isQrReady(esimRecord.status),
       dbStatus: esimRecord.status,
-      statusUpdated: statusUpdated,
-      updatedAt: new Date().toLocaleTimeString(),
-      activePlans
+      apiError: !req.session.user.isAdmin,
     });
 
   } catch (err) {
-    log.error({ err, apiError: err.response?.data }, 'showStatus error');
-
-    try {
-      const esimRecord = await db.Esim.findOne({
-        where: { transactionId: req.params.txId }
-      });
-
-      if (esimRecord) {
-        log.warn({ transactionId: req.params.txId, dbStatus: esimRecord.status }, 'API failed, showing database status');
-        return res.render('status', {
-          title: 'Purchase Status',
-          status: {
-            transactionId: esimRecord.transactionId,
-            offerId: esimRecord.offerId,
-            status: esimRecord.status,
-            statusMessage: 'Status from database (API temporarily unavailable)'
-          },
-          esim: esimRecord,
-          isQrReady: isQrReady(esimRecord.status),
-          dbStatus: esimRecord.status,
-          apiError: true
-        });
-      }
-    } catch (dbErr) {
-      log.error({ err: dbErr }, 'Database fallback also failed');
-    }
-
+    log.error({ err }, 'showStatus error');
     res.render('error', { message: 'Failed to fetch status' });
   }
 }
 
-// QR Code sayfası - Her zaman fresh API call
 export async function showQrCode(req, res) {
   try {
     const txId = req.params.txId;
-    log.info({ transactionId: txId }, 'Fetching QR code');
-
-    const apiStatus = await getPurchase(txId);
-    log.debug({ transactionId: txId, status: apiStatus.status }, 'API status for QR');
-
-    if (!isQrReady(apiStatus.status)) {
-      return res.render('error', {
-        message: `QR code not ready yet. Current status: ${apiStatus.status}`
-      });
-    }
-
-    const qr = await getPurchaseQrCode(txId);
 
     const esimRecord = await db.Esim.findOne({
       where: { transactionId: txId },
-      include: [{
-        model: db.User,
-        as: 'owner',
-        attributes: ['id', 'username']
-      }]
+      include: [{ model: db.User, as: 'owner', attributes: ['id', 'username'] }]
     });
 
     if (!esimRecord || (esimRecord.userId !== req.session.user.id && !req.session.user.isAdmin)) {
-      return res.render('error', {
-        message: 'You do not have permission to access this QR code'
+      return res.render('error', { message: 'Access denied' });
+    }
+
+    if (esimRecord.vendor === 'airalo') {
+      const vd = esimRecord.vendorData || {};
+      return res.render('qrcode', {
+        title: 'QR Code',
+        esim: esimRecord,
+        vendor: 'airalo',
+        qrcodeUrl: vd.qrcodeUrl || null,
+        directAppleUrl: vd.directAppleUrl || null,
+        lpa: vd.lpa || null,
+        matchingId: vd.matchingId || null,
+        manualInstallation: vd.manualInstallation || null,
+        qrcodeInstallation: vd.qrcodeInstallation || null,
       });
     }
 
+    // Zendit: admin-only QR code from API
+    if (!req.session.user.isAdmin) {
+      return res.render('error', { message: 'QR code only available through admin for legacy eSIMs' });
+    }
+
+    const apiStatus = await getPurchase(txId);
+    if (!isQrReady(apiStatus.status)) {
+      return res.render('error', { message: `QR code not ready. Status: ${apiStatus.status}` });
+    }
+
+    const qr = await getPurchaseQrCode(txId);
     res.render('qrcode', {
       title: 'QR Code',
       qr,
-      esim: esimRecord
+      esim: esimRecord,
+      vendor: 'zendit',
     });
 
   } catch (err) {
-    log.error({ err, apiError: err.response?.data }, 'showQrCode error');
+    log.error({ err }, 'showQrCode error');
     res.render('error', { message: 'Failed to fetch QR code' });
   }
 }
 
-// Kullanıcının satın aldığı eSIM'leri listele
 export async function listUserPurchases(req, res) {
   try {
     const userId = req.session.user.id;
     const { page, limit, offset } = getPaginationParams(req);
 
     const { count, rows: purchases } = await db.Esim.findAndCountAll({
-      where: { userId: userId },
+      where: { userId },
       order: [['createdAt', 'DESC']],
       limit,
       offset
@@ -344,28 +324,18 @@ export async function listUserPurchases(req, res) {
 
     const pagination = buildPagination(page, limit, count, req.query);
 
+    // Only fetch usage for Airalo eSIMs with iccid
     const plansMap = {};
-    const uniqueIccids = [...new Set(purchases.filter(p => p.iccid).map(p => p.iccid))];
-    await Promise.all(uniqueIccids.map(async (iccid) => {
+    const airaloIccids = [...new Set(
+      purchases.filter(p => p.vendor === 'airalo' && p.iccid).map(p => p.iccid)
+    )];
+    await Promise.all(airaloIccids.map(async (iccid) => {
       try {
-        const plans = await getEsimPlans(iccid);
-        plansMap[iccid] = plans;
-        log.debug({ iccid, planCount: plans?.list?.length || 0 }, 'Fetched eSIM plans');
+        const usage = await airaloGetUsage(iccid);
+        plansMap[iccid] = usage?.data || null;
       } catch (e) {
-        log.warn({ iccid, err: e.message }, 'Failed to fetch eSIM plans');
+        log.warn({ iccid, err: e.message }, 'Failed to fetch Airalo usage');
       }
-    }));
-
-    // Fix old activation codes: fetch externalReferenceId from API
-    await Promise.all(purchases.filter(p => p.activationCode && /^\d+$/.test(p.activationCode)).map(async (p) => {
-      try {
-        const apiData = await getPurchase(p.transactionId);
-        const ref = apiData.confirmation?.externalReferenceId;
-        if (ref && ref !== p.activationCode) {
-          await p.update({ activationCode: ref });
-          p.activationCode = ref;
-        }
-      } catch (e) { /* skip */ }
     }));
 
     res.render('purchases', {
@@ -455,23 +425,28 @@ export async function debugOfferFields(req, res) {
   }
 }
 
-// Kullanım detayı
 export async function showUsage(req, res) {
   try {
     const txId = req.params.txId;
-    const usage = await getUsage(txId);
-
-    const esimRecord = await db.Esim.findOne({
-      where: { transactionId: txId }
-    });
+    const esimRecord = await db.Esim.findOne({ where: { transactionId: txId } });
 
     if (!esimRecord || (esimRecord.userId !== req.session.user.id && !req.session.user.isAdmin)) {
-      return res.render('error', { message: 'Access denied' });
+      return res.status(403).json({ error: 'Access denied' });
     }
 
-    res.json({ usage, esim: esimRecord });
+    if (esimRecord.vendor === 'airalo' && esimRecord.iccid) {
+      const usage = await airaloGetUsage(esimRecord.iccid);
+      return res.json({ usage: usage?.data, esim: esimRecord, vendor: 'airalo' });
+    }
+
+    if (esimRecord.vendor === 'zendit' && req.session.user.isAdmin) {
+      const usage = await getUsage(txId);
+      return res.json({ usage, esim: esimRecord, vendor: 'zendit' });
+    }
+
+    res.json({ usage: null, esim: esimRecord, vendor: esimRecord.vendor, message: 'Usage not available' });
   } catch (err) {
-    log.error({ err, apiError: err.response?.data }, 'showUsage error');
+    log.error({ err }, 'showUsage error');
     res.status(500).json({ error: 'Failed to fetch usage data' });
   }
 }
