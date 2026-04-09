@@ -25,6 +25,7 @@ import paymentRoutes from './routes/payment.js';
 import legalRoutes from './routes/legal.js';
 import vendorRoutes from './routes/vendor.js';
 import webhookRoutes from './routes/webhook.js';
+import demoRoutes from './routes/demo.js';
 import { cookieParser, doubleCsrfProtection, csrfTokenMiddleware, csrfErrorHandler } from './middleware/csrf.js';
 import { verifyPaddleWebhook, processPaddleWebhook } from './services/paymentService.js';
 
@@ -223,6 +224,7 @@ app.use('/profile', profileRoutes);
 app.use('/payment', paymentRoutes);
 app.use('/legal', legalRoutes);
 app.use('/vendor', vendorRoutes);
+app.use('/demo', demoRoutes);
 app.use('/', esimRoutes);
 
 // Root route: landing page for guests, redirect for authenticated users
