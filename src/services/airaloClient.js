@@ -77,6 +77,10 @@ export async function getCountryPackages(countryCode) {
   if (!airalo) throw new Error('Airalo not initialized');
   return airalo.getCountryPackages(countryCode, true);
 }
+export async function getSimPackages(countryCode) {
+  if (!airalo) throw new Error('Airalo not initialized');
+  return airalo.getSimPackages(countryCode, true);
+}
 
 // Place an order (returns order with sims array containing iccid, qrcode_url, lpa, etc.)
 export async function createOrder(packageId, quantity = 1, description = '') {

@@ -1,4 +1,4 @@
-import { getAllPackages, initialize, isInitialized } from './airaloClient.js';
+import { getAllPackages,getSimPackages, initialize, isInitialized } from './airaloClient.js';
 import db from '../db/models/index.js';
 import logger from '../lib/logger.js';
 
@@ -14,7 +14,9 @@ export async function syncPackages() {
 
   try {
     log.info('Starting Airalo package sync');
-    const result = await getAllPackages();
+    //const result = await getAllPackages();
+    const countryCode = process.env.COUNTRY || 'TR'; // Optionally filter by country
+    const result = await getSimPackages(countryCode); // New method to fetch SIM packages with more details
     const packages = result?.data || [];
 
     if (!packages.length) {
