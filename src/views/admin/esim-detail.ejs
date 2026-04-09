@@ -17,6 +17,7 @@
     <% } else { %>
     <span class="badge badge-danger"><%= esim.status %></span>
     <% } %>
+    <span class="badge <%= esim.vendor === 'airalo' ? 'badge-indigo' : 'badge-amber' %>"><%= esim.vendor || 'zendit' %></span>
   </div>
 </div>
 
@@ -72,8 +73,49 @@
           <div class="detail-value"><%= esim.priceAmount %> <%= esim.priceCurrency || 'USD' %></div>
         </div>
         <% } %>
+        <% if (esim.vendorOrderId) { %>
+        <div class="detail-item">
+          <div class="detail-label">Vendor Order ID</div>
+          <div class="detail-value font-mono text-xs flex items-center gap-1">
+            <%= esim.vendorOrderId %>
+            <button onclick="copyToClipboard('<%= esim.vendorOrderId %>', this)" class="copy-btn"><i data-lucide="copy" class="w-3 h-3"></i></button>
+          </div>
+        </div>
+        <% } %>
       </div>
     </div>
+
+    <!-- Airalo Links -->
+    <% if (esim.vendor === 'airalo' && esim.vendorData) { %>
+    <div class="card">
+      <div class="card-header">
+        <h2>Airalo Installation</h2>
+      </div>
+      <div class="card-body space-y-3">
+        <% if (esim.vendorData.lpa) { %>
+        <div class="detail-item">
+          <div class="detail-label">LPA (Activation String)</div>
+          <div class="detail-value font-mono text-xs break-all flex items-center gap-1">
+            <%= esim.vendorData.lpa %>
+            <button onclick="copyToClipboard('<%= esim.vendorData.lpa %>', this)" class="copy-btn"><i data-lucide="copy" class="w-3 h-3"></i></button>
+          </div>
+        </div>
+        <% } %>
+        <div class="flex gap-2 mt-2">
+          <% if (esim.vendorData.qrcodeUrl) { %>
+          <a href="<%= esim.vendorData.qrcodeUrl %>" target="_blank" class="btn btn-secondary btn-sm">
+            <i data-lucide="qr-code" class="w-4 h-4"></i> View QR Code
+          </a>
+          <% } %>
+          <% if (esim.vendorData.directAppleUrl) { %>
+          <a href="<%= esim.vendorData.directAppleUrl %>" class="btn btn-secondary btn-sm">
+            <i data-lucide="apple" class="w-4 h-4"></i> Apple Install
+          </a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    <% } %>
 
     <!-- Activation -->
     <% if (esim.smdpAddress || esim.activationCode) { %>

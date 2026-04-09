@@ -572,18 +572,23 @@ export async function showEsimDetail(req, res) {
     }
 
     let usage = null;
-    try {
-      usage = await zenditGetUsage(esim.transactionId);
-    } catch (e) {
-      log.warn({ err: e, transactionId: esim.transactionId }, 'Could not fetch usage');
-    }
-
     let activePlans = null;
-    if (esim.iccid) {
+
+    if (esim.vendor === 'airalo' && esim.iccid) {
       try {
-        activePlans = await getEsimPlans(esim.iccid);
+        const usageRes = await airaloGetUsage(esim.iccid);
+        usage = usageRes?.data || null;
       } catch (e) {
-        log.warn({ err: e, iccid: esim.iccid }, 'Could not fetch eSIM plans');
+        log.warn({ err: e.message, iccid: esim.iccid }, 'Could not fetch Airalo usage');
+      }
+    } else if (esim.vendor === 'zendit' || !esim.vendor) {
+      try {
+        usage = await zenditGetUsage(esim.transactionId);
+      } catch (e) {
+        log.warn({ err: e.message, transactionId: esim.transactionId }, 'Could not fetch Zendit usage');
+      }
+      if (esim.iccid) {
+        try { activePlans = await getEsimPlans(esim.iccid); } catch (e) { /* skip */ }
       }
     }
 
