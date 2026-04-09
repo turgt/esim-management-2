@@ -102,7 +102,7 @@ export const adminCreateUserRules = [
 export const assignEsimRules = [
   body('userId')
     .isInt({ min: 1 }).withMessage('Please select a valid user'),
-  body('offerId')
+  body('packageId')
     .trim()
     .notEmpty().withMessage('Please select an offer')
 ];
