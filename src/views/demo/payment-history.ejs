@@ -13,7 +13,7 @@
   <div class="demo-offers-list">
     <% if (locals.payments && payments.length) { %>
       <% payments.forEach(function(payment) { %>
-    <a href="/demo/receipt" class="demo-offer-row demo-animate-in" style="text-decoration:none;color:inherit;">
+    <a href="/demo/receipt" class="demo-offer-row demo-animate-in">
       <div style="width:44px;height:44px;background:var(--gradient-primary);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
       </div>
@@ -24,11 +24,11 @@
       <div style="text-align:right;flex-shrink:0;">
         <div style="font-family:var(--font-heading);font-size:15px;font-weight:700;color:var(--color-text);"><%= payment.amount %></div>
         <% if (payment.status === 'completed') { %>
-          <span class="demo-badge" style="background:var(--color-success-bg);color:var(--color-success);padding:2px 8px;border-radius:var(--radius-full);font-size:10px;">Tamamlandı</span>
+          <span class="demo-badge demo-badge-success">Tamamlandi</span>
         <% } else if (payment.status === 'pending') { %>
-          <span class="demo-badge" style="background:var(--color-warning-bg);color:var(--color-warning);padding:2px 8px;border-radius:var(--radius-full);font-size:10px;">Bekleyen</span>
+          <span class="demo-badge demo-badge-warning">Bekleyen</span>
         <% } else { %>
-          <span class="demo-badge" style="background:var(--color-danger-bg);color:var(--color-danger);padding:2px 8px;border-radius:var(--radius-full);font-size:10px;">Başarısız</span>
+          <span class="demo-badge demo-badge-danger">Basarisiz</span>
         <% } %>
       </div>
     </a>

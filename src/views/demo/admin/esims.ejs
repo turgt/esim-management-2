@@ -1,61 +1,63 @@
 <div class="demo-page-title">Tüm eSIM'ler</div>
 
 <!-- Filter Chips -->
-<div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-  <button class="demo-chip demo-chip-active">Tümü</button>
-  <button class="demo-chip">Aktif</button>
-  <button class="demo-chip">Bekleyen</button>
-  <button class="demo-chip">Süresi Dolmuş</button>
-  <button class="demo-chip">Başarısız</button>
+<div class="demo-filters">
+  <button class="demo-filter-chip active">Tümü</button>
+  <button class="demo-filter-chip">Aktif</button>
+  <button class="demo-filter-chip">Bekleyen</button>
+  <button class="demo-filter-chip">Süresi Dolmuş</button>
+  <button class="demo-filter-chip">Başarısız</button>
 </div>
 
 <!-- eSIMs Table -->
-<div class="demo-card" style="padding: 0; overflow: hidden;">
-  <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-    <thead>
-      <tr>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">ICCID</th>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Kullanıcı</th>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Plan</th>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Durum</th>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Tarih</th>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">İşlemler</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% const defaultEsims = [
-        { id: 1, iccid: '8901260882168000001', user: 'ahmet.yilmaz', plan: 'Türkiye 5GB / 30 Gün', status: 'active', date: '2026-04-09' },
-        { id: 2, iccid: '8901260882168000002', user: 'elif.demir', plan: 'Avrupa 10GB / 30 Gün', status: 'active', date: '2026-04-08' },
-        { id: 3, iccid: '8901260882168000003', user: 'mehmet.kaya', plan: 'ABD 3GB / 15 Gün', status: 'pending', date: '2026-04-08' },
-        { id: 4, iccid: '8901260882168000004', user: 'zeynep.arslan', plan: 'Türkiye 10GB / 30 Gün', status: 'active', date: '2026-04-07' },
-        { id: 5, iccid: '8901260882168000005', user: 'can.ozturk', plan: 'Asya 5GB / 30 Gün', status: 'failed', date: '2026-04-07' },
-        { id: 6, iccid: '8901260882168000006', user: 'ahmet.yilmaz', plan: 'Avrupa 5GB / 15 Gün', status: 'expired', date: '2026-03-15' },
-        { id: 7, iccid: '8901260882168000007', user: 'elif.demir', plan: 'Türkiye 3GB / 7 Gün', status: 'active', date: '2026-04-06' },
-        { id: 8, iccid: '8901260882168000008', user: 'zeynep.arslan', plan: 'ABD 10GB / 30 Gün', status: 'pending', date: '2026-04-06' }
-      ]; %>
-      <% const esimList = locals.esims || defaultEsims; %>
-      <% esimList.forEach(function(e) { %>
+<div class="demo-table-card demo-animate-in">
+  <div class="demo-table-responsive">
+    <table class="demo-table">
+      <thead>
         <tr>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px;"><%= e.iccid %></td>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;"><%= e.user %></td>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;"><%= e.plan %></td>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;">
-            <% if (e.status === 'active') { %>
-              <span class="demo-badge demo-badge-success">Aktif</span>
-            <% } else if (e.status === 'pending') { %>
-              <span class="demo-badge demo-badge-warning">Bekleyen</span>
-            <% } else if (e.status === 'expired') { %>
-              <span class="demo-badge demo-badge-muted">Süresi Dolmuş</span>
-            <% } else { %>
-              <span class="demo-badge demo-badge-danger">Başarısız</span>
-            <% } %>
-          </td>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; color: #64748b;"><%= e.date %></td>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;">
-            <a href="/demo/admin/esims/<%= e.id %>" class="demo-btn demo-btn-outline demo-btn-sm">Detay</a>
-          </td>
+          <th>ICCID</th>
+          <th>Kullanıcı</th>
+          <th>Plan</th>
+          <th>Durum</th>
+          <th>Tarih</th>
+          <th>İşlemler</th>
         </tr>
-      <% }); %>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <% const defaultEsims = [
+          { id: 1, iccid: '8901260882168000001', user: 'ahmet.yilmaz', plan: 'Türkiye 5GB / 30 Gün', status: 'active', date: '2026-04-09' },
+          { id: 2, iccid: '8901260882168000002', user: 'elif.demir', plan: 'Avrupa 10GB / 30 Gün', status: 'active', date: '2026-04-08' },
+          { id: 3, iccid: '8901260882168000003', user: 'mehmet.kaya', plan: 'ABD 3GB / 15 Gün', status: 'pending', date: '2026-04-08' },
+          { id: 4, iccid: '8901260882168000004', user: 'zeynep.arslan', plan: 'Türkiye 10GB / 30 Gün', status: 'active', date: '2026-04-07' },
+          { id: 5, iccid: '8901260882168000005', user: 'can.ozturk', plan: 'Asya 5GB / 30 Gün', status: 'failed', date: '2026-04-07' },
+          { id: 6, iccid: '8901260882168000006', user: 'ahmet.yilmaz', plan: 'Avrupa 5GB / 15 Gün', status: 'expired', date: '2026-03-15' },
+          { id: 7, iccid: '8901260882168000007', user: 'elif.demir', plan: 'Türkiye 3GB / 7 Gün', status: 'active', date: '2026-04-06' },
+          { id: 8, iccid: '8901260882168000008', user: 'zeynep.arslan', plan: 'ABD 10GB / 30 Gün', status: 'pending', date: '2026-04-06' }
+        ]; %>
+        <% const esimList = locals.esims || defaultEsims; %>
+        <% esimList.forEach(function(e) { %>
+          <tr>
+            <td class="demo-table-mono"><%= e.iccid %></td>
+            <td><%= e.user %></td>
+            <td><%= e.plan %></td>
+            <td>
+              <% if (e.status === 'active') { %>
+                <span class="demo-badge demo-badge-success">Aktif</span>
+              <% } else if (e.status === 'pending') { %>
+                <span class="demo-badge demo-badge-warning">Bekleyen</span>
+              <% } else if (e.status === 'expired') { %>
+                <span class="demo-badge demo-badge-neutral">Süresi Dolmuş</span>
+              <% } else { %>
+                <span class="demo-badge demo-badge-danger">Başarısız</span>
+              <% } %>
+            </td>
+            <td><%= e.date %></td>
+            <td>
+              <a href="/demo/admin/esims/<%= e.id %>" class="demo-table-link">Detay</a>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
 </div>

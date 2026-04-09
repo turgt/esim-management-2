@@ -2,8 +2,9 @@
   <h1 class="demo-page-title demo-animate-in">Cihaz Uyumluluğu</h1>
 
   <!-- Search -->
-  <div class="demo-input-group demo-animate-in">
-    <input type="text" class="demo-input" placeholder="Cihaz ara..." style="padding-left:16px;">
+  <div class="demo-search-wrapper demo-animate-in">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <input type="text" class="demo-search-input" placeholder="Cihaz ara...">
   </div>
 
   <!-- Brand Filters -->
@@ -17,25 +18,26 @@
   </div>
 
   <!-- Device Accordion -->
-  <div class="demo-offers-list">
+  <div class="demo-accordion">
     <% if (locals.brands && brands.length) { %>
       <% brands.forEach(function(brand) { %>
-    <details class="demo-card demo-animate-in" style="border-radius:var(--radius-lg);overflow:hidden;">
-      <summary style="display:flex;align-items:center;gap:12px;padding:16px;cursor:pointer;font-family:var(--font-heading);font-size:15px;font-weight:700;list-style:none;user-select:none;">
-        <div style="width:40px;height:40px;background:var(--gradient-subtle);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;"><%= brand.icon || '📱' %></div>
-        <span style="flex:1;"><%= brand.name %></span>
-        <span style="font-size:12px;color:var(--color-text-muted);font-weight:500;"><%= brand.models.length %> model</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    <details class="demo-animate-in">
+      <summary>
+        <div style="display:flex;align-items:center;gap:12px;flex:1;">
+          <div style="width:40px;height:40px;background:var(--gradient-subtle);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;"><%= brand.icon || '📱' %></div>
+          <span style="flex:1;"><%= brand.name %></span>
+          <span style="font-size:12px;color:var(--color-text-muted);font-weight:500;"><%= brand.models.length %> model</span>
+        </div>
       </summary>
-      <div style="padding:0 16px 16px;display:flex;flex-direction:column;gap:8px;">
+      <div class="demo-accordion-body">
         <% brand.models.forEach(function(model) { %>
-        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--color-bg);border-radius:var(--radius-sm);">
+        <div class="demo-device-item">
           <% if (model.compatible) { %>
-            <span style="width:8px;height:8px;border-radius:50%;background:var(--color-success);flex-shrink:0;"></span>
+            <span class="demo-device-dot demo-device-dot-ok"></span>
           <% } else { %>
-            <span style="width:8px;height:8px;border-radius:50%;background:var(--color-danger);flex-shrink:0;"></span>
+            <span class="demo-device-dot demo-device-dot-no"></span>
           <% } %>
-          <span style="font-size:13px;font-weight:500;color:var(--color-text);"><%= model.name %></span>
+          <span><%= model.name %></span>
         </div>
         <% }) %>
       </div>

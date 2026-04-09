@@ -1,51 +1,53 @@
 <div class="demo-page-title">E-posta Logları</div>
 
 <!-- Filter Chips -->
-<div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-  <button class="demo-chip demo-chip-active">Tümü</button>
-  <button class="demo-chip">Gönderildi</button>
-  <button class="demo-chip">Başarısız</button>
+<div class="demo-filters">
+  <button class="demo-filter-chip active">Tümü</button>
+  <button class="demo-filter-chip">Gönderildi</button>
+  <button class="demo-filter-chip">Başarısız</button>
 </div>
 
 <!-- Emails Table -->
-<div class="demo-card" style="padding: 0; overflow: hidden;">
-  <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-    <thead>
-      <tr>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Alıcı</th>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Konu</th>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Durum</th>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Tarih</th>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">İşlemler</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% const defaultEmails = [
-        { id: 1, recipient: 'ahmet@example.com', subject: 'eSIM Aktivasyon Bilgileri', status: 'sent', date: '2026-04-09 14:35' },
-        { id: 2, recipient: 'elif@example.com', subject: 'Hoş Geldiniz - DataPatch', status: 'sent', date: '2026-04-08 10:22' },
-        { id: 3, recipient: 'mehmet@example.com', subject: 'Ödeme Onayı', status: 'failed', date: '2026-04-08 09:15' },
-        { id: 4, recipient: 'zeynep@example.com', subject: 'eSIM Top-up Başarılı', status: 'sent', date: '2026-04-07 16:48' },
-        { id: 5, recipient: 'can@example.com', subject: 'Şifre Sıfırlama', status: 'sent', date: '2026-04-07 11:30' },
-        { id: 6, recipient: 'ahmet@example.com', subject: 'eSIM Süresi Dolmak Üzere', status: 'failed', date: '2026-04-06 08:00' }
-      ]; %>
-      <% const emailList = locals.emails || defaultEmails; %>
-      <% emailList.forEach(function(e) { %>
+<div class="demo-table-card demo-animate-in">
+  <div class="demo-table-responsive">
+    <table class="demo-table">
+      <thead>
         <tr>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;"><%= e.recipient %></td>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-weight: 500;"><%= e.subject %></td>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;">
-            <% if (e.status === 'sent') { %>
-              <span class="demo-badge demo-badge-success">Gönderildi</span>
-            <% } else { %>
-              <span class="demo-badge demo-badge-danger">Başarısız</span>
-            <% } %>
-          </td>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; color: #64748b;"><%= e.date %></td>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;">
-            <a href="/demo/admin/emails/<%= e.id %>" class="demo-btn demo-btn-outline demo-btn-sm">Detay</a>
-          </td>
+          <th>Alıcı</th>
+          <th>Konu</th>
+          <th>Durum</th>
+          <th>Tarih</th>
+          <th>İşlemler</th>
         </tr>
-      <% }); %>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <% const defaultEmails = [
+          { id: 1, recipient: 'ahmet@example.com', subject: 'eSIM Aktivasyon Bilgileri', status: 'sent', date: '2026-04-09 14:35' },
+          { id: 2, recipient: 'elif@example.com', subject: 'Hoş Geldiniz - DataPatch', status: 'sent', date: '2026-04-08 10:22' },
+          { id: 3, recipient: 'mehmet@example.com', subject: 'Ödeme Onayı', status: 'failed', date: '2026-04-08 09:15' },
+          { id: 4, recipient: 'zeynep@example.com', subject: 'eSIM Top-up Başarılı', status: 'sent', date: '2026-04-07 16:48' },
+          { id: 5, recipient: 'can@example.com', subject: 'Şifre Sıfırlama', status: 'sent', date: '2026-04-07 11:30' },
+          { id: 6, recipient: 'ahmet@example.com', subject: 'eSIM Süresi Dolmak Üzere', status: 'failed', date: '2026-04-06 08:00' }
+        ]; %>
+        <% const emailList = locals.emails || defaultEmails; %>
+        <% emailList.forEach(function(e) { %>
+          <tr>
+            <td><%= e.recipient %></td>
+            <td><%= e.subject %></td>
+            <td>
+              <% if (e.status === 'sent') { %>
+                <span class="demo-badge demo-badge-success">Gönderildi</span>
+              <% } else { %>
+                <span class="demo-badge demo-badge-danger">Başarısız</span>
+              <% } %>
+            </td>
+            <td><%= e.date %></td>
+            <td>
+              <a href="/demo/admin/emails/<%= e.id %>" class="demo-table-link">Detay</a>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
 </div>

@@ -1,62 +1,64 @@
 <div class="demo-page-title">Ödemeler</div>
 
 <!-- Filter Chips -->
-<div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-  <button class="demo-chip demo-chip-active">Tümü</button>
-  <button class="demo-chip">Tamamlandı</button>
-  <button class="demo-chip">Bekleyen</button>
-  <button class="demo-chip">Başarısız</button>
+<div class="demo-filters">
+  <button class="demo-filter-chip active">Tümü</button>
+  <button class="demo-filter-chip">Tamamlandı</button>
+  <button class="demo-filter-chip">Bekleyen</button>
+  <button class="demo-filter-chip">Başarısız</button>
 </div>
 
 <!-- Payments Table -->
-<div class="demo-card" style="padding: 0; overflow: hidden;">
-  <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-    <thead>
-      <tr>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Kullanıcı</th>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Plan</th>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Tutar</th>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Durum</th>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">Tarih</th>
-        <th style="text-align: left; padding: 12px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; border-bottom: 1px solid #f1f5f9; font-weight: 600;">İşlemler</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% const defaultPayments = [
-        { user: 'ahmet.yilmaz', plan: 'Türkiye 5GB / 30 Gün', amount: '$12.99', status: 'completed', date: '2026-04-09' },
-        { user: 'elif.demir', plan: 'Avrupa 10GB / 30 Gün', amount: '$24.99', status: 'completed', date: '2026-04-08' },
-        { user: 'mehmet.kaya', plan: 'ABD 3GB / 15 Gün', amount: '$9.99', status: 'pending', date: '2026-04-08' },
-        { user: 'zeynep.arslan', plan: 'Türkiye 10GB / 30 Gün', amount: '$19.99', status: 'completed', date: '2026-04-07' },
-        { user: 'can.ozturk', plan: 'Asya 5GB / 30 Gün', amount: '$14.99', status: 'failed', date: '2026-04-07' },
-        { user: 'ahmet.yilmaz', plan: 'Avrupa 5GB / 15 Gün', amount: '$17.99', status: 'completed', date: '2026-04-06' },
-        { user: 'elif.demir', plan: 'Türkiye 3GB / 7 Gün', amount: '$7.99', status: 'failed', date: '2026-04-06' },
-        { user: 'zeynep.arslan', plan: 'ABD 10GB / 30 Gün', amount: '$29.99', status: 'pending', date: '2026-04-05' }
-      ]; %>
-      <% const paymentList = locals.adminPayments || defaultPayments; %>
-      <% paymentList.forEach(function(p) { %>
+<div class="demo-table-card demo-animate-in">
+  <div class="demo-table-responsive">
+    <table class="demo-table">
+      <thead>
         <tr>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-weight: 500;"><%= p.user %></td>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;"><%= p.plan %></td>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-weight: 600;"><%= p.amount %></td>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;">
-            <% if (p.status === 'completed') { %>
-              <span class="demo-badge demo-badge-success">Tamamlandı</span>
-            <% } else if (p.status === 'pending') { %>
-              <span class="demo-badge demo-badge-warning">Bekleyen</span>
-            <% } else { %>
-              <span class="demo-badge demo-badge-danger">Başarısız</span>
-            <% } %>
-          </td>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9; color: #64748b;"><%= p.date %></td>
-          <td style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9;">
-            <% if (p.status === 'failed') { %>
-              <button class="demo-btn demo-btn-sm demo-btn-outline">Tekrar Dene</button>
-            <% } else if (p.status === 'pending') { %>
-              <button class="demo-btn demo-btn-sm demo-btn-outline">Çözümle</button>
-            <% } %>
-          </td>
+          <th>Kullanıcı</th>
+          <th>Plan</th>
+          <th>Tutar</th>
+          <th>Durum</th>
+          <th>Tarih</th>
+          <th>İşlemler</th>
         </tr>
-      <% }); %>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <% const defaultPayments = [
+          { user: 'ahmet.yilmaz', plan: 'Türkiye 5GB / 30 Gün', amount: '$12.99', status: 'completed', date: '2026-04-09' },
+          { user: 'elif.demir', plan: 'Avrupa 10GB / 30 Gün', amount: '$24.99', status: 'completed', date: '2026-04-08' },
+          { user: 'mehmet.kaya', plan: 'ABD 3GB / 15 Gün', amount: '$9.99', status: 'pending', date: '2026-04-08' },
+          { user: 'zeynep.arslan', plan: 'Türkiye 10GB / 30 Gün', amount: '$19.99', status: 'completed', date: '2026-04-07' },
+          { user: 'can.ozturk', plan: 'Asya 5GB / 30 Gün', amount: '$14.99', status: 'failed', date: '2026-04-07' },
+          { user: 'ahmet.yilmaz', plan: 'Avrupa 5GB / 15 Gün', amount: '$17.99', status: 'completed', date: '2026-04-06' },
+          { user: 'elif.demir', plan: 'Türkiye 3GB / 7 Gün', amount: '$7.99', status: 'failed', date: '2026-04-06' },
+          { user: 'zeynep.arslan', plan: 'ABD 10GB / 30 Gün', amount: '$29.99', status: 'pending', date: '2026-04-05' }
+        ]; %>
+        <% const paymentList = locals.adminPayments || defaultPayments; %>
+        <% paymentList.forEach(function(p) { %>
+          <tr>
+            <td><%= p.user %></td>
+            <td><%= p.plan %></td>
+            <td><%= p.amount %></td>
+            <td>
+              <% if (p.status === 'completed') { %>
+                <span class="demo-badge demo-badge-success">Tamamlandı</span>
+              <% } else if (p.status === 'pending') { %>
+                <span class="demo-badge demo-badge-warning">Bekleyen</span>
+              <% } else { %>
+                <span class="demo-badge demo-badge-danger">Başarısız</span>
+              <% } %>
+            </td>
+            <td><%= p.date %></td>
+            <td>
+              <% if (p.status === 'failed') { %>
+                <button class="demo-btn demo-btn-sm demo-btn-outline">Tekrar Dene</button>
+              <% } else if (p.status === 'pending') { %>
+                <button class="demo-btn demo-btn-sm demo-btn-outline">Çözümle</button>
+              <% } %>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
 </div>

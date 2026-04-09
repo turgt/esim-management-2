@@ -2,64 +2,61 @@
   <h1 class="demo-page-title demo-animate-in">Fatura Detayı</h1>
 
   <!-- Receipt Card -->
-  <div class="demo-card demo-animate-in" style="padding:24px;">
+  <div class="demo-receipt-card demo-animate-in">
 
     <!-- Header -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div class="demo-gradient-text" style="font-family:var(--font-heading);font-size:20px;font-weight:800;">DataPatch</div>
-      <div style="font-size:12px;color:var(--color-text-muted);">Fatura No: <strong style="color:var(--color-text);">#DP-2026-0042</strong></div>
+    <div class="demo-receipt-header">
+      <div class="demo-receipt-logo demo-gradient-text">DataPatch</div>
+      <div class="demo-receipt-number">Fatura No: <strong style="color:var(--color-text);">#DP-2026-0042</strong></div>
     </div>
 
-    <!-- Divider -->
-    <div style="height:1px;background:var(--color-border);margin-bottom:16px;"></div>
+    <div class="demo-receipt-divider"></div>
 
     <!-- Detail Grid -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-      <div>
-        <div style="font-size:10px;text-transform:uppercase;font-weight:600;color:var(--color-text-muted);letter-spacing:0.5px;margin-bottom:4px;">Tarih</div>
-        <div style="font-size:14px;font-weight:600;color:var(--color-text);">9 Nisan 2026</div>
+    <div class="demo-detail-grid" style="margin-bottom:16px;">
+      <div class="demo-detail-item">
+        <div class="demo-detail-label">Tarih</div>
+        <div class="demo-detail-value">9 Nisan 2026</div>
       </div>
-      <div>
-        <div style="font-size:10px;text-transform:uppercase;font-weight:600;color:var(--color-text-muted);letter-spacing:0.5px;margin-bottom:4px;">Durum</div>
-        <span class="demo-badge" style="background:var(--color-success-bg);color:var(--color-success);padding:4px 10px;border-radius:var(--radius-full);font-size:11px;">Tamamlandı</span>
+      <div class="demo-detail-item">
+        <div class="demo-detail-label">Durum</div>
+        <span class="demo-badge demo-badge-success">Tamamlandi</span>
       </div>
-      <div style="grid-column:1/-1;">
-        <div style="font-size:10px;text-transform:uppercase;font-weight:600;color:var(--color-text-muted);letter-spacing:0.5px;margin-bottom:4px;">Ödeme Yöntemi</div>
-        <div style="font-size:14px;font-weight:600;color:var(--color-text);">Visa &bull;&bull;&bull;&bull; 4242</div>
+      <div class="demo-detail-item" style="grid-column:1/-1;">
+        <div class="demo-detail-label">Odeme Yontemi</div>
+        <div class="demo-detail-value">Visa &bull;&bull;&bull;&bull; 4242</div>
       </div>
     </div>
 
-    <!-- Divider -->
-    <div style="height:1px;background:var(--color-border);margin-bottom:16px;"></div>
+    <div class="demo-receipt-divider"></div>
 
     <!-- Line Items -->
     <div style="margin-bottom:16px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;">
+      <div class="demo-receipt-line" style="align-items:center;padding:10px 0;">
         <div>
-          <div style="font-size:14px;font-weight:600;color:var(--color-text);">Türkiye 10GB eSIM</div>
-          <div style="font-size:12px;color:var(--color-text-muted);">30 gün &bull; 5G</div>
+          <div style="font-size:14px;font-weight:600;color:var(--color-text);">Turkiye 10GB eSIM</div>
+          <div style="font-size:12px;color:var(--color-text-muted);">30 gun &bull; 5G</div>
         </div>
-        <div style="font-size:14px;font-weight:600;color:var(--color-text);">$4.16</div>
+        <div class="demo-receipt-line-value">$4.16</div>
       </div>
     </div>
 
-    <!-- Divider -->
-    <div style="height:1px;background:var(--color-border);margin-bottom:16px;"></div>
+    <div class="demo-receipt-divider"></div>
 
     <!-- Totals -->
     <div style="display:flex;flex-direction:column;gap:8px;">
-      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-secondary);">
-        <span>Ara Toplam</span>
-        <span>$4.16</span>
+      <div class="demo-receipt-line">
+        <span class="demo-receipt-line-label">Ara Toplam</span>
+        <span class="demo-receipt-line-value">$4.16</span>
       </div>
-      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-secondary);">
-        <span>KDV (%20)</span>
-        <span>$0.83</span>
+      <div class="demo-receipt-line">
+        <span class="demo-receipt-line-label">KDV (%20)</span>
+        <span class="demo-receipt-line-value">$0.83</span>
       </div>
-      <div style="height:1px;background:var(--color-border);margin:4px 0;"></div>
+      <div class="demo-receipt-divider"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <span style="font-family:var(--font-heading);font-size:16px;font-weight:700;">Toplam</span>
-        <span class="demo-gradient-text" style="font-family:var(--font-heading);font-size:22px;font-weight:800;">$4.99</span>
+        <span class="demo-receipt-total demo-gradient-text">$4.99</span>
       </div>
     </div>
   </div>

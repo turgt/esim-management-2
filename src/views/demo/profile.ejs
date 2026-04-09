@@ -2,17 +2,17 @@
   <h1 class="demo-page-title demo-animate-in">Profil</h1>
 
   <!-- Avatar Section -->
-  <div class="demo-animate-in" style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
-    <div style="width:64px;height:64px;border-radius:50%;background:var(--gradient-primary);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-heading);font-weight:800;font-size:24px;flex-shrink:0;">T</div>
+  <div class="demo-avatar-section demo-animate-in">
+    <div class="demo-avatar-lg">T</div>
     <div>
-      <div style="font-family:var(--font-heading);font-size:18px;font-weight:700;color:var(--color-text);">Turgut</div>
-      <div style="font-size:13px;color:var(--color-text-secondary);">demo@datapatch.co</div>
+      <div class="demo-avatar-name">Turgut</div>
+      <div class="demo-avatar-email">demo@datapatch.co</div>
     </div>
   </div>
 
   <!-- Hesap Bilgileri -->
-  <div class="demo-card demo-animate-in" style="padding:20px;margin-bottom:16px;">
-    <div style="font-family:var(--font-heading);font-size:16px;font-weight:700;margin-bottom:16px;">Hesap Bilgileri</div>
+  <div class="demo-section-card demo-animate-in">
+    <div class="demo-section-card-title">Hesap Bilgileri</div>
     <form>
       <div class="demo-input-group">
         <label class="demo-input-label">Görünen Ad</label>
@@ -31,8 +31,8 @@
   </div>
 
   <!-- Şifre Değiştir -->
-  <div class="demo-card demo-animate-in" style="padding:20px;margin-bottom:16px;">
-    <div style="font-family:var(--font-heading);font-size:16px;font-weight:700;margin-bottom:16px;">Şifre Değiştir</div>
+  <div class="demo-section-card demo-animate-in">
+    <div class="demo-section-card-title">Şifre Değiştir</div>
     <form>
       <div class="demo-input-group">
         <label class="demo-input-label">Mevcut Şifre</label>
@@ -51,16 +51,16 @@
   </div>
 
   <!-- Tercihler -->
-  <div class="demo-card demo-animate-in" style="padding:20px;margin-bottom:16px;">
-    <div style="font-family:var(--font-heading);font-size:16px;font-weight:700;margin-bottom:16px;">Tercihler</div>
+  <div class="demo-section-card demo-animate-in">
+    <div class="demo-section-card-title">Tercihler</div>
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <div>
         <div style="font-size:14px;font-weight:600;color:var(--color-text);">Tema</div>
         <div style="font-size:12px;color:var(--color-text-muted);">Arayüz görünümünü ayarla</div>
       </div>
-      <div style="display:flex;background:#f1f5f9;border-radius:var(--radius-full);padding:3px;">
-        <span style="padding:6px 14px;border-radius:var(--radius-full);font-size:12px;font-weight:600;background:var(--color-surface);color:var(--color-text);box-shadow:var(--shadow-sm);cursor:pointer;">Açık</span>
-        <span style="padding:6px 14px;border-radius:var(--radius-full);font-size:12px;font-weight:600;color:var(--color-text-muted);cursor:pointer;">Koyu</span>
+      <div class="demo-theme-toggle">
+        <span class="demo-theme-option active">Acik</span>
+        <span class="demo-theme-option">Koyu</span>
       </div>
     </div>
   </div>
