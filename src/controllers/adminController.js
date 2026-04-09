@@ -280,20 +280,31 @@ export async function showTopup(req, res) {
       return res.render('error', { message: 'eSIM not found' });
     }
 
-    const country = esim.country || process.env.COUNTRY || 'TR';
-    let offers = cacheService.getOffers(country);
-    if (!offers) {
-      offers = await listOffers(country);
-      cacheService.setOffers(country, offers);
-    }
-    const activeOffers = offers.list.filter(o => o.enabled);
-
+    let offers = [];
     let activePlans = null;
-    if (esim.iccid) {
+
+    if (esim.vendor === 'airalo' && esim.iccid) {
       try {
-        activePlans = await getEsimPlans(esim.iccid);
+        const { getTopupPackages } = await import('../services/airaloClient.js');
+        const topupResult = await getTopupPackages(esim.iccid);
+        offers = topupResult?.data || [];
       } catch (e) {
-        log.warn({ err: e, iccid: esim.iccid }, 'Could not fetch eSIM plans');
+        log.warn({ err: e.message, iccid: esim.iccid }, 'Could not fetch Airalo top-up packages');
+      }
+      try {
+        const usageRes = await airaloGetUsage(esim.iccid);
+        activePlans = usageRes?.data || null;
+      } catch (e) { /* skip */ }
+    } else if (esim.vendor === 'zendit') {
+      const country = esim.country || process.env.COUNTRY || 'TR';
+      let zenditOffers = cacheService.getOffers(country);
+      if (!zenditOffers) {
+        zenditOffers = await listOffers(country);
+        cacheService.setOffers(country, zenditOffers);
+      }
+      offers = zenditOffers.list.filter(o => o.enabled);
+      if (esim.iccid) {
+        try { activePlans = await getEsimPlans(esim.iccid); } catch (e) { /* skip */ }
       }
     }
 
@@ -305,7 +316,7 @@ export async function showTopup(req, res) {
     res.render('admin/topup', {
       title: 'Top-up eSIM',
       esim,
-      offers: activeOffers,
+      offers,
       activePlans,
       errors,
       success
@@ -320,7 +331,6 @@ export async function showTopup(req, res) {
 export async function topupEsim(req, res) {
   const transaction = await db.sequelize.transaction();
   try {
-    const { offerId } = req.body;
     const esim = await db.Esim.findByPk(req.params.esimId, { transaction });
 
     if (!esim || !esim.iccid) {
@@ -329,33 +339,64 @@ export async function topupEsim(req, res) {
       return res.redirect(`/admin/topup/${req.params.esimId}`);
     }
 
-    const transactionId = uuidv4();
-    log.info({ iccid: esim.iccid, offerId, transactionId }, 'Top-up eSIM');
+    if (esim.vendor === 'airalo') {
+      const { packageId } = req.body;
+      log.info({ iccid: esim.iccid, packageId }, 'Airalo top-up');
 
-    const purchase = await zenditPurchaseEsim(offerId, transactionId, esim.iccid);
-    const confirmation = purchase.confirmation || {};
+      const { createTopup } = await import('../services/airaloClient.js');
+      const topupResult = await createTopup(packageId, esim.iccid, 'Admin topup');
+      const order = topupResult?.data || topupResult;
 
-    await db.Esim.create({
-      userId: esim.userId,
-      offerId,
-      transactionId,
-      status: normalizeStatus(purchase.status),
-      assignedBy: req.session.user.id,
-      iccid: esim.iccid,
-      parentEsimId: esim.id,
-      country: purchase.country || esim.country,
-      dataGB: purchase.dataGB || null,
-      durationDays: purchase.durationDays || null,
-      brandName: purchase.brandName || null,
-      priceAmount: purchase.price?.fixed ? (purchase.price.fixed / (purchase.price.currencyDivisor || 100)) : null,
-      priceCurrency: purchase.price?.currency || null
-    }, { transaction });
+      await db.Esim.create({
+        userId: esim.userId,
+        offerId: packageId,
+        transactionId: String(order.id || order.code),
+        status: 'completed',
+        vendor: 'airalo',
+        vendorOrderId: String(order.id),
+        assignedBy: req.session.user.id,
+        iccid: esim.iccid,
+        parentEsimId: esim.id,
+        dataGB: order.data ? parseFloat(order.data) || null : null,
+        durationDays: order.validity || null,
+        brandName: order.package || null,
+        priceAmount: order.price || null,
+        priceCurrency: order.currency || 'USD',
+        vendorData: { topup: true }
+      }, { transaction });
+
+    } else {
+      // Zendit top-up (legacy)
+      const { offerId } = req.body;
+      const transactionId = uuidv4();
+      log.info({ iccid: esim.iccid, offerId, transactionId }, 'Zendit top-up');
+
+      const purchase = await zenditPurchaseEsim(offerId, transactionId, esim.iccid);
+      const confirmation = purchase.confirmation || {};
+
+      await db.Esim.create({
+        userId: esim.userId,
+        offerId,
+        transactionId,
+        status: normalizeStatus(purchase.status),
+        vendor: 'zendit',
+        assignedBy: req.session.user.id,
+        iccid: esim.iccid,
+        parentEsimId: esim.id,
+        country: purchase.country || esim.country,
+        dataGB: purchase.dataGB || null,
+        durationDays: purchase.durationDays || null,
+        brandName: purchase.brandName || null,
+        priceAmount: purchase.price?.fixed ? (purchase.price.fixed / (purchase.price.currencyDivisor || 100)) : null,
+        priceCurrency: purchase.price?.currency || null
+      }, { transaction });
+    }
 
     await transaction.commit();
 
     await logAudit(ACTIONS.ESIM_TOPUP, {
       userId: req.session.user.id, entity: 'Esim', entityId: esim.id,
-      details: { iccid: esim.iccid, offerId, transactionId },
+      details: { iccid: esim.iccid, vendor: esim.vendor },
       ipAddress: getIp(req)
     });
 
