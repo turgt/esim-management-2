@@ -105,12 +105,11 @@ export async function showOffers(req, res) {
   }
 }
 
-// Satın alma işlemi
 export async function createPurchase(req, res) {
   const transaction = await db.sequelize.transaction();
 
   try {
-    const { offerId } = req.body;
+    const { packageId } = req.body;
     const userId = req.session.user.id;
 
     const user = await db.User.findByPk(userId, {
@@ -123,39 +122,50 @@ export async function createPurchase(req, res) {
       return res.render('error', { message: 'eSIM limit reached' });
     }
 
-    const transactionId = uuidv4();
-    log.info({ username: user.username, offerId, transactionId }, 'Creating eSIM purchase');
+    log.info({ username: user.username, packageId }, 'Creating Airalo eSIM purchase');
 
-    const purchase = await purchaseEsim(offerId, transactionId);
-    log.info({ transactionId, status: purchase.status }, 'Purchase created');
-
-    const confirmation = purchase.confirmation || {};
+    const orderResult = await airaloCreateOrder(packageId, 1, `User ${user.username}`);
+    const order = orderResult?.data || orderResult;
+    const sim = order.sims?.[0] || {};
 
     await db.Esim.create({
       userId: user.id,
-      offerId,
-      transactionId,
-      status: normalizeStatus(purchase.status),
-      iccid: confirmation.iccid || null,
-      smdpAddress: confirmation.smdpAddress || null,
-      activationCode: confirmation.externalReferenceId || confirmation.activationCode || null,
-      country: purchase.country || process.env.COUNTRY || 'TR',
-      dataGB: purchase.dataGB || null,
-      durationDays: purchase.durationDays || null,
-      brandName: purchase.brandName || null,
-      priceAmount: purchase.price?.fixed ? (purchase.price.fixed / (purchase.price.currencyDivisor || 100)) : null,
-      priceCurrency: purchase.price?.currency || null
+      offerId: packageId,
+      transactionId: String(order.id || order.code),
+      status: 'completed',
+      vendor: 'airalo',
+      vendorOrderId: String(order.id),
+      iccid: sim.iccid || null,
+      smdpAddress: null,
+      activationCode: null,
+      country: null,
+      dataGB: order.data ? parseFloat(order.data) || null : null,
+      durationDays: order.validity || null,
+      brandName: order.package || null,
+      priceAmount: order.price || null,
+      priceCurrency: order.currency || 'USD',
+      vendorData: {
+        lpa: sim.lpa || null,
+        matchingId: sim.matching_id || null,
+        qrcodeUrl: sim.qrcode_url || null,
+        qrcode: sim.qrcode || null,
+        directAppleUrl: sim.direct_apple_installation_url || null,
+        apn: sim.apn || null,
+        msisdn: sim.msisdn || null,
+        manualInstallation: order.manual_installation || null,
+        qrcodeInstallation: order.qrcode_installation || null,
+      }
     }, { transaction });
 
     await transaction.commit();
 
     await logAudit(ACTIONS.ESIM_PURCHASE, {
       userId: user.id, entity: 'Esim', entityId: null,
-      details: { offerId, transactionId },
+      details: { packageId, airaloOrderId: order.id },
       ipAddress: getIp(req)
     });
 
-    res.redirect(`/status/${transactionId}?purchased=true`);
+    res.redirect(`/status/${order.id || order.code}?purchased=true`);
 
   } catch (err) {
     await transaction.rollback();

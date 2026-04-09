@@ -1,7 +1,8 @@
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import db from '../db/models/index.js';
-import { purchaseEsim, normalizeStatus, getBalance } from './zenditClient.js';
+import { purchaseEsim as zenditPurchaseEsim, normalizeStatus, getBalance as getZenditBalance } from './zenditClient.js';
+import { createOrder as airaloCreateOrder, checkBalance as checkAiraloBalance, createTopup as airaloCreateTopup } from './airaloClient.js';
 import { logAudit, ACTIONS } from './auditService.js';
 import { sendPaymentSuccessEmail, sendPaymentFailedEmail, sendEsimActivationFailedEmail } from './emailService.js';
 import logger from '../lib/logger.js';
@@ -20,22 +21,11 @@ function getPaddleConfig() {
   };
 }
 
-// Check if Zendit has enough balance to fulfill the eSIM purchase
-export async function checkZenditBalance(amount) {
-  try {
-    const balance = await getBalance();
-    const availableUsd = balance.availableBalance / (balance.currencyDivisor || 100);
-    log.info({ availableUsd, requiredAmount: amount }, 'Zendit balance check');
-
-    if (availableUsd < amount) {
-      return { sufficient: false, available: availableUsd, required: amount };
-    }
-    return { sufficient: true, available: availableUsd, required: amount };
-  } catch (err) {
-    log.error({ err }, 'Failed to check Zendit balance');
-    return { sufficient: false, available: 0, required: amount, error: err.message };
-  }
+export async function checkProviderBalance(amount) {
+  return checkAiraloBalance(amount);
 }
+
+export { checkProviderBalance as checkZenditBalance };
 
 export async function createPayment(userId, offerId, amount, currency = 'USD', metadata = {}, opts = {}) {
   const merchantOid = `ESIM_${Date.now()}_${uuidv4().slice(0, 8)}`;
@@ -255,17 +245,76 @@ export async function processPaddleWebhook(body) {
 }
 
 export async function purchaseEsimAfterPayment(payment) {
-  const balanceCheck = await checkZenditBalance(parseFloat(payment.amount));
+  // Check if this is a legacy Zendit payment
+  if (payment.metadata?.vendor === 'zendit') {
+    return zenditPurchaseEsimAfterPayment(payment);
+  }
+
+  const balanceCheck = await checkAiraloBalance(parseFloat(payment.amount));
   if (!balanceCheck.sufficient) {
-    const msg = `Insufficient Zendit balance: available $${balanceCheck.available.toFixed(2)}, required $${balanceCheck.required.toFixed(2)}`;
+    const msg = `Insufficient Airalo balance: available $${balanceCheck.available}, required $${balanceCheck.required}`;
     log.error({ merchantOid: payment.merchantOid, ...balanceCheck }, msg);
     throw new Error(msg);
   }
 
-  const transactionId = uuidv4();
-  log.info({ merchantOid: payment.merchantOid, offerId: payment.offerId, transactionId }, 'Purchasing eSIM after payment');
+  log.info({ merchantOid: payment.merchantOid, packageId: payment.offerId }, 'Purchasing Airalo eSIM after payment');
 
-  const purchase = await purchaseEsim(payment.offerId, transactionId);
+  const orderResult = await airaloCreateOrder(payment.offerId, 1, `Payment ${payment.merchantOid}`);
+  const order = orderResult?.data || orderResult;
+  const sim = order.sims?.[0] || {};
+
+  const esim = await db.Esim.create({
+    userId: payment.userId,
+    offerId: payment.offerId,
+    transactionId: String(order.id || order.code),
+    status: 'completed',
+    vendor: 'airalo',
+    vendorOrderId: String(order.id),
+    iccid: sim.iccid || null,
+    country: null,
+    dataGB: order.data ? parseFloat(order.data) || null : null,
+    durationDays: order.validity || null,
+    brandName: order.package || null,
+    priceAmount: order.price || null,
+    priceCurrency: order.currency || 'USD',
+    vendorData: {
+      lpa: sim.lpa || null,
+      matchingId: sim.matching_id || null,
+      qrcodeUrl: sim.qrcode_url || null,
+      qrcode: sim.qrcode || null,
+      directAppleUrl: sim.direct_apple_installation_url || null,
+      apn: sim.apn || null,
+      msisdn: sim.msisdn || null,
+      manualInstallation: order.manual_installation || null,
+      qrcodeInstallation: order.qrcode_installation || null,
+    }
+  });
+
+  await payment.update({
+    esimId: esim.id,
+    metadata: { ...payment.metadata, esimTransactionId: String(order.id), esimId: esim.id }
+  });
+
+  await logAudit(ACTIONS.ESIM_PURCHASE, {
+    userId: payment.userId,
+    entity: 'Esim',
+    entityId: esim.id,
+    details: { offerId: payment.offerId, airaloOrderId: order.id, merchantOid: payment.merchantOid }
+  });
+
+  log.info({ merchantOid: payment.merchantOid, airaloOrderId: order.id, esimId: esim.id }, 'Airalo eSIM purchased after payment');
+  return esim;
+}
+
+async function zenditPurchaseEsimAfterPayment(payment) {
+  const balance = await getZenditBalance();
+  const availableUsd = balance.availableBalance / (balance.currencyDivisor || 100);
+  if (availableUsd < parseFloat(payment.amount)) {
+    throw new Error(`Insufficient Zendit balance: $${availableUsd.toFixed(2)}`);
+  }
+
+  const transactionId = uuidv4();
+  const purchase = await zenditPurchaseEsim(payment.offerId, transactionId);
   const confirmation = purchase.confirmation || {};
 
   const esim = await db.Esim.create({
@@ -273,6 +322,7 @@ export async function purchaseEsimAfterPayment(payment) {
     offerId: payment.offerId,
     transactionId,
     status: normalizeStatus(purchase.status),
+    vendor: 'zendit',
     iccid: confirmation.iccid || null,
     smdpAddress: confirmation.smdpAddress || null,
     activationCode: confirmation.externalReferenceId || confirmation.activationCode || null,
@@ -289,38 +339,82 @@ export async function purchaseEsimAfterPayment(payment) {
     metadata: { ...payment.metadata, esimTransactionId: transactionId, esimId: esim.id }
   });
 
-  await logAudit(ACTIONS.ESIM_PURCHASE, {
-    userId: payment.userId,
-    entity: 'Esim',
-    entityId: esim.id,
-    details: { offerId: payment.offerId, transactionId, merchantOid: payment.merchantOid }
-  });
-
-  log.info({ merchantOid: payment.merchantOid, transactionId, esimId: esim.id }, 'eSIM purchased successfully after payment');
   return esim;
 }
 
 export async function topupEsimAfterPayment(payment) {
-  const balanceCheck = await checkZenditBalance(parseFloat(payment.amount));
+  // Check if this is a legacy Zendit payment
+  if (payment.metadata?.vendor === 'zendit') {
+    return zenditTopupEsimAfterPayment(payment);
+  }
+
+  const balanceCheck = await checkAiraloBalance(parseFloat(payment.amount));
   if (!balanceCheck.sufficient) {
-    const msg = `Insufficient Zendit balance: available $${balanceCheck.available.toFixed(2)}, required $${balanceCheck.required.toFixed(2)}`;
+    const msg = `Insufficient Airalo balance: available $${balanceCheck.available}, required $${balanceCheck.required}`;
     log.error({ merchantOid: payment.merchantOid, ...balanceCheck }, msg);
     throw new Error(msg);
   }
 
   const iccid = payment.targetIccid;
-  const transactionId = uuidv4();
-  log.info({ merchantOid: payment.merchantOid, offerId: payment.offerId, iccid, transactionId }, 'Top-up eSIM after payment');
+  log.info({ merchantOid: payment.merchantOid, packageId: payment.offerId, iccid }, 'Airalo top-up after payment');
 
   const parentEsim = await db.Esim.findOne({ where: { iccid, userId: payment.userId } });
 
-  const purchase = await purchaseEsim(payment.offerId, transactionId, iccid);
+  const topupResult = await airaloCreateTopup(payment.offerId, iccid, `Topup ${payment.merchantOid}`);
+  const order = topupResult?.data || topupResult;
+
+  const esim = await db.Esim.create({
+    userId: payment.userId,
+    offerId: payment.offerId,
+    transactionId: String(order.id || order.code),
+    status: 'completed',
+    vendor: 'airalo',
+    vendorOrderId: String(order.id),
+    iccid,
+    parentEsimId: parentEsim ? parentEsim.id : null,
+    dataGB: order.data ? parseFloat(order.data) || null : null,
+    durationDays: order.validity || null,
+    brandName: order.package || null,
+    priceAmount: order.price || null,
+    priceCurrency: order.currency || 'USD',
+    vendorData: { topup: true }
+  });
+
+  await payment.update({
+    esimId: esim.id,
+    metadata: { ...payment.metadata, esimTransactionId: String(order.id), esimId: esim.id }
+  });
+
+  await logAudit(ACTIONS.ESIM_TOPUP, {
+    userId: payment.userId,
+    entity: 'Esim',
+    entityId: esim.id,
+    details: { offerId: payment.offerId, iccid, airaloOrderId: order.id, merchantOid: payment.merchantOid }
+  });
+
+  log.info({ merchantOid: payment.merchantOid, airaloOrderId: order.id, esimId: esim.id }, 'Airalo top-up completed after payment');
+  return esim;
+}
+
+async function zenditTopupEsimAfterPayment(payment) {
+  const balance = await getZenditBalance();
+  const availableUsd = balance.availableBalance / (balance.currencyDivisor || 100);
+  if (availableUsd < parseFloat(payment.amount)) {
+    throw new Error(`Insufficient Zendit balance: $${availableUsd.toFixed(2)}`);
+  }
+
+  const iccid = payment.targetIccid;
+  const transactionId = uuidv4();
+  const parentEsim = await db.Esim.findOne({ where: { iccid, userId: payment.userId } });
+
+  const purchase = await zenditPurchaseEsim(payment.offerId, transactionId, iccid);
 
   const esim = await db.Esim.create({
     userId: payment.userId,
     offerId: payment.offerId,
     transactionId,
     status: normalizeStatus(purchase.status),
+    vendor: 'zendit',
     iccid,
     parentEsimId: parentEsim ? parentEsim.id : null,
     country: purchase.country || process.env.COUNTRY || 'TR',
@@ -336,14 +430,6 @@ export async function topupEsimAfterPayment(payment) {
     metadata: { ...payment.metadata, esimTransactionId: transactionId, esimId: esim.id }
   });
 
-  await logAudit(ACTIONS.ESIM_TOPUP, {
-    userId: payment.userId,
-    entity: 'Esim',
-    entityId: esim.id,
-    details: { offerId: payment.offerId, transactionId, iccid, merchantOid: payment.merchantOid }
-  });
-
-  log.info({ merchantOid: payment.merchantOid, transactionId, esimId: esim.id }, 'eSIM top-up completed after payment');
   return esim;
 }
 
@@ -359,5 +445,6 @@ export default {
   purchaseEsimAfterPayment,
   topupEsimAfterPayment,
   findByMerchantOid,
-  checkZenditBalance
+  checkZenditBalance,
+  checkProviderBalance
 };
