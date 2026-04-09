@@ -16,7 +16,7 @@ export async function syncPackages() {
     log.info('Starting Airalo package sync');
     //const result = await getAllPackages();
     const countryCode = process.env.COUNTRY || 'TR'; // Optionally filter by country
-    const result = await getSimPackages(countryCode); // New method to fetch SIM packages with more details
+    const result = await getCountryPackages(countryCode); // New method to fetch SIM packages with more details
     const packages = result?.data || [];
 
     if (!packages.length) {
@@ -32,7 +32,8 @@ export async function syncPackages() {
         await db.AiraloPackage.upsert({
           packageId: pkg.package_id || pkg.id,
           slug: pkg.slug || '',
-          countryCode: pkg.country_code || null,
+          //countryCode: pkg.country_code || null,
+          countryCode: countryCode,
           title: pkg.title || '',
           operatorTitle: pkg.operator_title || pkg.operator?.title || '',
           type: pkg.type || 'local',
