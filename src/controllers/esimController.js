@@ -24,7 +24,7 @@ function isQrReady(status) {
 export async function showLandingPage(req, res) {
   try {
     const featuredOffers = await db.AiraloPackage.findAll({
-      where: { countryCode: process.env.COUNTRY || 'TR' },
+      //where: { countryCode: process.env.COUNTRY || 'TR' },
       order: [['price', 'ASC']],
       limit: 6,
     });

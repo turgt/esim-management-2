@@ -36,7 +36,7 @@
         <select id="assign-offer" name="packageId" required class="input">
           <option value="">Choose a plan...</option>
           <% if (typeof offers !== 'undefined') { offers.forEach(function(offer) { %>
-          <option value="<%= offer.packageId %>"><%= offer.operatorTitle %> - <%= offer.data %> / <%= offer.day %> days (<%= offer.price ? offer.price.toFixed(2) + ' USD' : 'N/A' %>)</option>
+          <option value="<%= offer.packageId %>"><%= offer.operatorTitle %> - <%= offer.data %> / <%= offer.day %> days (<%= !isNaN(Number(offer.price)) ? Number(offer.price).toFixed(2) + ' USD' : 'N/A' %>)</option>
           <% }) } %>
         </select>
       </div>
