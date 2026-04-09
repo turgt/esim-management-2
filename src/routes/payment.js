@@ -4,7 +4,7 @@ import {
   createPayment,
   createPaddleCheckout,
   findByMerchantOid,
-  checkZenditBalance
+  checkProviderBalance
 } from '../services/paymentService.js';
 import { getPaginationParams, buildPagination } from '../utils/pagination.js';
 import { listOffers } from '../services/zenditClient.js';
@@ -34,7 +34,7 @@ router.post('/create', ensureAuth, async (req, res) => {
     }
 
     // Check provider balance BEFORE accepting payment
-    const balanceCheck = await checkZenditBalance(parsedAmount);
+    const balanceCheck = await checkProviderBalance(parsedAmount);
     if (!balanceCheck.sufficient) {
       log.warn({ offerId, amount: parsedAmount, ...balanceCheck }, 'Provider balance insufficient, blocking payment');
       return res.render('error', {
@@ -106,7 +106,7 @@ router.post('/topup/create', ensureAuth, async (req, res) => {
       return res.render('error', { message: 'Invalid amount', title: 'Error' });
     }
 
-    const balanceCheck = await checkZenditBalance(parsedAmount);
+    const balanceCheck = await checkProviderBalance(parsedAmount);
     if (!balanceCheck.sufficient) {
       return res.render('error', {
         message: 'Top-up is temporarily unavailable. Please try again later.',
