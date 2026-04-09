@@ -26,6 +26,7 @@ import legalRoutes from './routes/legal.js';
 import vendorRoutes from './routes/vendor.js';
 import webhookRoutes from './routes/webhook.js';
 import demoRoutes from './routes/demo.js';
+import { startSync as startAiraloSync } from './services/airaloSync.js';
 import { cookieParser, doubleCsrfProtection, csrfTokenMiddleware, csrfErrorHandler } from './middleware/csrf.js';
 import { verifyPaddleWebhook, processPaddleWebhook } from './services/paymentService.js';
 
@@ -307,6 +308,11 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // Bootstrap admin user
 await bootstrap(db);
+
+// Start Airalo package sync (non-blocking)
+startAiraloSync().catch(err => {
+  console.error('Airalo sync startup error:', err.message);
+});
 
 // Start server
 const PORT = process.env.PORT || 3000;

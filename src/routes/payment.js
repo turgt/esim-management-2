@@ -8,6 +8,7 @@ import {
 } from '../services/paymentService.js';
 import { getPaginationParams, buildPagination } from '../utils/pagination.js';
 import { listOffers } from '../services/zenditClient.js';
+import { getTopupPackages as getAiraloTopupPackages } from '../services/airaloClient.js';
 import cacheService from '../services/cacheService.js';
 import { getEsimPlans } from '../services/zenditClient.js';
 import logger from '../lib/logger.js';
@@ -18,7 +19,10 @@ const log = logger.child({ module: 'payment-routes' });
 // POST /payment/create — Start payment flow (authenticated + CSRF)
 router.post('/create', ensureAuth, async (req, res) => {
   try {
-    const { offerId, amount, currency } = req.body;
+    // Support both packageId (Airalo) and offerId (Zendit legacy)
+    const offerId = req.body.packageId || req.body.offerId;
+    const { amount, currency } = req.body;
+    const vendor = req.body.packageId ? 'airalo' : (req.body.vendor || 'airalo');
 
     if (!offerId || !amount) {
       return res.render('error', { message: 'Missing offer or amount', title: 'Error' });
@@ -29,10 +33,10 @@ router.post('/create', ensureAuth, async (req, res) => {
       return res.render('error', { message: 'Invalid amount', title: 'Error' });
     }
 
-    // Check Zendit balance BEFORE accepting payment
+    // Check provider balance BEFORE accepting payment
     const balanceCheck = await checkZenditBalance(parsedAmount);
     if (!balanceCheck.sufficient) {
-      log.warn({ offerId, amount: parsedAmount, ...balanceCheck }, 'Zendit balance insufficient, blocking payment');
+      log.warn({ offerId, amount: parsedAmount, ...balanceCheck }, 'Provider balance insufficient, blocking payment');
       return res.render('error', {
         message: 'This plan is temporarily unavailable. Please try again later or contact support.',
         title: 'Unavailable'
@@ -55,7 +59,8 @@ router.post('/create', ensureAuth, async (req, res) => {
     }
 
     const payment = await createPayment(userId, offerId, parsedAmount, currency || 'USD', {
-      planName: req.body.planName || offerId
+      planName: req.body.planName || offerId,
+      vendor
     });
 
     try {
@@ -88,7 +93,9 @@ router.post('/create', ensureAuth, async (req, res) => {
 // POST /payment/topup/create — Start top-up payment flow
 router.post('/topup/create', ensureAuth, async (req, res) => {
   try {
-    const { offerId, amount, currency, esimId, iccid } = req.body;
+    // Support both packageId (Airalo) and offerId (Zendit legacy)
+    const offerId = req.body.packageId || req.body.offerId;
+    const { amount, currency, esimId, iccid } = req.body;
 
     if (!offerId || !amount || !esimId || !iccid) {
       return res.render('error', { message: 'Missing required fields', title: 'Error' });
@@ -120,10 +127,13 @@ router.post('/topup/create', ensureAuth, async (req, res) => {
       return res.render('error', { message: 'User not found', title: 'Error' });
     }
 
+    const vendor = esim.vendor || 'airalo';
+
     const payment = await createPayment(userId, offerId, parsedAmount, currency || 'USD', {
       planName: req.body.planName || offerId,
       targetEsimId: esim.id,
-      targetIccid: iccid
+      targetIccid: iccid,
+      vendor
     }, { type: 'topup', targetIccid: iccid });
 
     try {
@@ -167,19 +177,32 @@ router.get('/topup/:esimId', ensureAuth, async (req, res) => {
       return res.render('error', { message: 'This eSIM does not have an ICCID yet. Top-up is not available.', title: 'Error' });
     }
 
-    const country = esim.country || process.env.COUNTRY || 'TR';
-    let offers = cacheService.getOffers(country);
-    if (!offers) {
-      offers = await listOffers(country);
-      cacheService.setOffers(country, offers);
-    }
-    const activeOffers = offers.list.filter(o => o.enabled);
-
+    let activeOffers = [];
     let activePlans = null;
-    try {
-      activePlans = await getEsimPlans(esim.iccid);
-    } catch (e) {
-      // silently skip
+
+    if (esim.vendor === 'airalo') {
+      // Fetch Airalo-specific topup packages for this eSIM
+      try {
+        const topupData = await getAiraloTopupPackages(esim.iccid);
+        activeOffers = topupData?.data || [];
+      } catch (e) {
+        log.warn({ err: e.message, iccid: esim.iccid }, 'Failed to fetch Airalo topup packages');
+      }
+    } else {
+      // Zendit legacy: fetch offers by country
+      const country = esim.country || process.env.COUNTRY || 'TR';
+      let offers = cacheService.getOffers(country);
+      if (!offers) {
+        offers = await listOffers(country);
+        cacheService.setOffers(country, offers);
+      }
+      activeOffers = offers.list.filter(o => o.enabled);
+
+      try {
+        activePlans = await getEsimPlans(esim.iccid);
+      } catch (e) {
+        // silently skip
+      }
     }
 
     res.render('topup', {

@@ -5,7 +5,8 @@ import {
   showAssignEsim, assignEsim, showTopup, topupEsim,
   showAllEsims, showEsimDetail,
   listPayments, retryEsimPurchase, resolvePayment,
-  listEmails, showEmailDetail, downloadAttachment
+  listEmails, showEmailDetail, downloadAttachment,
+  showZenditPurchase, zenditPurchase
 } from '../controllers/adminController.js';
 import {
   listVendors, showCreateVendor, createVendor,
@@ -55,5 +56,9 @@ router.get('/vendors/:id/qr', ensureAuth, ensureAdmin, downloadQrCode);
 router.get('/emails', ensureAuth, ensureAdmin, listEmails);
 router.get('/emails/:id', ensureAuth, ensureAdmin, showEmailDetail);
 router.get('/emails/:id/attachment/:attachmentIndex', ensureAuth, ensureAdmin, downloadAttachment);
+
+// Zendit Purchase (admin-only)
+router.get('/zendit/purchase', ensureAuth, ensureAdmin, showZenditPurchase);
+router.post('/zendit/purchase', ensureAuth, ensureAdmin, zenditPurchase);
 
 export default router;

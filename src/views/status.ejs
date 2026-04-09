@@ -4,13 +4,21 @@
   <div class="breadcrumb">
     <a href="/purchases"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to My Datas</a>
   </div>
-  <h1 class="text-page-title">Purchase Status</h1>
+  <div class="flex items-center gap-3">
+    <h1 class="text-page-title">Purchase Status</h1>
+    <% if (typeof vendor !== 'undefined' && vendor === 'zendit') { %>
+      <span class="badge badge-amber">Zendit</span>
+    <% } %>
+  </div>
 </div>
 
 <div class="max-w-2xl space-y-5">
   <!-- Status Banner -->
   <div class="card overflow-hidden">
-    <% if (status.status === 'DONE' || status.status === 'completed') { %>
+    <%
+      var currentStatusVal = (typeof status !== 'undefined' && status) ? status.status : (typeof dbStatus !== 'undefined' ? dbStatus : '');
+    %>
+    <% if (currentStatusVal === 'DONE' || currentStatusVal === 'completed') { %>
     <div class="status-banner status-banner-done">
       <div class="status-icon">
         <i data-lucide="check" class="w-5 h-5"></i>
@@ -20,7 +28,7 @@
         <p class="text-xs text-emerald-600 dark:text-emerald-500 mt-0.5">Your Data has been activated and is ready to use</p>
       </div>
     </div>
-    <% } else if (status.status === 'PENDING' || status.status === 'pending') { %>
+    <% } else if (currentStatusVal === 'PENDING' || currentStatusVal === 'pending') { %>
     <div class="status-banner status-banner-pending">
       <div class="status-icon">
         <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
@@ -30,7 +38,7 @@
         <p class="text-xs text-amber-600 dark:text-amber-500 mt-0.5">Your Data is being set up, this usually takes a few minutes</p>
       </div>
     </div>
-    <% } else if (status.status === 'FAILED' || status.status === 'failed') { %>
+    <% } else if (currentStatusVal === 'FAILED' || currentStatusVal === 'failed') { %>
     <div class="status-banner status-banner-failed">
       <div class="status-icon">
         <i data-lucide="x" class="w-5 h-5"></i>
@@ -46,7 +54,7 @@
         <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
       </div>
       <div>
-        <p class="text-sm font-bold text-indigo-700 dark:text-indigo-400"><%= status.status %></p>
+        <p class="text-sm font-bold text-indigo-700 dark:text-indigo-400"><%= currentStatusVal || 'Processing' %></p>
         <p class="text-xs text-indigo-600 dark:text-indigo-500 mt-0.5">Your Data is being prepared</p>
       </div>
     </div>
@@ -57,33 +65,37 @@
       <div class="grid grid-cols-2 gap-3">
         <div class="detail-item">
           <div class="detail-label">Transaction ID</div>
-          <div class="detail-value font-mono text-xs truncate"><%= status.transactionId %></div>
+          <div class="detail-value font-mono text-xs truncate"><%= (typeof status !== 'undefined' && status) ? status.transactionId : (esim ? esim.transactionId : '-') %></div>
         </div>
         <div class="detail-item">
           <div class="detail-label">Offer</div>
-          <div class="detail-value truncate"><%= status.offerId %></div>
+          <div class="detail-value truncate"><%= (typeof status !== 'undefined' && status) ? status.offerId : (esim ? esim.offerId : '-') %></div>
         </div>
-        <% if (status.brandName || (esim && esim.brandName)) { %>
+        <% if ((typeof status !== 'undefined' && status && status.brandName) || (esim && esim.brandName)) { %>
         <div class="detail-item">
           <div class="detail-label">Provider</div>
-          <div class="detail-value"><%= status.brandName || esim.brandName || '-' %></div>
+          <div class="detail-value"><%= (typeof status !== 'undefined' && status && status.brandName) ? status.brandName : (esim ? esim.brandName : '-') %></div>
         </div>
         <% } %>
-        <% if (status.country || (esim && esim.country)) { %>
+        <% if ((typeof status !== 'undefined' && status && status.country) || (esim && esim.country)) { %>
         <div class="detail-item">
           <div class="detail-label">Region</div>
-          <div class="detail-value"><%= status.country || esim.country || '-' %></div>
+          <div class="detail-value"><%= (typeof status !== 'undefined' && status && status.country) ? status.country : (esim ? esim.country : '-') %></div>
         </div>
         <% } %>
-        <% if (status.durationDays || (esim && esim.durationDays)) { %>
+        <% if ((typeof status !== 'undefined' && status && status.durationDays) || (esim && esim.durationDays)) { %>
         <div class="detail-item">
           <div class="detail-label">Duration</div>
-          <div class="detail-value font-semibold"><%= status.durationDays || esim.durationDays %> days</div>
+          <div class="detail-value font-semibold"><%= (typeof status !== 'undefined' && status && status.durationDays) ? status.durationDays : esim.durationDays %> days</div>
         </div>
         <% } %>
         <div class="detail-item">
           <div class="detail-label">Data</div>
-          <div class="detail-value font-semibold"><%= status.dataUnlimited ? 'Unlimited' : (status.dataGB || (esim && esim.dataGB) ? (status.dataGB || esim.dataGB) + ' GB' : '-') %></div>
+          <%
+            var dataUnlimited = (typeof status !== 'undefined' && status) ? status.dataUnlimited : false;
+            var dataGB = (typeof status !== 'undefined' && status && status.dataGB) ? status.dataGB : (esim ? esim.dataGB : null);
+          %>
+          <div class="detail-value font-semibold"><%= dataUnlimited ? 'Unlimited' : (dataGB ? dataGB + ' GB' : '-') %></div>
         </div>
         <% if (esim && esim.iccid) { %>
         <div class="detail-item col-span-2">
@@ -98,6 +110,19 @@
         <% } %>
       </div>
     </div>
+
+    <!-- Airalo Usage Data -->
+    <% if (typeof vendor !== 'undefined' && vendor === 'airalo' && typeof usageData !== 'undefined' && usageData) { %>
+    <div class="p-5 pt-0">
+      <p class="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-2">Data Usage</p>
+      <div class="card p-4 bg-[var(--surface-1)] border border-[var(--border-subtle)]">
+        <div class="flex justify-between text-sm">
+          <span class="text-[var(--text-secondary)]">Remaining: <strong class="text-[var(--text-primary)]"><%= usageData.remaining %> MB</strong> / <%= usageData.total %> MB</span>
+          <span class="badge badge-neutral"><%= usageData.status %></span>
+        </div>
+      </div>
+    </div>
+    <% } %>
 
     <!-- Active Plans -->
     <%
@@ -135,7 +160,7 @@
   </div>
 
   <!-- Activity Log -->
-  <% if (status.log && status.log.length > 0) { %>
+  <% if (typeof status !== 'undefined' && status && status.log && status.log.length > 0) { %>
   <div class="card">
     <div class="card-header">
       <h3>Activity Log</h3>
@@ -245,7 +270,7 @@
   <!-- Actions -->
   <div class="flex flex-col sm:flex-row gap-3">
     <% if (isQrReady) { %>
-    <a href="/qrcode/<%= status.transactionId %>" class="flex-1 btn btn-primary btn-lg">
+    <a href="/qrcode/<%= esim ? esim.transactionId : (typeof status !== 'undefined' && status ? status.transactionId : '') %>" class="flex-1 btn btn-primary btn-lg">
       <i data-lucide="qr-code" class="w-4 h-4"></i>
       QR Code & Details
     </a>
@@ -285,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
     history.replaceState(null, '', window.location.pathname);
   }
 
-  var currentStatus = '<%= status.status %>';
+  var currentStatus = '<%= (typeof status !== "undefined" && status) ? status.status : (typeof dbStatus !== "undefined" ? dbStatus : "") %>';
   var pendingStates = ['pending', 'processing', 'installing', 'PENDING', 'AUTHORIZED', 'IN_PROGRESS'];
   if (pendingStates.includes(currentStatus)) {
     var refreshCount = 0;

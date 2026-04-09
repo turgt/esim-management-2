@@ -30,6 +30,10 @@ services:
       OFFERS_LIMIT: 100
       ZENDIT_API_BASE: https://api.zendit.io/v1
       ZENDIT_API_KEY: sand_f78d3a0c-45da-4cb8-bb98-f5a5e47c061f68b9746c4809099222b4188a
+      # Airalo Partner API
+      AIRALO_CLIENT_ID: ""
+      AIRALO_CLIENT_SECRET: ""
+      AIRALO_ENV: "sandbox"
       APP_URL: http://localhost:3000
       # Paddle - sandbox mode by default
       PADDLE_API_KEY: ""

@@ -43,6 +43,16 @@
         <div class="detail-label">Country</div>
         <div class="detail-value"><%= esim.country || '-' %></div>
       </div>
+      <div class="detail-item">
+        <div class="detail-label">Vendor</div>
+        <div class="detail-value">
+          <% if (esim.vendor === 'airalo') { %>
+          <span class="badge badge-info">Airalo</span>
+          <% } else { %>
+          <span class="badge badge-secondary"><%= esim.vendor || 'zendit' %></span>
+          <% } %>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -127,12 +137,21 @@
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div>
         <label for="topup-offer" class="input-label">Select Package</label>
-        <select id="topup-offer" name="offerId" required class="input">
-          <option value="">Choose a package...</option>
-          <% if (typeof offers !== 'undefined') { offers.forEach(function(offer) { %>
-          <option value="<%= offer.offerId %>"><%= offer.brand %> - <%= offer.dataGB ? offer.dataGB + ' GB' : 'Unlimited' %> / <%= offer.durationDays %> days</option>
-          <% }) } %>
+        <% if (esim.vendor === 'airalo') { %>
+        <select id="topup-offer" name="packageId" class="input w-full" required>
+          <option value="">Select top-up package...</option>
+          <% if (offers && offers.length) { offers.forEach(function(pkg) { %>
+          <option value="<%= pkg.id %>"><%= pkg.title || pkg.data %> / <%= pkg.day %> days — $<%= pkg.price %></option>
+          <% }); } %>
         </select>
+        <% } else { %>
+        <select id="topup-offer" name="offerId" class="input w-full" required>
+          <option value="">Select offer...</option>
+          <% if (offers && offers.length) { offers.forEach(function(offer) { %>
+          <option value="<%= offer.offerId %>"><%= offer.brand %> — <%= offer.dataGB %>GB / <%= offer.durationDays %> days</option>
+          <% }); } %>
+        </select>
+        <% } %>
       </div>
       <button type="submit" class="btn btn-primary btn-block">
         <i data-lucide="plus-circle" class="w-4 h-4"></i>
