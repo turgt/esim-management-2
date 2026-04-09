@@ -8,8 +8,8 @@
   <p class="text-subtitle mt-1">Purchase and assign a Data plan to a user</p>
 </div>
 
-<% if (typeof error !== 'undefined' && error) { %>
-<div class="alert alert-error mb-6"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i><%= error %></div>
+<% if (typeof errors !== 'undefined' && errors && errors.length > 0) { %>
+<div class="alert alert-error mb-6"><i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i><% errors.forEach(function(e){ %><%= e %> <% }) %></div>
 <% } %>
 <% if (typeof success !== 'undefined' && success) { %>
 <div class="alert alert-success mb-6"><i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i><%= success %></div>
@@ -33,10 +33,10 @@
       </div>
       <div>
         <label for="assign-offer" class="input-label">Select Data Plan</label>
-        <select id="assign-offer" name="offerId" required class="input">
+        <select id="assign-offer" name="packageId" required class="input">
           <option value="">Choose a plan...</option>
           <% if (typeof offers !== 'undefined') { offers.forEach(function(offer) { %>
-          <option value="<%= offer.offerId %>"><%= offer.brand %> - <%= offer.dataGB %> GB / <%= offer.durationDays %> days (<%= offer.price ? (offer.price.fixed / (offer.price.currencyDivisor || 100)).toFixed(2) + ' ' + (offer.price.currency || 'USD') : 'N/A' %>)</option>
+          <option value="<%= offer.packageId %>"><%= offer.operatorTitle %> - <%= offer.data %> / <%= offer.day %> days (<%= offer.price ? offer.price.toFixed(2) + ' USD' : 'N/A' %>)</option>
           <% }) } %>
         </select>
       </div>

@@ -1,7 +1,8 @@
 import db from '../db/models/index.js';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-import { listOffers, purchaseEsim, getUsage, getBalance, getEsimPlans, normalizeStatus } from '../services/zenditClient.js';
+import { listOffers, purchaseEsim as zenditPurchaseEsim, getUsage as zenditGetUsage, getBalance as zenditGetBalance, getEsimPlans, normalizeStatus } from '../services/zenditClient.js';
+import { createOrder as airaloCreateOrder, getUsage as airaloGetUsage } from '../services/airaloClient.js';
 import { purchaseEsimAfterPayment, topupEsimAfterPayment } from '../services/paymentService.js';
 import cacheService from '../services/cacheService.js';
 import { sendEsimAssignedEmail } from '../services/emailService.js';
@@ -21,7 +22,7 @@ export async function showDashboard(req, res) {
 
     let balance = null;
     try {
-      balance = await getBalance();
+      balance = await zenditGetBalance();
     } catch (e) {
       log.warn({ err: e }, 'Could not fetch balance');
     }
@@ -165,12 +166,11 @@ export async function showAssignEsim(req, res) {
     });
 
     const country = process.env.COUNTRY || 'TR';
-    let offers = cacheService.getOffers(country);
-    if (!offers) {
-      offers = await listOffers(country);
-      cacheService.setOffers(country, offers);
-    }
-    const activeOffers = offers.list.filter(o => o.enabled);
+    const packages = await db.AiraloPackage.findAll({
+      where: { countryCode: country },
+      order: [['price', 'ASC']],
+      limit: 100,
+    });
 
     const errors = req.session.validationErrors || [];
     const success = req.session.assignSuccess || null;
@@ -180,7 +180,7 @@ export async function showAssignEsim(req, res) {
     res.render('admin/assign-esim', {
       title: 'Assign eSIM',
       users,
-      offers: activeOffers,
+      offers: packages,
       errors,
       success
     });
@@ -190,11 +190,11 @@ export async function showAssignEsim(req, res) {
   }
 }
 
-// Assign eSIM to user
+// Assign eSIM to user (Airalo)
 export async function assignEsim(req, res) {
   const transaction = await db.sequelize.transaction();
   try {
-    const { userId, offerId } = req.body;
+    const { userId, packageId } = req.body;
     const adminId = req.session.user.id;
 
     const user = await db.User.findByPk(userId, {
@@ -214,34 +214,41 @@ export async function assignEsim(req, res) {
       return res.redirect('/admin/assign-esim');
     }
 
-    const transactionId = uuidv4();
-    log.info({ username: user.username, offerId, transactionId }, 'Admin assigning eSIM');
+    log.info({ username: user.username, packageId }, 'Admin assigning Airalo eSIM');
 
-    const purchase = await purchaseEsim(offerId, transactionId);
-    const confirmation = purchase.confirmation || {};
+    const orderResult = await airaloCreateOrder(packageId, 1, `Admin assign to ${user.username}`);
+    const order = orderResult?.data || orderResult;
+    const sim = order.sims?.[0] || {};
 
     const esim = await db.Esim.create({
       userId: user.id,
-      offerId,
-      transactionId,
-      status: normalizeStatus(purchase.status),
+      offerId: packageId,
+      transactionId: String(order.id || order.code),
+      status: 'completed',
+      vendor: 'airalo',
+      vendorOrderId: String(order.id),
       assignedBy: adminId,
-      iccid: confirmation.iccid || null,
-      smdpAddress: confirmation.smdpAddress || null,
-      activationCode: confirmation.externalReferenceId || confirmation.activationCode || null,
-      country: purchase.country || process.env.COUNTRY || 'TR',
-      dataGB: purchase.dataGB || null,
-      durationDays: purchase.durationDays || null,
-      brandName: purchase.brandName || null,
-      priceAmount: purchase.price?.fixed ? (purchase.price.fixed / (purchase.price.currencyDivisor || 100)) : null,
-      priceCurrency: purchase.price?.currency || null
+      iccid: sim.iccid || null,
+      dataGB: order.data ? parseFloat(order.data) || null : null,
+      durationDays: order.validity || null,
+      brandName: order.package || null,
+      priceAmount: order.price || null,
+      priceCurrency: order.currency || 'USD',
+      vendorData: {
+        lpa: sim.lpa || null,
+        matchingId: sim.matching_id || null,
+        qrcodeUrl: sim.qrcode_url || null,
+        qrcode: sim.qrcode || null,
+        directAppleUrl: sim.direct_apple_installation_url || null,
+        apn: sim.apn || null,
+      }
     }, { transaction });
 
     await transaction.commit();
 
     await logAudit(ACTIONS.ESIM_ASSIGN, {
       userId: adminId, entity: 'Esim', entityId: esim.id,
-      details: { targetUser: user.username, offerId, transactionId },
+      details: { targetUser: user.username, packageId, airaloOrderId: order.id },
       ipAddress: getIp(req)
     });
 
@@ -325,7 +332,7 @@ export async function topupEsim(req, res) {
     const transactionId = uuidv4();
     log.info({ iccid: esim.iccid, offerId, transactionId }, 'Top-up eSIM');
 
-    const purchase = await purchaseEsim(offerId, transactionId, esim.iccid);
+    const purchase = await zenditPurchaseEsim(offerId, transactionId, esim.iccid);
     const confirmation = purchase.confirmation || {};
 
     await db.Esim.create({
@@ -566,7 +573,7 @@ export async function showEsimDetail(req, res) {
 
     let usage = null;
     try {
-      usage = await getUsage(esim.transactionId);
+      usage = await zenditGetUsage(esim.transactionId);
     } catch (e) {
       log.warn({ err: e, transactionId: esim.transactionId }, 'Could not fetch usage');
     }
