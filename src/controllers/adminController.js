@@ -756,3 +756,110 @@ async function parseAndServeAttachment(res, rawUrl, attachmentIndex) {
   });
   res.send(att.content);
 }
+
+// Admin-only: Zendit purchase page (for consuming remaining balance)
+export async function showZenditPurchase(req, res) {
+  try {
+    const users = await db.User.findAll({
+      where: { isActive: true },
+      attributes: ['id', 'username', 'displayName', 'esimLimit'],
+      include: [{ model: db.Esim, foreignKey: 'userId', attributes: ['id'] }],
+      order: [['username', 'ASC']]
+    });
+
+    const country = process.env.COUNTRY || 'TR';
+    let offers = cacheService.getOffers(country);
+    if (!offers) {
+      offers = await listOffers(country);
+      cacheService.setOffers(country, offers);
+    }
+    const activeOffers = offers.list.filter(o => o.enabled);
+
+    let balance = null;
+    try {
+      const bal = await zenditGetBalance();
+      balance = {
+        amount: (bal.availableBalance / (bal.currencyDivisor || 100)).toFixed(2),
+        currency: bal.currency || 'USD'
+      };
+    } catch (e) {
+      log.warn({ err: e.message }, 'Could not fetch Zendit balance');
+    }
+
+    const errors = req.session.validationErrors || [];
+    const success = req.session.zenditSuccess || null;
+    delete req.session.validationErrors;
+    delete req.session.zenditSuccess;
+
+    res.render('admin/zendit-purchase', {
+      title: 'Zendit Purchase',
+      users,
+      offers: activeOffers,
+      balance,
+      errors,
+      success
+    });
+  } catch (err) {
+    log.error({ err }, 'showZenditPurchase error');
+    res.render('error', { message: 'Failed to load Zendit purchase form' });
+  }
+}
+
+export async function zenditPurchase(req, res) {
+  const transaction = await db.sequelize.transaction();
+  try {
+    const { userId, offerId } = req.body;
+    const adminId = req.session.user.id;
+
+    const user = await db.User.findByPk(userId, {
+      include: [{ model: db.Esim, foreignKey: 'userId' }],
+      transaction
+    });
+
+    if (!user) {
+      await transaction.rollback();
+      req.session.validationErrors = ['User not found'];
+      return res.redirect('/admin/zendit/purchase');
+    }
+
+    const transactionId = uuidv4();
+    log.info({ username: user.username, offerId, transactionId }, 'Admin Zendit purchase');
+
+    const purchase = await zenditPurchaseEsim(offerId, transactionId);
+    const confirmation = purchase.confirmation || {};
+
+    await db.Esim.create({
+      userId: user.id,
+      offerId,
+      transactionId,
+      status: normalizeStatus(purchase.status),
+      vendor: 'zendit',
+      assignedBy: adminId,
+      iccid: confirmation.iccid || null,
+      smdpAddress: confirmation.smdpAddress || null,
+      activationCode: confirmation.externalReferenceId || confirmation.activationCode || null,
+      country: purchase.country || process.env.COUNTRY || 'TR',
+      dataGB: purchase.dataGB || null,
+      durationDays: purchase.durationDays || null,
+      brandName: purchase.brandName || null,
+      priceAmount: purchase.price?.fixed ? (purchase.price.fixed / (purchase.price.currencyDivisor || 100)) : null,
+      priceCurrency: purchase.price?.currency || null
+    }, { transaction });
+
+    await transaction.commit();
+
+    await logAudit(ACTIONS.ESIM_PURCHASE, {
+      userId: adminId, entity: 'Esim', entityId: null,
+      details: { offerId, transactionId, vendor: 'zendit', targetUser: user.username },
+      ipAddress: getIp(req)
+    });
+
+    req.session.zenditSuccess = `Zendit eSIM purchased for ${user.username}!`;
+    res.redirect('/admin/zendit/purchase');
+  } catch (err) {
+    await transaction.rollback();
+    log.error({ err, apiError: err.response?.data }, 'zenditPurchase error');
+    req.session.validationErrors = ['Zendit purchase failed: ' + (err.response?.data?.message || err.message)];
+    res.redirect('/admin/zendit/purchase');
+  }
+}

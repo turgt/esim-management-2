@@ -1,0 +1,80 @@
+<%- include('../partials/header', {title: 'Zendit Purchase', user: locals.user}) %>
+
+<div class="mb-6">
+  <div class="breadcrumb">
+    <a href="/admin/dashboard"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to Dashboard</a>
+  </div>
+  <h1 class="text-page-title">Zendit Purchase</h1>
+  <p class="text-subtitle mt-1">Purchase eSIM from Zendit (legacy — for consuming remaining balance)</p>
+</div>
+
+<% if (typeof balance !== 'undefined' && balance) { %>
+<div class="card p-4 mb-6">
+  <div class="flex items-center gap-3">
+    <i data-lucide="wallet" class="w-5 h-5 text-amber-500"></i>
+    <span class="font-semibold">Zendit Balance:</span>
+    <span class="text-lg font-bold">$<%= balance.amount %> <%= balance.currency %></span>
+    <% if (parseFloat(balance.amount) <= 0) { %>
+      <span class="badge badge-danger">Empty</span>
+    <% } %>
+  </div>
+</div>
+<% } %>
+
+<% if (typeof errors !== 'undefined' && errors && errors.length > 0) { %>
+<div class="alert alert-error mb-4">
+  <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+  <div><% errors.forEach(function(error) { %><p><%= error %></p><% }) %></div>
+</div>
+<% } %>
+
+<% if (typeof success !== 'undefined' && success) { %>
+<div class="alert alert-success mb-4">
+  <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i>
+  <p><%= success %></p>
+</div>
+<% } %>
+
+<div class="max-w-2xl">
+  <div class="card">
+    <div class="card-header">
+      <h2>Purchase Details</h2>
+    </div>
+    <form method="POST" action="/admin/zendit/purchase" class="card-body space-y-4">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div>
+        <label for="zendit-user" class="input-label">User</label>
+        <select id="zendit-user" name="userId" class="input" required>
+          <option value="">Select user...</option>
+          <% if (typeof users !== 'undefined') { users.forEach(function(user) { %>
+          <option value="<%= user.id %>">
+            <%= user.username %><%= user.displayName ? ' (' + user.displayName + ')' : '' %>
+            — <%= user.Esims ? user.Esims.length : 0 %><%= user.esimLimit ? '/' + user.esimLimit : '' %> eSIMs
+          </option>
+          <% }) } %>
+        </select>
+      </div>
+
+      <div>
+        <label for="zendit-offer" class="input-label">Zendit Offer</label>
+        <select id="zendit-offer" name="offerId" class="input" required>
+          <option value="">Select offer...</option>
+          <% if (typeof offers !== 'undefined') { offers.forEach(function(offer) { %>
+          <option value="<%= offer.offerId %>">
+            <%= offer.brand %> — <%= offer.dataGB %>GB / <%= offer.durationDays %> days
+            — $<%= offer.price && offer.price.fixed ? (offer.price.fixed / (offer.price.currencyDivisor || 100)).toFixed(2) : 'N/A' %>
+          </option>
+          <% }) } %>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">
+        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+        Purchase from Zendit
+      </button>
+    </form>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
