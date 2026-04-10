@@ -266,6 +266,36 @@ document.addEventListener('keydown', function(e) {
 // Initial sort
 document.addEventListener('DOMContentLoaded', function() {
   applyFilterAndSort();
+
+  // Apply search query from URL if present
+  var params = new URLSearchParams(window.location.search);
+  var q = params.get('q');
+  if (q) {
+    var grid = document.getElementById('offersGrid');
+    if (!grid) return;
+    var cards = Array.from(grid.querySelectorAll('.offer-card'));
+    var term = q.toLowerCase();
+    var visible = 0;
+    cards.forEach(function(card) {
+      // Only filter cards that are currently visible (respect active filter)
+      if (card.style.display === 'none') return;
+      var text = card.textContent.toLowerCase();
+      if (text.indexOf(term) === -1) {
+        card.style.display = 'none';
+      } else {
+        visible++;
+      }
+    });
+    // Update results count with search context
+    var countEl = document.getElementById('resultsCount');
+    if (countEl) {
+      countEl.textContent = visible + ' plan' + (visible !== 1 ? 's' : '') + ' found for \u201c' + q + '\u201d';
+    }
+    // Show/hide no-results message
+    var noResults = document.getElementById('noResults');
+    if (noResults) noResults.style.display = visible === 0 ? 'block' : 'none';
+    if (grid) grid.style.display = visible === 0 ? 'none' : '';
+  }
 });
 </script>
 

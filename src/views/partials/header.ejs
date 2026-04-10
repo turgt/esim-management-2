@@ -201,5 +201,20 @@ document.addEventListener('DOMContentLoaded', function() {
   lucide.createIcons();
   var isDark = document.documentElement.classList.contains('dark');
   updateThemeIcon(isDark);
+
+  // Topbar search: redirect to /offers?q=<term> on Enter
+  var searchInput = document.querySelector('.topbar-search input');
+  if (searchInput) {
+    // Pre-fill search input from URL query param if on offers page
+    var params = new URLSearchParams(window.location.search);
+    var q = params.get('q');
+    if (q) searchInput.value = q;
+
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && this.value.trim()) {
+        window.location.href = '/offers?q=' + encodeURIComponent(this.value.trim());
+      }
+    });
+  }
 });
 </script>
