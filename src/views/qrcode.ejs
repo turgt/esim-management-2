@@ -20,8 +20,10 @@
       computedMatchingId = (typeof matchingId !== 'undefined' && matchingId) || esim.vendorData.matchingId || null;
       computedQrcodeUrl = (typeof qrcodeUrl !== 'undefined' && qrcodeUrl) || esim.vendorData.qrcodeUrl || esim.vendorData.qrcode || null;
       computedDirectAppleUrl = (typeof directAppleUrl !== 'undefined' && directAppleUrl) || esim.vendorData.directAppleUrl || null;
-      smdpAddress = esim.vendorData.smdpAddress || null;
-      activationCode = esim.vendorData.activationCode || computedMatchingId || null;
+      // Use controller-provided values first, then derive from vendorData
+      // Airalo: vd.lpa = SM-DP+ address, vd.qrcode = full LPA string, vd.matchingId = activation code
+      smdpAddress = (typeof locals.smdpAddress !== 'undefined' && locals.smdpAddress) || esim.vendorData.lpa || (computedLpa ? computedLpa.split('$')[1] : null) || null;
+      activationCode = (typeof locals.activationCode !== 'undefined' && locals.activationCode) || computedMatchingId || (computedLpa ? computedLpa.split('$')[2] : null) || null;
     } else if (esim.smdpAddress && esim.activationCode) {
       computedLpa = 'LPA:1$' + esim.smdpAddress + '$' + esim.activationCode;
       smdpAddress = esim.smdpAddress;
@@ -140,15 +142,6 @@
       </ol>
     </div>
 
-    <!-- Platform buttons -->
-    <div class="flex gap-3 mt-4">
-      <a href="#" class="flex-1 btn btn-secondary btn-sm text-center" onclick="return false;">
-        <i data-lucide="apple" class="w-4 h-4"></i> iOS Settings
-      </a>
-      <a href="#" class="flex-1 btn btn-secondary btn-sm text-center" onclick="return false;">
-        <i data-lucide="smartphone" class="w-4 h-4"></i> Android Settings
-      </a>
-    </div>
   </div>
 
   <!-- Manual Install Tab -->
