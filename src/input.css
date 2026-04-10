@@ -2178,6 +2178,12 @@ body {
   line-height: 1.5;
 }
 
+.steps-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
 .landing-plans {
   padding: 0 20px 32px;
   max-width: 960px;

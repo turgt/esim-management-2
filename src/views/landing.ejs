@@ -1,135 +1,74 @@
 <%- include('partials/landing-header', {title: title}) %>
 
-<!-- Hero Section -->
+<!-- Hero -->
 <section class="landing-hero">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-    <div class="text-center max-w-3xl mx-auto">
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--brand-light)] text-[var(--brand-primary)] text-sm font-medium mb-6">
-        <i data-lucide="signal" class="w-4 h-4"></i>
-        Instant eSIM Activation
-      </div>
-      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[var(--text-primary)] tracking-tight leading-[1.1] mb-5">
-        Stay Connected<br>
-        <span class="text-[var(--brand-primary)]">Anywhere in the World</span>
-      </h1>
-      <p class="text-lg sm:text-xl text-[var(--text-secondary)] mb-8 max-w-2xl mx-auto leading-relaxed">
-        Affordable eSIM data plans with instant activation. No roaming fees, no physical SIM card needed. Buy online, scan QR, connect.
-      </p>
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
-        <a href="/auth/register" class="btn btn-primary btn-lg w-full sm:w-auto">
-          <i data-lucide="zap" class="w-5 h-5"></i>
-          Get Started Free
-        </a>
-        <a href="#plans" class="btn btn-secondary btn-lg w-full sm:w-auto">
-          <i data-lucide="globe" class="w-5 h-5"></i>
-          View Plans
-        </a>
-      </div>
-      <!-- Trust Signals -->
-      <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-[var(--text-secondary)]">
-        <span class="flex items-center gap-1.5">
-          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
-          Secure Payments
-        </span>
-        <span class="flex items-center gap-1.5">
-          <i data-lucide="clock" class="w-4 h-4 text-sky-500"></i>
-          Instant Delivery
-        </span>
-        <span class="flex items-center gap-1.5">
-          <i data-lucide="headphones" class="w-4 h-4 text-amber-500"></i>
-          24/7 Support
-        </span>
-        <span class="flex items-center gap-1.5">
-          <i data-lucide="ban" class="w-4 h-4 text-rose-500"></i>
-          No Roaming Fees
-        </span>
-      </div>
+  <div class="landing-hero-content fade-up">
+    <h1 class="landing-hero-title">
+      Stay Connected,<br>
+      <span class="landing-hero-accent">Anywhere in the World</span>
+    </h1>
+    <p class="landing-hero-sub">
+      Affordable eSIM data plans in 190+ countries with instant activation. No roaming fees, no physical SIM card needed.
+    </p>
+    <div class="landing-hero-ctas">
+      <a href="/auth/register" class="btn btn-primary btn-lg">Get Started Free</a>
+      <a href="#plans" class="btn btn-secondary btn-lg">View Plans</a>
     </div>
   </div>
 </section>
 
-<!-- Features / Why DataPatch -->
-<section class="bg-[var(--surface-0)] border-y border-[var(--border-default)]">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="text-center mb-12">
-      <h2 class="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-3">Why DataPatch?</h2>
-      <p class="text-[var(--text-secondary)] max-w-xl mx-auto">Everything you need for hassle-free mobile data abroad</p>
+<!-- Trust Bar -->
+<div class="landing-trust fade-up">
+  <div class="landing-trust-item">
+    <div class="landing-trust-icon">🌍</div>
+    <span>190+ Countries</span>
+  </div>
+  <div class="landing-trust-item">
+    <div class="landing-trust-icon">⚡</div>
+    <span>Instant Activation</span>
+  </div>
+  <div class="landing-trust-item">
+    <div class="landing-trust-icon">🔒</div>
+    <span>Secure Payment</span>
+  </div>
+  <div class="landing-trust-item">
+    <div class="landing-trust-icon">💬</div>
+    <span>24/7 Support</span>
+  </div>
+</div>
+
+<div class="landing-divider"></div>
+
+<!-- How It Works -->
+<div class="landing-section fade-up">
+  <h2 class="landing-section-title">How It Works</h2>
+  <div class="steps-grid">
+    <div class="landing-step-card">
+      <div class="landing-step-number">1</div>
+      <h3 class="landing-step-title">Choose a Plan</h3>
+      <p class="landing-step-desc">Browse plans for your destination country. Compare prices and data options.</p>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="text-center p-5">
-        <div class="w-12 h-12 rounded-xl bg-[var(--brand-light)] flex items-center justify-center mx-auto mb-4">
-          <i data-lucide="wallet" class="w-6 h-6 text-[var(--brand-primary)]"></i>
-        </div>
-        <h3 class="text-sm font-semibold text-[var(--text-primary)] mb-1.5">Affordable Prices</h3>
-        <p class="text-sm text-[var(--text-secondary)]">Up to 90% cheaper than traditional roaming charges</p>
-      </div>
-      <div class="text-center p-5">
-        <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
-          <i data-lucide="zap" class="w-6 h-6 text-emerald-600 dark:text-emerald-400"></i>
-        </div>
-        <h3 class="text-sm font-semibold text-[var(--text-primary)] mb-1.5">Instant Activation</h3>
-        <p class="text-sm text-[var(--text-secondary)]">Get connected in minutes with QR code installation</p>
-      </div>
-      <div class="text-center p-5">
-        <div class="w-12 h-12 rounded-xl bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center mx-auto mb-4">
-          <i data-lucide="globe-2" class="w-6 h-6 text-sky-600 dark:text-sky-400"></i>
-        </div>
-        <h3 class="text-sm font-semibold text-[var(--text-primary)] mb-1.5">Global Coverage</h3>
-        <p class="text-sm text-[var(--text-secondary)]">Data plans available in 190+ countries and regions</p>
-      </div>
-      <div class="text-center p-5">
-        <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
-          <i data-lucide="repeat" class="w-6 h-6 text-amber-600 dark:text-amber-400"></i>
-        </div>
-        <h3 class="text-sm font-semibold text-[var(--text-primary)] mb-1.5">Easy Top-Up</h3>
-        <p class="text-sm text-[var(--text-secondary)]">Running low? Top up your existing eSIM with one click</p>
-      </div>
+    <div class="landing-step-card">
+      <div class="landing-step-number">2</div>
+      <h3 class="landing-step-title">Purchase Securely</h3>
+      <p class="landing-step-desc">Buy instantly with secure payment. Credit card or Apple Pay accepted.</p>
+    </div>
+    <div class="landing-step-card">
+      <div class="landing-step-number">3</div>
+      <h3 class="landing-step-title">Scan & Connect</h3>
+      <p class="landing-step-desc">Scan the QR code to install your eSIM on your device. Get online right away.</p>
     </div>
   </div>
-</section>
+</div>
 
-<!-- How it Works -->
-<section>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="text-center mb-12">
-      <h2 class="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-3">How it Works</h2>
-      <p class="text-[var(--text-secondary)]">Get connected in 3 simple steps</p>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
-      <div class="landing-step-card">
-        <div class="landing-step-icon bg-[var(--brand-light)]">
-          <i data-lucide="search" class="w-6 h-6 text-[var(--brand-primary)]"></i>
-        </div>
-        <div class="landing-step-number">1</div>
-        <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">Choose a Plan</h3>
-        <p class="text-sm text-[var(--text-secondary)]">Browse plans below and pick the one that fits your travel needs.</p>
-      </div>
-      <div class="landing-step-card">
-        <div class="landing-step-icon bg-emerald-50 dark:bg-emerald-500/10">
-          <i data-lucide="credit-card" class="w-6 h-6 text-emerald-600 dark:text-emerald-400"></i>
-        </div>
-        <div class="landing-step-number">2</div>
-        <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">Purchase Securely</h3>
-        <p class="text-sm text-[var(--text-secondary)]">Create a free account and complete your purchase with secure payment.</p>
-      </div>
-      <div class="landing-step-card">
-        <div class="landing-step-icon bg-sky-50 dark:bg-sky-500/10">
-          <i data-lucide="qr-code" class="w-6 h-6 text-sky-600 dark:text-sky-400"></i>
-        </div>
-        <div class="landing-step-number">3</div>
-        <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">Scan & Connect</h3>
-        <p class="text-sm text-[var(--text-secondary)]">Scan the QR code to install your eSIM and get online instantly.</p>
-      </div>
-    </div>
-  </div>
-</section>
+<div class="landing-divider"></div>
 
-<!-- Plans Section -->
-<section id="plans" class="scroll-mt-16 bg-[var(--surface-0)] border-y border-[var(--border-default)]">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="text-center mb-8">
-      <h2 class="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-2">Available Plans</h2>
-      <p class="text-[var(--text-secondary)]">Choose a data plan for seamless connectivity</p>
+<!-- Featured Plans -->
+<section id="plans" class="scroll-mt-16">
+  <div class="landing-plans fade-up">
+    <div class="landing-plans-head">
+      <h2 class="landing-section-title" style="margin-bottom:0;text-align:left;">Available Plans</h2>
+      <a href="/auth/register" class="landing-plans-link">View All →</a>
     </div>
 
     <% if (typeof offers !== 'undefined' && offers && offers.length > 0) { %>
@@ -250,11 +189,9 @@
 
 <!-- FAQ Section -->
 <section>
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="text-center mb-10">
-      <h2 class="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-3">Frequently Asked Questions</h2>
-    </div>
-    <div class="space-y-3">
+  <div class="landing-section fade-up">
+    <h2 class="landing-section-title">Frequently Asked Questions</h2>
+    <div class="space-y-3" style="max-width:720px;margin:0 auto;">
       <div class="brand-accordion" id="faq-0">
         <div class="brand-accordion-header" role="button" tabindex="0" onclick="toggleFaq(0)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleFaq(0)}">
           <span>What is an eSIM?</span>
