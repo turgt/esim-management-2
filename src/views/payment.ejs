@@ -1,66 +1,74 @@
-<%- include('partials/header', {title: 'Payment', user: locals.user}) %>
+<%- include('partials/header', {title: 'Payment', user: locals.user, backUrl: '/offers'}) %>
 
-<div class="mb-6">
-  <a href="/offers" class="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
-    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Plans
-  </a>
-</div>
+<%
+  var planName = (typeof payment !== 'undefined' && payment && payment.metadata && payment.metadata.planName)
+    ? payment.metadata.planName
+    : (typeof offerId !== 'undefined' ? offerId : 'Data Plan');
+  var displayAmount = parseFloat(amount).toFixed(2);
+  var displayCurrency = (typeof currency !== 'undefined' && currency) ? currency : 'USD';
+  var subtotal = (parseFloat(amount) / 1.20).toFixed(2);
+  var tax = (parseFloat(amount) - parseFloat(subtotal)).toFixed(2);
+%>
 
-<div class="max-w-2xl mx-auto">
+<div class="max-w-lg mx-auto space-y-5">
+
   <!-- Order Summary -->
-  <div class="card mb-4 sm:mb-6">
-    <div class="flex items-center gap-3 mb-4">
-      <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[var(--brand-light)] flex items-center justify-center flex-shrink-0">
-        <i data-lucide="credit-card" class="w-4 h-4 sm:w-5 sm:h-5 text-[var(--brand-primary)]"></i>
+  <div class="card fade-up stagger-1">
+    <div class="p-5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-[var(--brand-light)] flex items-center justify-center flex-shrink-0">
+          <i data-lucide="shopping-bag" class="w-5 h-5 text-[var(--brand-primary)]"></i>
+        </div>
+        <div class="min-w-0">
+          <h2 class="text-base font-bold text-[var(--text-primary)]"><%= planName %></h2>
+          <p class="text-xs text-[var(--text-secondary)]">Order #<%= payment.merchantOid %></p>
+        </div>
       </div>
-      <div class="min-w-0">
-        <h2 class="text-base sm:text-lg font-semibold text-[var(--text-primary)]">Order Summary</h2>
-        <p class="text-xs text-[var(--text-secondary)]">Complete your payment to activate your Data</p>
-      </div>
-    </div>
 
-    <div class="p-3 sm:p-4 rounded-lg bg-[var(--surface-1)] border border-[var(--border-subtle)]">
-      <div class="flex justify-between items-center mb-2 gap-2">
-        <span class="text-sm text-[var(--text-secondary)] flex-shrink-0">Plan</span>
-        <span class="text-sm font-medium text-[var(--text-primary)] truncate text-right"><%= offerId %></span>
-      </div>
-      <div class="flex justify-between items-center mb-2 gap-2">
-        <span class="text-sm text-[var(--text-secondary)] flex-shrink-0">Order ID</span>
-        <span class="text-[0.6875rem] font-mono text-[var(--text-tertiary)] truncate text-right"><%= payment.merchantOid %></span>
-      </div>
-      <div class="border-t border-[var(--border-subtle)] mt-3 pt-3">
+      <!-- Price Breakdown -->
+      <div class="space-y-3 mt-4">
         <div class="flex justify-between items-center">
-          <span class="text-base font-semibold text-[var(--text-primary)]">Total</span>
-          <span class="text-lg font-bold text-[var(--brand-primary)]">$<%= parseFloat(amount).toFixed(2) %> <%= currency %></span>
+          <span class="text-sm text-[var(--text-secondary)]">Subtotal</span>
+          <span class="text-sm text-[var(--text-primary)]">$<%= subtotal %> <%= displayCurrency %></span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-[var(--text-secondary)]">Tax (20%)</span>
+          <span class="text-sm text-[var(--text-primary)]">$<%= tax %> <%= displayCurrency %></span>
+        </div>
+        <div class="border-t border-[var(--border-subtle)] pt-3">
+          <div class="flex justify-between items-center">
+            <span class="text-base font-bold text-[var(--text-primary)]">Total</span>
+            <span class="text-lg font-bold text-[var(--brand-primary)]">$<%= displayAmount %> <%= displayCurrency %></span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Payment overlay trigger area -->
-  <div class="card text-center py-8 sm:py-10" id="paymentStatus">
+  <!-- Payment Status Area -->
+  <div class="card text-center py-8 fade-up stagger-2" id="paymentStatus">
     <div id="statusLoading">
-      <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[var(--surface-2)] flex items-center justify-center mx-auto mb-4">
-        <i data-lucide="loader-2" class="w-7 h-7 sm:w-8 sm:h-8 text-[var(--brand-primary)] animate-spin"></i>
+      <div class="w-14 h-14 rounded-full bg-[var(--surface-2)] flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="loader-2" class="w-7 h-7 text-[var(--brand-primary)] animate-spin"></i>
       </div>
       <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">Opening Secure Payment</h3>
       <p class="text-sm text-[var(--text-secondary)]">Please wait...</p>
     </div>
 
     <div id="statusReady" style="display:none;">
-      <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[var(--brand-light)] flex items-center justify-center mx-auto mb-4">
-        <i data-lucide="lock" class="w-7 h-7 sm:w-8 sm:h-8 text-[var(--brand-primary)]"></i>
+      <div class="w-14 h-14 rounded-full bg-[var(--brand-light)] flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="lock" class="w-7 h-7 text-[var(--brand-primary)]"></i>
       </div>
       <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">Secure Payment Ready</h3>
       <p class="text-sm text-[var(--text-secondary)] mb-5">Your payment form was closed. Click below to reopen.</p>
-      <button id="reopenBtn" onclick="openCheckout()" class="btn btn-primary inline-flex items-center gap-2">
-        <i data-lucide="credit-card" class="w-4 h-4"></i> Open Payment Form
+      <button id="reopenBtn" onclick="openCheckout()" class="btn btn-primary btn-lg btn-block">
+        <i data-lucide="credit-card" class="w-4 h-4"></i> Complete Payment - $<%= displayAmount %>
       </button>
     </div>
 
     <div id="statusError" style="display:none;">
-      <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mx-auto mb-4">
-        <i data-lucide="alert-circle" class="w-7 h-7 sm:w-8 sm:h-8 text-red-500"></i>
+      <div class="w-14 h-14 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="alert-circle" class="w-7 h-7 text-red-500"></i>
       </div>
       <h3 class="text-base font-semibold text-[var(--text-primary)] mb-1">Payment Unavailable</h3>
       <p class="text-sm text-[var(--text-secondary)] mb-5" id="errorMsg">Could not load payment form. Please try again.</p>
@@ -70,9 +78,10 @@
     </div>
   </div>
 
-  <p class="text-center text-xs text-[var(--text-tertiary)] mt-3">
+  <!-- Security Note -->
+  <p class="text-center text-xs text-[var(--text-tertiary)] fade-up stagger-3">
     <i data-lucide="shield-check" class="w-3.5 h-3.5 inline-block -mt-0.5 mr-0.5"></i>
-    Payments securely processed by Paddle
+    Secure payment -- processed by Paddle
   </p>
 </div>
 
@@ -90,7 +99,7 @@
       document.getElementById(s).style.display = 'none';
     });
     document.getElementById(id).style.display = 'block';
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   }
 
   function openCheckout() {
