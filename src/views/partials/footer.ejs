@@ -1,25 +1,72 @@
 
 <% if (typeof user !== 'undefined' && user) { %>
-      </div>
-      <footer class="py-4 mt-auto border-t border-[var(--border-default)] mx-4 sm:mx-6 lg:mx-8">
-        <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mb-2">
-          <a href="/legal/about" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Hakkimizda</a>
-          <a href="/legal/terms" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Hizmet Sartlari</a>
-          <a href="/legal/privacy" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Gizlilik</a>
-          <a href="/legal/kvkk" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">KVKK</a>
-          <a href="/legal/distance-sales" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Mesafeli Satis</a>
-          <a href="/legal/delivery-refund" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Teslimat ve Iade</a>
-          <a href="/legal/refund" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Iade Politikasi</a>
-        </div>
-        <div class="flex items-center justify-center gap-3 mb-2">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" class="h-6 w-auto opacity-60"><rect width="48" height="32" rx="4" fill="#1A1F71"/><text x="24" y="20" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="Arial,sans-serif">VISA</text></svg>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" class="h-6 w-auto opacity-60"><rect width="48" height="32" rx="4" fill="#252525"/><circle cx="19" cy="16" r="10" fill="#EB001B"/><circle cx="29" cy="16" r="10" fill="#F79E1B"/><path d="M24 8.8a10 10 0 0 1 0 14.4 10 10 0 0 1 0-14.4z" fill="#FF5F00"/></svg>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 32" class="h-6 w-auto opacity-60"><rect width="60" height="32" rx="4" fill="#1E64FF"/><text x="30" y="20" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold" font-family="Arial,sans-serif">iyzico</text></svg>
-        </div>
-        <p class="text-xs text-[var(--text-tertiary)] text-center">&copy; <%= new Date().getFullYear() %> DataPatch</p>
-      </footer>
-    </main>
-  </div>
+  </main>
+<%
+  var _isAdminPage = (title === 'Admin Dashboard' || title === 'Manage Users' || title === 'All Datas' || title === 'Data Detail' || title === 'Assign Data' || title === 'Admin Payments' || title === 'Vendors' || title === 'Vendor Detail' || title === 'Create Vendor' || title === 'Edit Vendor' || title === 'Emails' || title === 'Email Detail' || title === 'Zendit Purchase' || (typeof title === 'string' && (title.indexOf('Top-up') !== -1 || title.indexOf('Top Up') !== -1 || title.indexOf('Admin') !== -1)));
+%>
+  <footer class="py-4 mt-auto border-t border-[var(--border-default)] px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full">
+    <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mb-2">
+      <a href="/legal/about" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Hakkimizda</a>
+      <a href="/legal/terms" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Hizmet Sartlari</a>
+      <a href="/legal/privacy" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Gizlilik</a>
+      <a href="/legal/kvkk" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">KVKK</a>
+      <a href="/legal/distance-sales" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Mesafeli Satis</a>
+      <a href="/legal/delivery-refund" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Teslimat ve Iade</a>
+      <a href="/legal/refund" class="text-[0.6875rem] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">Iade Politikasi</a>
+    </div>
+    <div class="flex items-center justify-center gap-3 mb-2">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" class="h-6 w-auto opacity-60"><rect width="48" height="32" rx="4" fill="#1A1F71"/><text x="24" y="20" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold" font-family="Arial,sans-serif">VISA</text></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" class="h-6 w-auto opacity-60"><rect width="48" height="32" rx="4" fill="#252525"/><circle cx="19" cy="16" r="10" fill="#EB001B"/><circle cx="29" cy="16" r="10" fill="#F79E1B"/><path d="M24 8.8a10 10 0 0 1 0 14.4 10 10 0 0 1 0-14.4z" fill="#FF5F00"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 32" class="h-6 w-auto opacity-60"><rect width="60" height="32" rx="4" fill="#1E64FF"/><text x="30" y="20" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold" font-family="Arial,sans-serif">iyzico</text></svg>
+    </div>
+    <p class="text-xs text-[var(--text-tertiary)] text-center">&copy; <%= new Date().getFullYear() %> DataPatch</p>
+  </footer>
+
+  <!-- Tabbar (mobile, hidden on desktop via CSS) -->
+  <% if (_isAdminPage && user.isAdmin) { %>
+  <nav class="tabbar">
+    <a href="/admin/dashboard" class="<%= title === 'Admin Dashboard' ? 'active' : '' %>">
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+      <span>Panel</span>
+    </a>
+    <a href="/admin/users" class="<%= (title === 'Manage Users' || (typeof title === 'string' && title.indexOf('User') !== -1)) ? 'active' : '' %>">
+      <i data-lucide="users" class="w-5 h-5"></i>
+      <span>Users</span>
+    </a>
+    <a href="/admin/esims" class="<%= (title === 'All Datas' || title === 'Data Detail' || title === 'Assign Data' || (typeof title === 'string' && (title.indexOf('Top-up') !== -1 || title.indexOf('Top Up') !== -1))) ? 'active' : '' %>">
+      <i data-lucide="layers" class="w-5 h-5"></i>
+      <span>eSIM</span>
+    </a>
+    <a href="/admin/payments" class="<%= title === 'Admin Payments' ? 'active' : '' %>">
+      <i data-lucide="credit-card" class="w-5 h-5"></i>
+      <span>Payments</span>
+    </a>
+    <a href="/admin/vendors" class="<%= (title === 'Vendors' || title === 'Vendor Detail' || title === 'Create Vendor' || title === 'Edit Vendor') ? 'active' : '' %>">
+      <i data-lucide="store" class="w-5 h-5"></i>
+      <span>Vendors</span>
+    </a>
+  </nav>
+  <% } else { %>
+  <nav class="tabbar">
+    <a href="/offers" class="<%= title === 'Offers' ? 'active' : '' %>">
+      <i data-lucide="globe" class="w-5 h-5"></i>
+      <span>Plans</span>
+    </a>
+    <a href="/purchases" class="<%= (title === 'My Datas' || title === 'My Purchases' || title === 'Purchase Status' || title === 'QR Code' || title === 'Payment' || title === 'Payment Result' || title === 'Top-up Data') ? 'active' : '' %>">
+      <i data-lucide="smartphone" class="w-5 h-5"></i>
+      <span>My Datas</span>
+    </a>
+    <a href="/payment/history" class="<%= (title === 'My Payments' || title === 'Receipt') ? 'active' : '' %>">
+      <i data-lucide="receipt" class="w-5 h-5"></i>
+      <span>Payments</span>
+    </a>
+    <a href="/profile" class="<%= title === 'Profile' ? 'active' : '' %>">
+      <i data-lucide="user" class="w-5 h-5"></i>
+      <span>Profile</span>
+    </a>
+  </nav>
+  <% } %>
+
   <div id="toast-container" class="toast-container"></div>
 <% } else { %>
   <div class="text-center mt-6">
