@@ -76,7 +76,7 @@ export async function checkCompatibility(req, res) {
 
 export async function showOffers(req, res) {
   try {
-    const country = req.query.country || process.env.COUNTRY || 'TR';
+    const country = req.query.country || '';
     const type = req.query.type || '';
 
     const where = {};
@@ -93,9 +93,21 @@ export async function showOffers(req, res) {
       limit: parseInt(process.env.OFFERS_LIMIT) || 100,
     });
 
+    // Retrieve distinct synced countries for the filter UI
+    const syncedCountries = await db.AiraloPackage.findAll({
+      attributes: [[db.Sequelize.fn('DISTINCT', db.Sequelize.col('countryCode')), 'countryCode']],
+      raw: true,
+    });
+    const availableCountries = syncedCountries
+      .map(r => r.countryCode)
+      .filter(Boolean)
+      .sort();
+
     res.render('offers', {
       title: 'Offers',
       offers: packages,
+      availableCountries,
+      selectedCountry: country,
     });
   } catch (err) {
     log.error({ err }, 'showOffers error');
@@ -398,13 +410,18 @@ export async function debugEsimData(req, res) {
 // Debug: show package fields from AiraloPackage table (admin only)
 export async function debugOfferFields(req, res) {
   try {
-    const country = process.env.COUNTRY || 'TR';
+    const country = req.query.country || '';
+    const where = {};
+    if (country) {
+      where.countryCode = country;
+    }
     const packages = await db.AiraloPackage.findAll({
-      where: { countryCode: country },
+      where,
       order: [['price', 'ASC']],
       limit: 100,
     });
     const types = [...new Set(packages.map(p => p.type).filter(Boolean))];
+    const countries = [...new Set(packages.map(p => p.countryCode).filter(Boolean))];
     const sample = packages.slice(0, 3).map(p => ({
       packageId: p.packageId,
       operatorTitle: p.operatorTitle,
@@ -415,7 +432,7 @@ export async function debugOfferFields(req, res) {
       price: p.price,
       countryCode: p.countryCode,
     }));
-    res.json({ totalPackages: packages.length, uniqueTypes: types, samplePackages: sample });
+    res.json({ totalPackages: packages.length, uniqueTypes: types, uniqueCountries: countries, samplePackages: sample });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

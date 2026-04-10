@@ -27,6 +27,7 @@ services:
       SESSION_SECRET: local-dev-secret-change-in-prod
       PORT: 3000
       COUNTRY: TR
+      AIRALO_COUNTRIES: "TR"
       OFFERS_LIMIT: 100
       ZENDIT_API_BASE: https://api.zendit.io/v1
       ZENDIT_API_KEY: sand_f78d3a0c-45da-4cb8-bb98-f5a5e47c061f68b9746c4809099222b4188a
