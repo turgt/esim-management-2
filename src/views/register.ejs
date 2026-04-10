@@ -1,6 +1,8 @@
 <%- include('partials/header', {title: 'Register', user: null}) %>
 
-    <div class="card p-5 sm:p-7">
+    <p class="auth-brand-subtitle">Create your DataPatch account</p>
+
+    <div class="card p-5 sm:p-7 fade-up">
       <div class="text-center mb-6">
         <h1 class="text-xl font-bold text-[var(--text-primary)]">Create account</h1>
         <p class="text-sm text-[var(--text-secondary)] mt-1.5">Get started with DataPatch</p>
@@ -56,8 +58,8 @@
       </form>
     </div>
 
-    <p class="mt-5 text-center text-sm text-[var(--text-tertiary)]">
-      Already have an account? <a href="/auth/login" class="font-semibold text-[var(--brand-primary)] hover:underline">Sign in</a>
+    <p class="auth-footer">
+      Already have an account? <a href="/auth/login">Sign in</a>
     </p>
 
 <script>

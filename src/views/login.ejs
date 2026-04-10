@@ -1,6 +1,8 @@
 <%- include('partials/header', {title: 'Login', user: null}) %>
 
-    <div class="card p-5 sm:p-7">
+    <p class="auth-brand-subtitle">Sign in to manage your eSIMs</p>
+
+    <div class="card p-5 sm:p-7 fade-up">
       <div class="text-center mb-6">
         <h1 class="text-xl font-bold text-[var(--text-primary)]">Welcome back</h1>
         <p class="text-sm text-[var(--text-secondary)] mt-1.5">Sign in to manage your Datas</p>
@@ -43,7 +45,7 @@
         <div>
           <div class="flex items-center justify-between mb-1">
             <label for="password" class="input-label mb-0">Password</label>
-            <a href="/auth/forgot-password" class="text-xs font-medium text-[var(--brand-primary)] hover:underline">Forgot password?</a>
+            <a href="/auth/forgot-password" class="auth-forgot">Forgot password?</a>
           </div>
           <div class="input-icon-wrapper relative">
             <i data-lucide="lock" class="input-icon w-4 h-4"></i>
@@ -57,8 +59,8 @@
       </form>
     </div>
 
-    <p class="mt-5 text-center text-sm text-[var(--text-tertiary)]">
-      Don't have an account? <a href="/auth/register" class="font-semibold text-[var(--brand-primary)] hover:underline">Create account</a>
+    <p class="auth-footer">
+      Don't have an account? <a href="/auth/register">Create account</a>
     </p>
 
 <script>
