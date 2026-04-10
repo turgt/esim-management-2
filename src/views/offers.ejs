@@ -14,6 +14,16 @@
 
 <% if (typeof offers !== 'undefined' && offers && offers.length > 0) { %>
 
+<!-- Country Filter -->
+<% if (typeof availableCountries !== 'undefined' && availableCountries && availableCountries.length > 1) { %>
+<div class="flex gap-1.5 flex-wrap mb-4 fade-up stagger-0" id="countryChips">
+  <a href="/offers" class="filter-chip <%= (!locals.selectedCountry || locals.selectedCountry === '') ? 'active' : '' %>">All Countries</a>
+  <% availableCountries.forEach(function(cc) { %>
+  <a href="/offers?country=<%= cc %>" class="filter-chip <%= (locals.selectedCountry === cc) ? 'active' : '' %>"><%= cc %></a>
+  <% }); %>
+</div>
+<% } %>
+
 <!-- Filters -->
 <div class="flex gap-1.5 flex-wrap mb-4 fade-up stagger-1" id="filterChips">
   <button type="button" class="filter-chip active" data-filter="all" onclick="filterOffers('all', this)">All</button>
