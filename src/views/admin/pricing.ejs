@@ -1,0 +1,612 @@
+<%- include('../partials/header', {title: 'Pricing', user: locals.user}) %>
+
+<div class="mb-8 flex items-center justify-between">
+  <div>
+    <h1 class="text-page-title">Pricing Management</h1>
+    <p class="text-subtitle mt-1"><%= packageCount %> packages across <%= Object.keys(countryGroups).length %> countries</p>
+  </div>
+</div>
+
+<% if (locals.pricingSuccess) { %>
+<div class="alert alert-success mb-6">
+  <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i>
+  <span><%= pricingSuccess %></span>
+</div>
+<% } %>
+<% if (locals.pricingError) { %>
+<div class="alert alert-error mb-6">
+  <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+  <span><%= pricingError %></span>
+</div>
+<% } %>
+
+<!-- Global Markup Card -->
+<div class="card mb-6">
+  <div class="card-header">
+    <div class="flex items-center gap-2">
+      <i data-lucide="percent" class="w-4 h-4 text-[var(--brand-primary)]"></i>
+      <h2>Global Markup</h2>
+    </div>
+  </div>
+  <div class="card-body">
+    <p class="text-sm text-[var(--text-secondary)] mb-4">
+      Applied to all packages that don't have a package-level override. The final price is calculated as:
+      <span class="font-mono text-[var(--text-primary)]">finalPrice = netPrice × (1 + markup / 100)</span>
+    </p>
+    <form method="post" action="/admin/pricing/global-markup" class="flex items-end gap-3">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div>
+        <label for="globalMarkupInput" class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Markup Percentage</label>
+        <div class="flex items-center gap-0">
+          <input
+            type="number"
+            id="globalMarkupInput"
+            name="markup"
+            value="<%= globalMarkup %>"
+            min="0"
+            max="1000"
+            step="0.1"
+            class="input !rounded-r-none"
+            style="width: 120px;"
+          >
+          <span class="flex items-center px-3 h-[42px] bg-[var(--surface-1)] border border-l-0 border-[var(--border-subtle)] rounded-r-lg text-[var(--text-secondary)] text-sm font-medium">%</span>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <i data-lucide="save" class="w-4 h-4"></i>
+        Save
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Country Groups -->
+<div class="space-y-3 mb-24" id="countryGroupsContainer">
+<% Object.entries(countryGroups).forEach(function([country, packages]) { %>
+  <details class="card" data-country="<%= country %>">
+    <summary class="flex items-center justify-between p-4 cursor-pointer select-none list-none" style="display: flex;">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-[var(--brand-light)] flex items-center justify-center">
+          <i data-lucide="globe" class="w-4 h-4 text-[var(--brand-primary)]"></i>
+        </div>
+        <div>
+          <span class="font-semibold text-[var(--text-primary)]"><%= country %></span>
+          <span class="ml-2 badge badge-secondary"><%= packages.length %> packages</span>
+        </div>
+      </div>
+      <i data-lucide="chevron-right" class="w-4 h-4 text-[var(--text-tertiary)] transition-transform duration-200 chevron-icon"></i>
+    </summary>
+    <div class="border-t border-[var(--border-subtle)] overflow-x-auto">
+      <table class="table w-full">
+        <thead>
+          <tr>
+            <th style="min-width: 200px;">Package</th>
+            <th style="min-width: 120px;">Data / Duration</th>
+            <th style="min-width: 90px;">Cost</th>
+            <th style="min-width: 100px;">Airalo Price</th>
+            <th style="min-width: 140px;">Override</th>
+            <th style="min-width: 110px;">Value</th>
+            <th style="min-width: 100px;">Final Price</th>
+            <th style="min-width: 80px;">Profit</th>
+          </tr>
+        </thead>
+        <tbody>
+        <% packages.forEach(function(pkg) { %>
+          <tr data-package-id="<%= pkg.packageId %>">
+            <td>
+              <div>
+                <p class="font-medium text-[var(--text-primary)] text-sm"><%= pkg.title %></p>
+                <p class="text-xs text-[var(--text-tertiary)]"><%= pkg.operatorTitle %></p>
+              </div>
+            </td>
+            <td>
+              <div class="text-sm text-[var(--text-secondary)]">
+                <span class="font-medium"><%= pkg.isUnlimited ? 'Unlimited' : pkg.data + ' MB' %></span>
+                <span class="text-[var(--text-tertiary)]"> / <%= pkg.day %> days</span>
+              </div>
+            </td>
+            <td>
+              <span class="text-sm font-mono text-[var(--text-secondary)]">$<%= (pkg.netPrice / 100).toFixed(2) %></span>
+            </td>
+            <td>
+              <span class="text-sm font-mono text-[var(--text-secondary)]">$<%= (pkg.price / 100).toFixed(2) %></span>
+            </td>
+            <td>
+              <select
+                class="input input-sm override-select"
+                data-package-id="<%= pkg.packageId %>"
+                data-price="<%= pkg.price %>"
+                data-net-price="<%= pkg.netPrice %>"
+                data-original-type="<%= pkg.overrideType %>"
+                data-original-value="<%= pkg.overrideValue !== null ? pkg.overrideValue : '' %>"
+              >
+                <option value="none" <%= pkg.overrideType === 'none' ? 'selected' : '' %>>None (global)</option>
+                <option value="markup" <%= pkg.overrideType === 'markup' ? 'selected' : '' %>>Markup %</option>
+                <option value="fixed" <%= pkg.overrideType === 'fixed' ? 'selected' : '' %>>Fixed Price</option>
+              </select>
+            </td>
+            <td>
+              <input
+                type="number"
+                class="input input-sm override-value"
+                data-package-id="<%= pkg.packageId %>"
+                data-original-value="<%= pkg.overrideValue !== null ? pkg.overrideValue : '' %>"
+                value="<%= pkg.overrideValue !== null ? pkg.overrideValue : '' %>"
+                placeholder="—"
+                step="0.01"
+                min="0"
+                <%= pkg.overrideType === 'none' ? 'disabled' : '' %>
+              >
+            </td>
+            <td>
+              <span class="text-sm font-mono font-semibold text-[var(--text-primary)] final-price-cell">
+                $<%= (pkg.finalPrice / 100).toFixed(2) %>
+              </span>
+            </td>
+            <td>
+              <%
+                var profit = pkg.finalPrice - pkg.netPrice;
+                var profitPct = pkg.netPrice > 0 ? ((profit / pkg.netPrice) * 100).toFixed(1) : '0';
+                var profitPositive = profit >= 0;
+              %>
+              <span class="text-sm font-mono profit-cell <%= profitPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500' %>">
+                $<%= (profit / 100).toFixed(2) %>
+              </span>
+            </td>
+          </tr>
+        <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </details>
+<% }) %>
+</div>
+
+<!-- Sticky Change Bar -->
+<div id="changeBar" class="fixed bottom-0 left-0 right-0 z-40 transform translate-y-full transition-transform duration-300 ease-in-out" style="left: 260px;">
+  <div class="bg-[var(--surface-0)] border-t border-[var(--border-subtle)] shadow-lg px-6 py-3 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+      <i data-lucide="edit-3" class="w-4 h-4 text-[var(--brand-primary)]"></i>
+      <span id="changeCount" class="font-semibold text-[var(--text-primary)]">0</span>
+      <span>pending change(s)</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button type="button" onclick="discardChanges()" class="btn btn-secondary btn-sm">
+        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        Discard
+      </button>
+      <button type="button" onclick="showPreview()" class="btn btn-primary btn-sm">
+        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+        Preview &amp; Apply
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Preview Modal -->
+<div id="previewBackdrop" class="modal-backdrop hidden" onclick="closePreview()">
+  <div class="confirm-modal" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-semibold text-lg text-[var(--text-primary)]">Preview Changes</h3>
+      <button type="button" onclick="closePreview()" class="p-1.5 rounded-lg hover:bg-[var(--surface-1)] text-[var(--text-tertiary)] transition-colors">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+    <div id="previewContent">
+      <div class="flex items-center justify-center py-8 text-[var(--text-tertiary)]">
+        <i data-lucide="loader" class="w-5 h-5 animate-spin mr-2"></i>
+        <span class="text-sm">Loading preview...</span>
+      </div>
+    </div>
+    <div class="flex justify-end gap-2 mt-5 pt-4 border-t border-[var(--border-subtle)]">
+      <button type="button" onclick="closePreview()" class="btn btn-secondary">Cancel</button>
+      <button type="button" id="applyBtn" onclick="applyChanges()" class="btn btn-primary" disabled>
+        <i data-lucide="check" class="w-4 h-4"></i>
+        Apply Changes
+      </button>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+
+<script>
+(function () {
+  'use strict';
+
+  var GLOBAL_MARKUP = <%= globalMarkup %>;
+  var CSRF_TOKEN = '<%= csrfToken %>';
+
+  // pendingOverrides: { packageId -> { type, value } }
+  var pendingOverrides = {};
+
+  // ─── Calc helpers ──────────────────────────────────────────────────────────
+
+  function calcFinal(netPrice, type, value, markup) {
+    if (type === 'fixed') {
+      return Math.round(parseFloat(value) * 100);
+    }
+    if (type === 'markup') {
+      var pct = parseFloat(value);
+      if (isNaN(pct)) pct = 0;
+      return Math.round(netPrice * (1 + pct / 100));
+    }
+    // none — use global markup
+    return Math.round(netPrice * (1 + markup / 100));
+  }
+
+  function formatPrice(cents) {
+    return '$' + (cents / 100).toFixed(2);
+  }
+
+  // ─── Row update ────────────────────────────────────────────────────────────
+
+  function updateRow(tr) {
+    var sel = tr.querySelector('.override-select');
+    var inp = tr.querySelector('.override-value');
+    var finalCell = tr.querySelector('.final-price-cell');
+    var profitCell = tr.querySelector('.profit-cell');
+
+    if (!sel || !finalCell || !profitCell) return;
+
+    var type = sel.value;
+    var netPrice = parseInt(sel.dataset.netPrice, 10) || 0;
+    var value = inp ? inp.value : '';
+
+    var finalCents = calcFinal(netPrice, type, value, GLOBAL_MARKUP);
+    var profitCents = finalCents - netPrice;
+
+    finalCell.textContent = formatPrice(finalCents);
+
+    profitCell.textContent = formatPrice(profitCents);
+    if (profitCents >= 0) {
+      profitCell.className = 'text-sm font-mono profit-cell text-emerald-600 dark:text-emerald-400';
+    } else {
+      profitCell.className = 'text-sm font-mono profit-cell text-red-500';
+    }
+  }
+
+  // ─── Change tracking ───────────────────────────────────────────────────────
+
+  function markPending(packageId, type, value) {
+    pendingOverrides[packageId] = { type: type, value: value };
+    updateChangeBar();
+  }
+
+  function clearPending(packageId) {
+    delete pendingOverrides[packageId];
+    updateChangeBar();
+  }
+
+  function isChanged(sel, inp) {
+    var origType = sel.dataset.originalType;
+    var origValue = sel.dataset.originalValue;
+    if (sel.value !== origType) return true;
+    if (sel.value !== 'none') {
+      var curVal = inp ? inp.value : '';
+      if (String(curVal) !== String(origValue)) return true;
+    }
+    return false;
+  }
+
+  // ─── Change bar ────────────────────────────────────────────────────────────
+
+  function updateChangeBar() {
+    var count = Object.keys(pendingOverrides).length;
+    var bar = document.getElementById('changeBar');
+    var countEl = document.getElementById('changeCount');
+    if (!bar) return;
+
+    countEl.textContent = count;
+
+    if (count > 0) {
+      bar.classList.remove('translate-y-full');
+    } else {
+      bar.classList.add('translate-y-full');
+    }
+  }
+
+  // ─── Discard ───────────────────────────────────────────────────────────────
+
+  function discardChanges() {
+    document.querySelectorAll('.override-select').forEach(function (sel) {
+      var packageId = sel.dataset.packageId;
+      var origType = sel.dataset.originalType;
+      var origValue = sel.dataset.originalValue;
+
+      sel.value = origType;
+
+      var tr = sel.closest('tr');
+      if (!tr) return;
+      var inp = tr.querySelector('.override-value');
+      if (inp) {
+        inp.value = origValue;
+        inp.disabled = (origType === 'none');
+      }
+      updateRow(tr);
+    });
+
+    pendingOverrides = {};
+    updateChangeBar();
+  }
+
+  // ─── Preview modal ─────────────────────────────────────────────────────────
+
+  function showPreview() {
+    var backdrop = document.getElementById('previewBackdrop');
+    var content = document.getElementById('previewContent');
+    var applyBtn = document.getElementById('applyBtn');
+
+    backdrop.classList.remove('hidden');
+    applyBtn.disabled = true;
+
+    // Clear content
+    while (content.firstChild) content.removeChild(content.firstChild);
+
+    // Loading spinner
+    var loading = document.createElement('div');
+    loading.className = 'flex items-center justify-center py-8 text-[var(--text-tertiary)]';
+    var spinIcon = document.createElement('i');
+    spinIcon.setAttribute('data-lucide', 'loader');
+    spinIcon.className = 'w-5 h-5 animate-spin mr-2';
+    var loadText = document.createElement('span');
+    loadText.className = 'text-sm';
+    loadText.textContent = 'Loading preview...';
+    loading.appendChild(spinIcon);
+    loading.appendChild(loadText);
+    content.appendChild(loading);
+
+    lucide.createIcons({ nodes: [spinIcon] });
+
+    var overridesArr = Object.entries(pendingOverrides).map(function (entry) {
+      return { packageId: entry[0], type: entry[1].type, value: entry[1].value };
+    });
+
+    fetch('/admin/pricing/preview', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': CSRF_TOKEN
+      },
+      body: JSON.stringify({ overrides: overridesArr })
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error('Server error: ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        while (content.firstChild) content.removeChild(content.firstChild);
+        buildPreviewTable(content, data.changes || []);
+        applyBtn.disabled = false;
+        lucide.createIcons({ nodes: content.querySelectorAll('[data-lucide]') });
+      })
+      .catch(function (err) {
+        while (content.firstChild) content.removeChild(content.firstChild);
+        var errDiv = document.createElement('div');
+        errDiv.className = 'alert alert-error';
+        var icon = document.createElement('i');
+        icon.setAttribute('data-lucide', 'alert-circle');
+        icon.className = 'w-4 h-4 flex-shrink-0';
+        var msg = document.createElement('span');
+        msg.textContent = 'Failed to load preview: ' + err.message;
+        errDiv.appendChild(icon);
+        errDiv.appendChild(msg);
+        content.appendChild(errDiv);
+        lucide.createIcons({ nodes: [icon] });
+      });
+  }
+
+  function buildPreviewTable(container, changes) {
+    if (changes.length === 0) {
+      var empty = document.createElement('p');
+      empty.className = 'text-center text-sm text-[var(--text-tertiary)] py-6';
+      empty.textContent = 'No changes to preview.';
+      container.appendChild(empty);
+      return;
+    }
+
+    var wrapper = document.createElement('div');
+    wrapper.className = 'overflow-x-auto max-h-80 overflow-y-auto';
+
+    var tbl = document.createElement('table');
+    tbl.className = 'table w-full text-sm';
+
+    // thead
+    var thead = document.createElement('thead');
+    var headRow = document.createElement('tr');
+    ['Package', 'Old', 'New', 'Profit'].forEach(function (label) {
+      var th = document.createElement('th');
+      th.textContent = label;
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    tbl.appendChild(thead);
+
+    // tbody
+    var tbody = document.createElement('tbody');
+    changes.forEach(function (change) {
+      var tr = document.createElement('tr');
+
+      // Package
+      var tdPkg = document.createElement('td');
+      var pkgName = document.createElement('p');
+      pkgName.className = 'font-medium text-[var(--text-primary)]';
+      pkgName.textContent = change.title || change.packageId;
+      var pkgId = document.createElement('p');
+      pkgId.className = 'text-xs text-[var(--text-tertiary)] font-mono';
+      pkgId.textContent = change.packageId;
+      tdPkg.appendChild(pkgName);
+      tdPkg.appendChild(pkgId);
+
+      // Old price
+      var tdOld = document.createElement('td');
+      tdOld.className = 'font-mono text-[var(--text-secondary)]';
+      tdOld.textContent = change.oldPrice != null ? formatPrice(change.oldPrice) : '—';
+
+      // New price
+      var tdNew = document.createElement('td');
+      tdNew.className = 'font-mono font-semibold text-[var(--text-primary)]';
+      tdNew.textContent = change.newPrice != null ? formatPrice(change.newPrice) : '—';
+
+      // Profit
+      var tdProfit = document.createElement('td');
+      var profitCents = change.profit != null ? change.profit : (change.newPrice != null && change.netPrice != null ? change.newPrice - change.netPrice : null);
+      if (profitCents != null) {
+        tdProfit.className = 'font-mono ' + (profitCents >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500');
+        tdProfit.textContent = formatPrice(profitCents);
+      } else {
+        tdProfit.className = 'text-[var(--text-tertiary)]';
+        tdProfit.textContent = '—';
+      }
+
+      tr.appendChild(tdPkg);
+      tr.appendChild(tdOld);
+      tr.appendChild(tdNew);
+      tr.appendChild(tdProfit);
+      tbody.appendChild(tr);
+    });
+
+    tbl.appendChild(tbody);
+    wrapper.appendChild(tbl);
+    container.appendChild(wrapper);
+  }
+
+  function closePreview() {
+    var backdrop = document.getElementById('previewBackdrop');
+    backdrop.classList.add('hidden');
+  }
+
+  // ─── Apply changes ─────────────────────────────────────────────────────────
+
+  function applyChanges() {
+    var applyBtn = document.getElementById('applyBtn');
+    applyBtn.disabled = true;
+
+    var overridesArr = Object.entries(pendingOverrides).map(function (entry) {
+      return { packageId: entry[0], type: entry[1].type, value: entry[1].value };
+    });
+
+    fetch('/admin/pricing/override', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': CSRF_TOKEN
+      },
+      body: JSON.stringify({ overrides: overridesArr })
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error('Server error: ' + res.status);
+        return res.json();
+      })
+      .then(function () {
+        window.location.reload();
+      })
+      .catch(function (err) {
+        applyBtn.disabled = false;
+        alert('Failed to apply changes: ' + err.message);
+      });
+  }
+
+  // ─── Event delegation ──────────────────────────────────────────────────────
+
+  document.addEventListener('change', function (e) {
+    var sel = e.target.closest('.override-select');
+    if (sel) {
+      var tr = sel.closest('tr');
+      if (!tr) return;
+      var inp = tr.querySelector('.override-value');
+      var type = sel.value;
+      var packageId = sel.dataset.packageId;
+
+      if (inp) {
+        if (type === 'none') {
+          inp.disabled = true;
+          inp.value = '';
+        } else {
+          inp.disabled = false;
+        }
+      }
+
+      updateRow(tr);
+
+      if (isChanged(sel, inp)) {
+        markPending(packageId, type, inp ? inp.value : '');
+      } else {
+        clearPending(packageId);
+      }
+      return;
+    }
+
+    var inp2 = e.target.closest('.override-value');
+    if (inp2) {
+      var tr2 = inp2.closest('tr');
+      if (!tr2) return;
+      var sel2 = tr2.querySelector('.override-select');
+      var packageId2 = inp2.dataset.packageId;
+
+      updateRow(tr2);
+
+      if (isChanged(sel2, inp2)) {
+        markPending(packageId2, sel2 ? sel2.value : 'none', inp2.value);
+      } else {
+        clearPending(packageId2);
+      }
+    }
+  });
+
+  document.addEventListener('input', function (e) {
+    var inp = e.target.closest('.override-value');
+    if (!inp) return;
+    var tr = inp.closest('tr');
+    if (!tr) return;
+    var sel = tr.querySelector('.override-select');
+    var packageId = inp.dataset.packageId;
+
+    updateRow(tr);
+
+    if (isChanged(sel, inp)) {
+      markPending(packageId, sel ? sel.value : 'none', inp.value);
+    } else {
+      clearPending(packageId);
+    }
+  });
+
+  // ─── Chevron rotation on details toggle ────────────────────────────────────
+
+  document.addEventListener('toggle', function (e) {
+    var details = e.target.closest('details[data-country]');
+    if (!details) return;
+    var chevron = details.querySelector('.chevron-icon');
+    if (!chevron) return;
+    if (details.open) {
+      chevron.style.transform = 'rotate(90deg)';
+    } else {
+      chevron.style.transform = 'rotate(0deg)';
+    }
+  }, true);
+
+  // ─── Expose globals for inline onclick handlers ────────────────────────────
+
+  window.discardChanges = discardChanges;
+  window.showPreview = showPreview;
+  window.closePreview = closePreview;
+  window.applyChanges = applyChanges;
+
+  // ─── Adjust change bar for sidebar ────────────────────────────────────────
+
+  function adjustChangeBar() {
+    var bar = document.getElementById('changeBar');
+    if (!bar) return;
+    // On mobile, extend full width
+    if (window.innerWidth < 768) {
+      bar.style.left = '0';
+    } else {
+      bar.style.left = '260px';
+    }
+  }
+
+  adjustChangeBar();
+  window.addEventListener('resize', adjustChangeBar);
+
+}());
+</script>
