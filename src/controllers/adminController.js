@@ -2,7 +2,7 @@ import db from '../db/models/index.js';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { listOffers, purchaseEsim as zenditPurchaseEsim, getUsage as zenditGetUsage, getBalance as zenditGetBalance, getEsimPlans, normalizeStatus } from '../services/zenditClient.js';
-import { createOrder as airaloCreateOrder, getUsage as airaloGetUsage } from '../services/airaloClient.js';
+import { createOrder as airaloCreateOrder, getUsage as airaloGetUsage, getBalance as airaloGetBalance } from '../services/airaloClient.js';
 import { purchaseEsimAfterPayment, topupEsimAfterPayment } from '../services/paymentService.js';
 import cacheService from '../services/cacheService.js';
 import { sendEsimAssignedEmail } from '../services/emailService.js';
@@ -22,9 +22,14 @@ export async function showDashboard(req, res) {
 
     let balance = null;
     try {
-      balance = await zenditGetBalance();
+      balance = await airaloGetBalance();
     } catch (e) {
-      log.warn({ err: e }, 'Could not fetch balance');
+      log.warn({ err: e }, 'Could not fetch Airalo balance, trying Zendit');
+      try {
+        balance = await zenditGetBalance();
+      } catch (e2) {
+        log.warn({ err: e2 }, 'Could not fetch Zendit balance either');
+      }
     }
 
     const recentEsims = await db.Esim.findAll({

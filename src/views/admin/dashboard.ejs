@@ -18,8 +18,8 @@
       <i data-lucide="wallet" class="w-5 h-5 text-[var(--brand-primary)]"></i>
     </div>
     <div class="stat-content">
-      <p class="stat-label">Zendit Balance</p>
-      <p class="stat-value text-[var(--brand-primary)]"><%= typeof balance !== 'undefined' && balance ? '$' + Number((balance.availableBalance / (balance.currencyDivisor || 100)).toFixed(2)).toLocaleString('en-US', {minimumFractionDigits: 2}) : '-' %></p>
+      <p class="stat-label">Provider Balance</p>
+      <p class="stat-value text-[var(--brand-primary)]"><%= typeof balance !== 'undefined' && balance ? (typeof balance.balance === 'number' ? (balance.currency || '$') + ' ' + balance.balance.toLocaleString('en-US', {minimumFractionDigits: 2}) : (balance.availableBalance ? '$' + Number((balance.availableBalance / (balance.currencyDivisor || 100)).toFixed(2)).toLocaleString('en-US', {minimumFractionDigits: 2}) : '-')) : '-' %></p>
     </div>
   </div>
   <div class="stat-card">
