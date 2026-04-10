@@ -302,7 +302,7 @@ export async function showQrCode(req, res) {
 
       // Proxy QR image through our server so users don't need direct access to Airalo CDN
       let proxiedQrBase64 = null;
-      const qrUrl = vd.qrcodeUrl || vd.qrcode || null;
+      const qrUrl = vd.qrcodeUrl || null; // qrcodeUrl is the image URL; vd.qrcode is LPA string, not a URL
       if (qrUrl) {
         try {
           const response = await fetch(qrUrl);
@@ -312,6 +312,16 @@ export async function showQrCode(req, res) {
           }
         } catch (e) {
           log.warn({ err: e, qrUrl }, 'Failed to proxy Airalo QR image');
+        }
+      }
+      // Fallback: generate QR from LPA string if proxy failed or no URL
+      if (!proxiedQrBase64 && vd.qrcode) {
+        try {
+          const QRCode = (await import('qrcode')).default;
+          const dataUrl = await QRCode.toDataURL(vd.qrcode, { width: 300, margin: 2 });
+          proxiedQrBase64 = dataUrl.replace(/^data:image\/png;base64,/, '');
+        } catch (e) {
+          log.warn({ err: e }, 'Failed to generate QR from LPA string');
         }
       }
 

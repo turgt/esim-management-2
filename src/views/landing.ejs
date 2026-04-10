@@ -97,23 +97,17 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="offersGrid">
       <% offers.forEach(function(offer) { %>
       <%
-        var price = offer.price && offer.price.fixed ? (offer.price.fixed / (offer.price.currencyDivisor || 100)).toFixed(2) : null;
-        var currency = offer.price ? (offer.price.currency || 'USD') : 'USD';
-        var dataLabel = offer.dataGB ? offer.dataGB : null;
-        var durationLabel = offer.durationDays ? offer.durationDays + ' days' : '';
-        var regionShort = '';
-        if (offer.regions && offer.regions.length > 0) {
-          regionShort = offer.regions[0];
-          if (regionShort.length > 20) regionShort = offer.country || regionShort.substring(0, 18) + '...';
-        } else if (offer.country) {
-          regionShort = offer.country;
-        }
-        var speeds = offer.dataSpeeds || [];
-        var bestSpeed = speeds.length ? speeds[speeds.length - 1] : '';
-        var subTypes = offer.subTypes || [];
+        var price = offer.finalPrice ? parseFloat(offer.finalPrice).toFixed(2) : (offer.price ? parseFloat(offer.price).toFixed(2) : null);
+        var currency = 'USD';
+        var dataLabel = offer.data || null;
+        var durationLabel = offer.day ? offer.day + ' days' : '';
+        var regionShort = offer.countryCode || offer.operatorTitle || '';
+        var subTypes = offer.type ? [offer.type] : [];
+        var bestSpeed = '';
         var priceNum = price ? parseFloat(price) : 0;
-        var dataNum = offer.dataUnlimited ? 99999 : (offer.dataGB || 0);
-        var durationNum = offer.durationDays || 0;
+        var dataMatch = dataLabel ? dataLabel.match(/(\d+)/) : null;
+        var dataNum = offer.isUnlimited ? 99999 : (dataMatch ? parseInt(dataMatch[1]) : 0);
+        var durationNum = offer.day || 0;
       %>
       <a href="/auth/login" class="offer-card block no-underline"
         aria-label="<%= offer.dataUnlimited ? 'Unlimited' : (dataLabel ? dataLabel + ' GB' : 'Data') %> plan, <%= durationLabel %>, $<%= price || '0' %>"
