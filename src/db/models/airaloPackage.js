@@ -24,7 +24,17 @@ export default (sequelize, DataTypes) => {
     rechargeability: { type: DataTypes.BOOLEAN, defaultValue: false },
     imageUrl: { type: DataTypes.STRING, allowNull: true },
     rawData: { type: DataTypes.JSONB, allowNull: true },
-    lastSyncedAt: { type: DataTypes.DATE, allowNull: true }
+    lastSyncedAt: { type: DataTypes.DATE, allowNull: true },
+    overrideType: {
+      type: DataTypes.ENUM('none', 'fixed', 'markup'),
+      allowNull: false,
+      defaultValue: 'none',
+    },
+    overrideValue: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+      defaultValue: null,
+    },
   }, { sequelize, modelName: 'AiraloPackage' });
   return AiraloPackage;
 };

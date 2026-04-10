@@ -35,6 +35,8 @@ async function syncCountryPackages(countryCode) {
 
   for (const pkg of packages) {
     try {
+      // Note: overrideType and overrideValue are intentionally excluded
+      // so admin pricing overrides are preserved across syncs
       await db.AiraloPackage.upsert({
         packageId: pkg.package_id || pkg.id,
         slug: pkg.slug || '',
