@@ -2403,10 +2403,20 @@ body {
   .topbar { height: 56px; padding: 0 16px; }
   .topbar-logo { font-size: 18px; margin-right: 0; }
 
+  /* Hide topbar search & nav on mobile — tabbar handles navigation */
+  .topbar-search { display: none; }
+  .topbar-nav { display: none; }
+
+  /* Prevent topbar-right from overflowing on small screens */
+  .topbar-right { gap: 8px; }
+
   .content-area { padding: 16px 16px 100px; }
   .content-area-wide { padding: 16px 16px 100px; }
 
   .text-page-title { font-size: 22px; }
+
+  /* Breadcrumb compact padding */
+  .breadcrumb { font-size: 12px; gap: 0.25rem; margin-bottom: 0.5rem; }
 
   .detail-grid { grid-template-columns: 1fr; }
   .topup-grid { grid-template-columns: 1fr; }
@@ -2420,6 +2430,16 @@ body {
     -webkit-overflow-scrolling: touch;
   }
 
+  /* Filter chips: horizontal scroll instead of wrapping */
+  #filterChips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  #filterChips::-webkit-scrollbar { display: none; }
+
   /* Compact offer cards on mobile */
   .offer-card .offer-price {
     font-size: 18px;
@@ -2430,6 +2450,10 @@ body {
 @media (min-width: 768px) and (max-width: 1023px) {
   .content-area { padding: 24px 32px 100px; }
   .detail-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Topbar nav still hidden on tablet — tabbar handles navigation */
+  .topbar-nav { display: none; }
+  .topbar-search { display: none; }
 }
 
 /* ============================================
