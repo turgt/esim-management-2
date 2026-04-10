@@ -1,296 +1,190 @@
-<%- include('partials/header', {title: 'Purchase Status', user: locals.user}) %>
+<%- include('partials/header', {title: 'Purchase Status', user: locals.user, backUrl: '/purchases'}) %>
 
-<div class="mb-6">
-  <div class="breadcrumb">
-    <a href="/purchases"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to My Datas</a>
+<%
+  /* ── Resolve current status string ── */
+  var currentStatusVal = (typeof status !== 'undefined' && status)
+    ? status.status
+    : (typeof dbStatus !== 'undefined' ? dbStatus : '');
+
+  var isDone    = ['DONE','ACCEPTED','completed'].includes(currentStatusVal);
+  var isPending = ['PENDING','pending','processing','installing','AUTHORIZED','IN_PROGRESS'].includes(currentStatusVal);
+  var isFailed  = ['FAILED','CANCELLED','REJECTED','ERROR','failed'].includes(currentStatusVal);
+
+  /* ── Resolve detail values (vendor-agnostic) ── */
+  var txId      = (typeof status !== 'undefined' && status) ? status.transactionId : (esim ? esim.transactionId : '-');
+  var offerId   = (typeof status !== 'undefined' && status) ? status.offerId : (esim ? esim.offerId : '-');
+  var provider  = (typeof status !== 'undefined' && status && status.brandName) ? status.brandName : (esim && esim.brandName ? esim.brandName : null);
+  var country   = (typeof status !== 'undefined' && status && status.country) ? status.country : (esim && esim.country ? esim.country : null);
+  var duration  = (typeof status !== 'undefined' && status && status.durationDays) ? status.durationDays : (esim && esim.durationDays ? esim.durationDays : null);
+  var dataUnlimited = (typeof status !== 'undefined' && status) ? status.dataUnlimited : false;
+  var dataGB    = (typeof status !== 'undefined' && status && status.dataGB) ? status.dataGB : (esim ? esim.dataGB : null);
+  var iccid     = esim && esim.iccid ? esim.iccid : null;
+  var purchaseDate = esim ? esim.createdAt : null;
+
+  /* ── Usage data (Airalo) ── */
+  var hasUsage  = typeof usageData !== 'undefined' && usageData && usageData.total;
+  var usedMB    = hasUsage ? (usageData.total - usageData.remaining) : 0;
+  var totalMB   = hasUsage ? usageData.total : 0;
+  var usagePct  = hasUsage ? Math.round((usedMB / totalMB) * 100) : 0;
+%>
+
+<!-- Status Banner -->
+<% if (isDone) { %>
+<div class="status-banner status-banner-done fade-up stagger-1">
+  <div class="status-icon">
+    <i data-lucide="check-circle" class="w-6 h-6"></i>
   </div>
-  <div class="flex items-center gap-3">
-    <h1 class="text-page-title">Purchase Status</h1>
-    <% if (typeof vendor !== 'undefined' && vendor === 'zendit') { %>
-      <span class="badge badge-amber">Zendit</span>
-    <% } %>
+  <div>
+    <div class="status-banner-title">Data Ready</div>
+    <div class="status-banner-msg">Your eSIM has been activated and is ready to use</div>
+  </div>
+</div>
+<% } else if (isPending) { %>
+<div class="status-banner status-banner-pending fade-up stagger-1">
+  <div class="status-icon">
+    <i data-lucide="loader" class="w-6 h-6 animate-spin"></i>
+  </div>
+  <div>
+    <div class="status-banner-title">Processing</div>
+    <div class="status-banner-msg">Your eSIM is being set up, this usually takes a few minutes</div>
+  </div>
+</div>
+<% } else if (isFailed) { %>
+<div class="status-banner status-banner-failed fade-up stagger-1">
+  <div class="status-icon">
+    <i data-lucide="x-circle" class="w-6 h-6"></i>
+  </div>
+  <div>
+    <div class="status-banner-title">Activation Failed</div>
+    <div class="status-banner-msg">Please contact support for assistance</div>
+  </div>
+</div>
+<% } else { %>
+<div class="status-banner status-banner-progress fade-up stagger-1">
+  <div class="status-icon">
+    <i data-lucide="loader" class="w-6 h-6 animate-spin"></i>
+  </div>
+  <div>
+    <div class="status-banner-title"><%= currentStatusVal || 'Processing' %></div>
+    <div class="status-banner-msg">Your eSIM is being prepared</div>
+  </div>
+</div>
+<% } %>
+
+<!-- Details Grid -->
+<div class="detail-grid fade-up stagger-2">
+  <% if (country) { %>
+  <div class="detail-item">
+    <div class="detail-label">Country</div>
+    <div class="detail-value"><%= country %></div>
+  </div>
+  <% } %>
+  <div class="detail-item">
+    <div class="detail-label">Data</div>
+    <div class="detail-value"><%= dataUnlimited ? 'Unlimited' : (dataGB ? dataGB + ' GB' : '-') %></div>
+  </div>
+  <% if (duration) { %>
+  <div class="detail-item">
+    <div class="detail-label">Duration</div>
+    <div class="detail-value"><%= duration %> days</div>
+  </div>
+  <% } %>
+  <% if (provider) { %>
+  <div class="detail-item">
+    <div class="detail-label">Operator</div>
+    <div class="detail-value"><%= provider %></div>
+  </div>
+  <% } %>
+  <% if (iccid) { %>
+  <div class="detail-item">
+    <div class="detail-label">ICCID</div>
+    <div class="detail-value detail-mono"><%= iccid %></div>
+  </div>
+  <% } %>
+  <div class="detail-item">
+    <div class="detail-label">Purchase Date</div>
+    <div class="detail-value"><%= purchaseDate ? new Date(purchaseDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '-' %></div>
   </div>
 </div>
 
-<div class="max-w-2xl space-y-5">
-  <!-- Status Banner -->
-  <div class="card overflow-hidden fade-up stagger-1">
-    <%
-      var currentStatusVal = (typeof status !== 'undefined' && status) ? status.status : (typeof dbStatus !== 'undefined' ? dbStatus : '');
-    %>
-    <% if (currentStatusVal === 'DONE' || currentStatusVal === 'completed') { %>
-    <div class="status-banner status-banner-done">
-      <div class="status-icon">
-        <i data-lucide="check" class="w-5 h-5"></i>
-      </div>
-      <div>
-        <p class="text-sm font-bold text-emerald-700 dark:text-emerald-400">Data Ready</p>
-        <p class="text-xs text-emerald-600 dark:text-emerald-500 mt-0.5">Your Data has been activated and is ready to use</p>
-      </div>
-    </div>
-    <% } else if (currentStatusVal === 'PENDING' || currentStatusVal === 'pending') { %>
-    <div class="status-banner status-banner-pending">
-      <div class="status-icon">
-        <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
-      </div>
-      <div>
-        <p class="text-sm font-bold text-amber-700 dark:text-amber-400">Processing</p>
-        <p class="text-xs text-amber-600 dark:text-amber-500 mt-0.5">Your Data is being set up, this usually takes a few minutes</p>
-      </div>
-    </div>
-    <% } else if (currentStatusVal === 'FAILED' || currentStatusVal === 'failed') { %>
-    <div class="status-banner status-banner-failed">
-      <div class="status-icon">
-        <i data-lucide="x" class="w-5 h-5"></i>
-      </div>
-      <div>
-        <p class="text-sm font-bold text-rose-700 dark:text-rose-400">Activation Failed</p>
-        <p class="text-xs text-rose-600 dark:text-rose-500 mt-0.5">Please contact support for assistance</p>
-      </div>
-    </div>
-    <% } else { %>
-    <div class="status-banner status-banner-progress">
-      <div class="status-icon">
-        <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
-      </div>
-      <div>
-        <p class="text-sm font-bold text-indigo-700 dark:text-indigo-400"><%= currentStatusVal || 'Processing' %></p>
-        <p class="text-xs text-indigo-600 dark:text-indigo-500 mt-0.5">Your Data is being prepared</p>
-      </div>
-    </div>
-    <% } %>
-
-    <!-- Details Grid -->
-    <div class="p-5">
-      <div class="grid grid-cols-2 gap-3">
-        <div class="detail-item">
-          <div class="detail-label">Transaction ID</div>
-          <div class="detail-value font-mono text-xs truncate"><%= (typeof status !== 'undefined' && status) ? status.transactionId : (esim ? esim.transactionId : '-') %></div>
-        </div>
-        <div class="detail-item">
-          <div class="detail-label">Offer</div>
-          <div class="detail-value truncate"><%= (typeof status !== 'undefined' && status) ? status.offerId : (esim ? esim.offerId : '-') %></div>
-        </div>
-        <% if ((typeof status !== 'undefined' && status && status.brandName) || (esim && esim.brandName)) { %>
-        <div class="detail-item">
-          <div class="detail-label">Provider</div>
-          <div class="detail-value"><%= (typeof status !== 'undefined' && status && status.brandName) ? status.brandName : (esim ? esim.brandName : '-') %></div>
-        </div>
-        <% } %>
-        <% if ((typeof status !== 'undefined' && status && status.country) || (esim && esim.country)) { %>
-        <div class="detail-item">
-          <div class="detail-label">Region</div>
-          <div class="detail-value"><%= (typeof status !== 'undefined' && status && status.country) ? status.country : (esim ? esim.country : '-') %></div>
-        </div>
-        <% } %>
-        <% if ((typeof status !== 'undefined' && status && status.durationDays) || (esim && esim.durationDays)) { %>
-        <div class="detail-item">
-          <div class="detail-label">Duration</div>
-          <div class="detail-value font-semibold"><%= (typeof status !== 'undefined' && status && status.durationDays) ? status.durationDays : esim.durationDays %> days</div>
-        </div>
-        <% } %>
-        <div class="detail-item">
-          <div class="detail-label">Data</div>
-          <%
-            var dataUnlimited = (typeof status !== 'undefined' && status) ? status.dataUnlimited : false;
-            var dataGB = (typeof status !== 'undefined' && status && status.dataGB) ? status.dataGB : (esim ? esim.dataGB : null);
-          %>
-          <div class="detail-value font-semibold"><%= dataUnlimited ? 'Unlimited' : (dataGB ? dataGB + ' GB' : '-') %></div>
-        </div>
-        <% if (esim && esim.iccid) { %>
-        <div class="detail-item col-span-2">
-          <div class="detail-label">ICCID</div>
-          <div class="flex items-center gap-1.5">
-            <span class="detail-value font-mono text-xs"><%= esim.iccid %></span>
-            <button onclick="copyToClipboard('<%= esim.iccid %>', this)" class="copy-btn" title="Copy ICCID">
-              <i data-lucide="copy" class="w-3 h-3"></i>
-            </button>
-          </div>
-        </div>
-        <% } %>
-      </div>
-    </div>
-
-    <!-- Airalo Usage Data -->
-    <% if (typeof vendor !== 'undefined' && vendor === 'airalo' && typeof usageData !== 'undefined' && usageData) { %>
-    <div class="p-5 pt-0">
-      <p class="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-2">Data Usage</p>
-      <div class="card p-4 bg-[var(--surface-1)] border border-[var(--border-subtle)]">
-        <div class="flex justify-between text-sm">
-          <span class="text-[var(--text-secondary)]">Remaining: <strong class="text-[var(--text-primary)]"><%= usageData.remaining %> MB</strong> / <%= usageData.total %> MB</span>
-          <span class="badge badge-neutral"><%= usageData.status %></span>
-        </div>
-      </div>
-    </div>
-    <% } %>
-
-    <!-- Active Plans -->
-    <%
-      var planList = typeof activePlans !== 'undefined' && activePlans ? (activePlans.list || []) : [];
-    %>
-    <% if (planList.length > 0) { %>
-    <div class="p-5 pt-0">
-      <p class="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-2">Active Plans</p>
-      <div class="space-y-2">
-        <% planList.forEach(function(plan) { %>
-        <div class="flex items-center justify-between text-sm p-3 rounded-lg bg-[var(--surface-1)] border border-[var(--border-subtle)]">
-          <div class="flex-1 min-w-0">
-            <% if (plan.unlimited) { %>
-            <span class="font-semibold text-[var(--text-primary)]">Unlimited</span>
-            <% } else { %>
-            <span class="font-semibold text-[var(--text-primary)]"><%= plan.remainingDataGB != null ? plan.remainingDataGB.toFixed(2) : '-' %></span>
-            <span class="text-[var(--text-tertiary)]"> / <%= plan.initialDataGB || '-' %> GB remaining</span>
-            <% } %>
-            <% if (plan.endAt) { %>
-            <p class="text-xs text-[var(--text-tertiary)] mt-0.5">Expires: <%= new Date(plan.endAt).toLocaleDateString('en-GB') %></p>
-            <% } %>
-          </div>
-          <% if (plan.status === 'ACTIVE') { %>
-          <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
-          <% } else if (plan.status === 'QUEUED') { %>
-          <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Queued</span>
-          <% } else { %>
-          <span class="badge badge-neutral"><%= plan.status %></span>
-          <% } %>
-        </div>
-        <% }) %>
-      </div>
-    </div>
-    <% } %>
+<!-- Data Usage Progress (Airalo with usage data) -->
+<% if (hasUsage) { %>
+<div class="progress-wrap fade-up stagger-3">
+  <div class="progress-header">
+    <div class="progress-title">Data Usage</div>
+    <div class="progress-value"><%= usedMB %> MB / <%= totalMB %> MB</div>
   </div>
+  <div class="progress-bar">
+    <div class="progress-fill" style="width: <%= usagePct %>%;"></div>
+  </div>
+  <div class="progress-label"><%= usagePct %>% used</div>
+</div>
+<% } %>
 
-  <!-- Activity Log -->
+<!-- Action Buttons -->
+<div class="flex flex-col sm:flex-row gap-3 fade-up stagger-4" style="margin-bottom:24px;">
+  <% if (isQrReady) { %>
+  <a href="/qrcode/<%= txId %>" class="flex-1 btn btn-primary btn-lg">
+    <i data-lucide="qr-code" class="w-4 h-4"></i>
+    View QR Code
+  </a>
+  <% } %>
+  <% if (typeof vendor !== 'undefined' && vendor === 'airalo' && isDone && esim && esim.id) { %>
+  <a href="/payment/topup/<%= esim.id %>" class="flex-1 btn btn-secondary btn-lg">
+    <i data-lucide="plus" class="w-4 h-4"></i>
+    Top-up
+  </a>
+  <% } %>
+  <% if (!isQrReady) { %>
+  <button onclick="location.reload()" class="flex-1 btn btn-secondary btn-lg">
+    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+    Refresh Status
+  </button>
+  <% } %>
+</div>
+
+<!-- Activity Timeline -->
+<div class="timeline fade-up stagger-5">
+  <div class="timeline-title">Activity</div>
+
   <% if (typeof status !== 'undefined' && status && status.log && status.log.length > 0) { %>
-  <div class="card fade-up stagger-2">
-    <div class="card-header">
-      <h3>Activity Log</h3>
-      <span class="badge badge-neutral"><%= status.log.length %></span>
-    </div>
-    <div class="card-body">
-      <div class="relative" role="list" aria-label="Activity timeline">
-        <% status.log.forEach(function(entry, index) { %>
-        <div class="flex gap-3.5 <%= index < status.log.length - 1 ? 'pb-5' : '' %>" role="listitem">
-          <div class="flex flex-col items-center">
-            <%
-              var isDone = ['DONE','ACCEPTED','completed'].includes(entry.status);
-              var isPending = ['PENDING','pending'].includes(entry.status);
-              var isProgress = ['AUTHORIZED','IN_PROGRESS','processing'].includes(entry.status);
-              var isFailed = ['FAILED','CANCELLED','REJECTED','ERROR','failed'].includes(entry.status);
-            %>
-            <% if (isDone) { %>
-            <div class="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 shadow-sm">
-              <i data-lucide="check" class="w-3 h-3 text-white"></i>
-            </div>
-            <% } else if (isPending) { %>
-            <div class="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0 shadow-sm">
-              <div class="w-2 h-2 rounded-full bg-white"></div>
-            </div>
-            <% } else if (isProgress) { %>
-            <div class="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0 shadow-sm">
-              <div class="w-2 h-2 rounded-full bg-white"></div>
-            </div>
-            <% } else if (isFailed) { %>
-            <div class="w-6 h-6 rounded-full bg-rose-500 flex items-center justify-center flex-shrink-0 shadow-sm">
-              <i data-lucide="x" class="w-3 h-3 text-white"></i>
-            </div>
-            <% } else { %>
-            <div class="w-6 h-6 rounded-full bg-[var(--surface-2)] border border-[var(--border-default)] flex items-center justify-center flex-shrink-0">
-              <div class="w-2 h-2 rounded-full bg-[var(--text-tertiary)]"></div>
-            </div>
-            <% } %>
-            <% if (index < status.log.length - 1) { %>
-            <div class="w-0.5 flex-1 bg-[var(--border-default)] min-h-[16px] rounded-full"></div>
-            <% } %>
-          </div>
-          <div class="min-w-0 -mt-0.5">
-            <p class="text-sm font-semibold text-[var(--text-primary)]"><%= entry.status %></p>
-            <p class="text-xs text-[var(--text-secondary)] mt-0.5"><%= entry.statusMessage %></p>
-            <p class="text-xs text-[var(--text-tertiary)] mt-0.5"><%= new Date(entry.dateTime).toLocaleString('en-GB') %></p>
-          </div>
-        </div>
-        <% }) %>
+    <% status.log.forEach(function(entry) { %>
+    <%
+      var entryDone   = ['DONE','ACCEPTED','completed'].includes(entry.status);
+      var entryFailed = ['FAILED','CANCELLED','REJECTED','ERROR','failed'].includes(entry.status);
+    %>
+    <div class="timeline-item">
+      <div class="timeline-dot <%= entryDone ? 'timeline-dot-ok' : (entryFailed ? 'timeline-dot-warn' : 'timeline-dot-ok') %>">
+        <% if (entryDone) { %>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        <% } else if (entryFailed) { %>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        <% } else { %>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+        <% } %>
+      </div>
+      <div>
+        <div class="timeline-text"><%= entry.status %><% if (entry.statusMessage) { %> &mdash; <%= entry.statusMessage %><% } %></div>
+        <div class="timeline-time"><%= new Date(entry.dateTime).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></div>
       </div>
     </div>
-  </div>
+    <% }) %>
+  <% } else { %>
+    <!-- Basic status info when no activity log -->
+    <div class="timeline-item">
+      <div class="timeline-dot <%= isDone ? 'timeline-dot-ok' : 'timeline-dot-warn' %>">
+        <% if (isDone) { %>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        <% } else { %>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+        <% } %>
+      </div>
+      <div>
+        <div class="timeline-text"><%= isDone ? 'eSIM activated' : (isFailed ? 'Activation failed' : 'Order processing') %></div>
+        <div class="timeline-time"><%= purchaseDate ? new Date(purchaseDate).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-' %></div>
+      </div>
+    </div>
   <% } %>
-
-  <% if (isQrReady && esim && esim.smdpAddress && esim.activationCode) { %>
-  <%
-    var lpaStr = 'LPA:1$' + esim.smdpAddress + '$' + esim.activationCode;
-    var appleUrl = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + lpaStr;
-    var androidUrl = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + lpaStr;
-  %>
-  <!-- Install on This Phone -->
-  <div class="card fade-up stagger-3">
-    <div class="card-header">
-      <h3>Install on This Phone</h3>
-    </div>
-    <div class="card-body">
-      <!-- One-tap (mobile only) -->
-      <div id="statusDirectBtns" style="display:none" class="mb-4">
-        <a href="<%= appleUrl %>" id="statusIosBtn" class="btn btn-primary btn-lg btn-block mb-2" style="display:none">
-          <i data-lucide="smartphone" class="w-4 h-4"></i> Install eSIM Now
-        </a>
-        <a href="<%= androidUrl %>" id="statusAndroidBtn" class="btn btn-primary btn-lg btn-block mb-2" style="display:none">
-          <i data-lucide="smartphone" class="w-4 h-4"></i> Install eSIM Now
-        </a>
-        <p class="text-xs text-[var(--text-tertiary)] mb-3">If the button doesn't work, use manual entry below.</p>
-        <div class="border-t border-[var(--border-subtle)] pt-3"></div>
-      </div>
-      <script>
-      (function(){
-        var ua=navigator.userAgent||'';
-        if(/iPhone|iPad|iPod/.test(ua)){document.getElementById('statusDirectBtns').style.display='block';document.getElementById('statusIosBtn').style.display='flex';}
-        else if(/Android/.test(ua)){document.getElementById('statusDirectBtns').style.display='block';document.getElementById('statusAndroidBtn').style.display='flex';}
-        lucide.createIcons();
-      })();
-      </script>
-      <!-- Manual entry -->
-      <p class="text-sm text-[var(--text-secondary)] mb-3">Copy and enter in Settings → Cellular → Add eSIM → Enter Details Manually.</p>
-      <div class="space-y-2.5">
-        <div class="bg-[var(--surface-1)] rounded-lg p-3 border border-[var(--border-subtle)]">
-          <div class="flex items-center justify-between mb-1">
-            <span class="detail-label">SM-DP+ Address</span>
-            <button onclick="copyToClipboard('<%= esim.smdpAddress %>', this)" class="copy-btn"><i data-lucide="copy" class="w-3 h-3"></i> <span class="text-[0.6875rem]">Copy</span></button>
-          </div>
-          <p class="text-sm font-mono text-[var(--text-primary)] break-all"><%= esim.smdpAddress %></p>
-        </div>
-        <div class="bg-[var(--surface-1)] rounded-lg p-3 border border-[var(--border-subtle)]">
-          <div class="flex items-center justify-between mb-1">
-            <span class="detail-label">Activation Code</span>
-            <button onclick="copyToClipboard('<%= esim.activationCode %>', this)" class="copy-btn"><i data-lucide="copy" class="w-3 h-3"></i> <span class="text-[0.6875rem]">Copy</span></button>
-          </div>
-          <p class="text-sm font-mono text-[var(--text-primary)] break-all"><%= esim.activationCode %></p>
-        </div>
-      </div>
-    </div>
-  </div>
-  <% } %>
-
-  <!-- Actions -->
-  <div class="flex flex-col sm:flex-row gap-3 fade-up stagger-4">
-    <% if (isQrReady) { %>
-    <a href="/qrcode/<%= esim ? esim.transactionId : (typeof status !== 'undefined' && status ? status.transactionId : '') %>" class="flex-1 btn btn-primary btn-lg">
-      <i data-lucide="qr-code" class="w-4 h-4"></i>
-      QR Code & Details
-    </a>
-    <% } %>
-    <button onclick="location.reload()" class="flex-1 btn btn-secondary btn-lg">
-      <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-      Refresh Status
-    </button>
-  </div>
-
-  <!-- Auto-refresh countdown (pending only) -->
-  <div id="refreshBar" style="display:none" class="card p-3 mt-4 fade-up stagger-5">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-        <i data-lucide="timer" class="w-4 h-4 text-[var(--text-tertiary)]"></i>
-        <span>Auto-refresh in <strong id="refreshCountdown" class="text-[var(--text-primary)]">30</strong>s</span>
-      </div>
-      <button onclick="stopAutoRefresh()" class="text-xs font-medium text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">Stop</button>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -300,7 +194,6 @@ var _countdownTimer = null;
 function stopAutoRefresh() {
   clearInterval(_refreshTimer);
   clearInterval(_countdownTimer);
-  document.getElementById('refreshBar').style.display = 'none';
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -310,24 +203,13 @@ document.addEventListener('DOMContentLoaded', function() {
     history.replaceState(null, '', window.location.pathname);
   }
 
-  var currentStatus = '<%= (typeof status !== "undefined" && status) ? status.status : (typeof dbStatus !== "undefined" ? dbStatus : "") %>';
+  var currentStatus = '<%= currentStatusVal %>';
   var pendingStates = ['pending', 'processing', 'installing', 'PENDING', 'AUTHORIZED', 'IN_PROGRESS'];
   if (pendingStates.includes(currentStatus)) {
     var refreshCount = 0;
-    var seconds = 30;
-    var countdownEl = document.getElementById('refreshCountdown');
-    document.getElementById('refreshBar').style.display = 'block';
-    lucide.createIcons();
-
-    _countdownTimer = setInterval(function() {
-      seconds--;
-      if (countdownEl) countdownEl.textContent = seconds;
-    }, 1000);
-
     _refreshTimer = setInterval(function() {
       refreshCount++;
       if (refreshCount >= 10) { stopAutoRefresh(); return; }
-      seconds = 30;
       window.location.reload();
     }, 30000);
   }
