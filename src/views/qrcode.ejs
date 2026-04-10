@@ -1,20 +1,31 @@
-<%- include('partials/header', {title: 'QR Code', user: locals.user}) %>
+<%- include('partials/header', {title: 'QR Code', user: locals.user, backUrl: '/purchases'}) %>
 
 <%
-  // Vendor-aware LPA construction
+  // Vendor-aware field extraction
   var computedLpa = null;
   var computedMatchingId = null;
   var computedQrcodeUrl = null;
   var computedDirectAppleUrl = null;
+  var smdpAddress = null;
+  var activationCode = null;
+  var planName = '';
+  var dataMeta = '';
 
   if (typeof esim !== 'undefined' && esim) {
+    planName = esim.planName || esim.offerId || '';
+    dataMeta = [esim.dataAmount, esim.duration, esim.price].filter(Boolean).join(' · ');
+
     if (esim.vendor === 'airalo' && esim.vendorData) {
       computedLpa = (typeof lpa !== 'undefined' && lpa) || esim.vendorData.lpa || null;
       computedMatchingId = (typeof matchingId !== 'undefined' && matchingId) || esim.vendorData.matchingId || null;
       computedQrcodeUrl = (typeof qrcodeUrl !== 'undefined' && qrcodeUrl) || esim.vendorData.qrcodeUrl || esim.vendorData.qrcode || null;
       computedDirectAppleUrl = (typeof directAppleUrl !== 'undefined' && directAppleUrl) || esim.vendorData.directAppleUrl || null;
+      smdpAddress = esim.vendorData.smdpAddress || null;
+      activationCode = esim.vendorData.activationCode || computedMatchingId || null;
     } else if (esim.smdpAddress && esim.activationCode) {
       computedLpa = 'LPA:1$' + esim.smdpAddress + '$' + esim.activationCode;
+      smdpAddress = esim.smdpAddress;
+      activationCode = esim.activationCode;
     }
   }
 
@@ -23,273 +34,190 @@
   if (typeof lpa === 'undefined' || !lpa) lpa = computedLpa;
   if (typeof matchingId === 'undefined' || !matchingId) matchingId = computedMatchingId;
   if (typeof directAppleUrl === 'undefined' || !directAppleUrl) directAppleUrl = computedDirectAppleUrl;
+
+  // Determine QR image source
+  var qrImageSrc = null;
+  if (qrcodeUrl) {
+    qrImageSrc = qrcodeUrl;
+  } else if (typeof qr !== 'undefined' && qr && qr.imageBase64) {
+    qrImageSrc = 'data:image/png;base64,' + qr.imageBase64;
+  }
+
+  // Build direct install links for Zendit
+  var appleLink = null;
+  var androidLink = null;
+  if (smdpAddress && activationCode) {
+    var lpaString = 'LPA:1$' + smdpAddress + '$' + activationCode;
+    appleLink = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + lpaString;
+    androidLink = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + lpaString;
+  }
+  if (directAppleUrl) {
+    appleLink = directAppleUrl;
+  }
 %>
 
-<div class="mb-6">
-  <div class="breadcrumb">
-    <a href="/purchases"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to My Datas</a>
-  </div>
-  <h1 class="text-page-title">Your Data QR Code</h1>
-  <p class="text-subtitle mt-1">Scan this code with your device to install the Data</p>
-</div>
+<% if (qrImageSrc) { %>
+<div class="max-w-lg mx-auto space-y-5">
 
-<% if (typeof vendor !== 'undefined' && vendor === 'airalo') { %>
-<div class="max-w-2xl space-y-6">
-  <!-- Airalo QR Code -->
-  <div class="card fade-up stagger-1">
-    <div class="p-6 text-center border-b border-[var(--border-subtle)] bg-[var(--surface-1)]">
-      <div class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--brand-light)] mb-3">
-        <i data-lucide="qr-code" class="w-5 h-5 text-[var(--brand-primary)]"></i>
-      </div>
-      <h2 class="text-lg font-bold text-[var(--text-primary)]">Ready to Install</h2>
-      <p class="text-sm text-[var(--text-secondary)] mt-1">Scan the QR code below with your device camera</p>
+  <!-- QR Card -->
+  <div class="card text-center p-6 fade-up stagger-1">
+    <div class="inline-block bg-white p-4 rounded-2xl shadow-lg border border-gray-100 mb-4">
+      <img src="<%= qrImageSrc %>" alt="eSIM QR Code" class="qr-image w-56 h-56 mx-auto" style="max-width:224px;" />
     </div>
-    <div class="p-8 text-center">
-      <% if (qrcodeUrl) { %>
-      <div class="inline-block bg-white p-5 rounded-2xl shadow-lg border border-gray-100 mb-4">
-        <img src="<%= qrcodeUrl %>" alt="eSIM QR Code" class="qr-image w-64 h-64 mx-auto" style="max-width: 250px;">
-      </div>
-      <% } %>
-      <% if (directAppleUrl) { %>
-      <div class="mt-4" id="airaloDirectBtns" style="display:none">
-        <a href="<%= directAppleUrl %>" class="btn btn-primary btn-lg btn-block mb-2">
+    <% if (planName) { %>
+    <h2 class="text-lg font-bold text-[var(--text-primary)]"><%= planName %></h2>
+    <% } %>
+    <% if (dataMeta) { %>
+    <p class="text-sm text-[var(--text-secondary)] mt-1"><%= dataMeta %></p>
+    <% } %>
+  </div>
+
+  <!-- Tab Toggle -->
+  <div class="tab-group fade-up stagger-2">
+    <button class="tab-item active" onclick="switchTab('auto', this)">Auto Install</button>
+    <button class="tab-item" onclick="switchTab('manual', this)">Manual Install</button>
+  </div>
+
+  <!-- Auto Install Tab -->
+  <div id="tab-auto" class="fade-up stagger-3">
+    <div class="card p-5 space-y-0">
+      <% if (appleLink || androidLink) { %>
+      <div id="directInstallBtns" style="display:none; margin-bottom:16px;">
+        <% if (appleLink) { %>
+        <a href="<%= appleLink %>" id="iosDirectBtn" class="btn btn-primary btn-lg btn-block mb-2" style="display:none;">
           <i data-lucide="smartphone" class="w-4 h-4"></i> Install on iPhone (iOS 17.4+)
         </a>
+        <% } %>
+        <% if (androidLink) { %>
+        <a href="<%= androidLink %>" id="androidDirectBtn" class="btn btn-primary btn-lg btn-block mb-2" style="display:none;">
+          <i data-lucide="smartphone" class="w-4 h-4"></i> Install on Android
+        </a>
+        <% } %>
+        <p class="text-xs text-[var(--text-tertiary)] text-center mt-2" id="directNote"></p>
       </div>
       <script>
       (function(){
         var ua = navigator.userAgent || '';
-        if (/iPhone|iPad|iPod/.test(ua)) {
-          document.getElementById('airaloDirectBtns').style.display = 'block';
+        var isIOS = /iPhone|iPad|iPod/.test(ua);
+        var isAndroid = /Android/.test(ua);
+        var wrapper = document.getElementById('directInstallBtns');
+        if (isIOS && document.getElementById('iosDirectBtn')) {
+          wrapper.style.display = 'block';
+          document.getElementById('iosDirectBtn').style.display = 'flex';
+          document.getElementById('directNote').textContent = 'Requires iOS 17.4+ and Safari.';
+        } else if (isAndroid && document.getElementById('androidDirectBtn')) {
+          wrapper.style.display = 'block';
+          document.getElementById('androidDirectBtn').style.display = 'flex';
+          document.getElementById('directNote').textContent = 'Requires Android 10+ with Google Play services.';
         }
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
       })();
       </script>
       <% } %>
-    </div>
-  </div>
 
-  <% if (lpa) { %>
-  <!-- Manual Installation (LPA) -->
-  <div class="card fade-up stagger-2">
-    <div class="card-header">
-      <h3>Manual Install</h3>
-    </div>
-    <div class="card-body space-y-3">
-      <p class="text-sm text-[var(--text-secondary)]">Copy the LPA string below and enter it in your phone's eSIM settings.</p>
-      <div class="bg-[var(--surface-1)] rounded-lg p-3.5 border border-[var(--border-subtle)]">
-        <div class="flex items-center justify-between mb-1">
-          <span class="detail-label">LPA String</span>
-          <button onclick="copyToClipboard('<%= lpa %>', this)" class="copy-btn" title="Copy">
-            <i data-lucide="copy" class="w-3 h-3"></i> <span class="text-[0.6875rem]">Copy</span>
-          </button>
-        </div>
-        <code class="text-xs break-all text-[var(--text-primary)]"><%= lpa %></code>
-      </div>
-      <% if (matchingId) { %>
-      <div class="bg-[var(--surface-1)] rounded-lg p-3.5 border border-[var(--border-subtle)]">
-        <div class="flex items-center justify-between mb-1">
-          <span class="detail-label">Matching ID</span>
-          <button onclick="copyToClipboard('<%= matchingId %>', this)" class="copy-btn" title="Copy">
-            <i data-lucide="copy" class="w-3 h-3"></i> <span class="text-[0.6875rem]">Copy</span>
-          </button>
-        </div>
-        <code class="text-xs break-all text-[var(--text-primary)]"><%= matchingId %></code>
-      </div>
-      <% } %>
-      <% if (manualInstallation) { %>
-      <div class="alert alert-warning">
-        <i data-lucide="info" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
-        <div class="text-sm"><%= manualInstallation %></div>
-      </div>
-      <% } %>
-    </div>
-  </div>
-  <% } %>
-
-  <!-- Tips -->
-  <div class="alert alert-warning fade-up stagger-3">
-    <i data-lucide="lightbulb" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
-    <div class="text-sm space-y-1">
-      <p>Make sure you have a stable internet connection</p>
-      <p>Installation may take a few minutes</p>
-      <p>Keep this QR code private and secure</p>
-    </div>
-  </div>
-
-  <!-- Actions -->
-  <div class="flex flex-col sm:flex-row gap-3 fade-up stagger-4">
-    <% if (qrcodeUrl) { %>
-    <button onclick="downloadAiraloQR()" class="flex-1 btn btn-primary btn-lg">
-      <i data-lucide="download" class="w-4 h-4"></i>
-      Save QR Code
-    </button>
-    <% } %>
-    <a href="/purchases" class="flex-1 btn btn-secondary btn-lg">
-      <i data-lucide="arrow-left" class="w-4 h-4"></i>
-      Back to Purchases
-    </a>
-  </div>
-</div>
-<script>
-function downloadAiraloQR() {
-  var img = document.querySelector('.qr-image');
-  if (!img) return;
-  var canvas = document.createElement('canvas');
-  var ctx = canvas.getContext('2d');
-  canvas.width = img.naturalWidth || 256;
-  canvas.height = img.naturalHeight || 256;
-  ctx.drawImage(img, 0, 0);
-  var link = document.createElement('a');
-  link.download = 'esim-qr-code.png';
-  link.href = canvas.toDataURL();
-  link.click();
-}
-</script>
-
-<% } else if (typeof qr !== 'undefined' && qr && qr.imageBase64) { %>
-<div class="max-w-2xl space-y-6">
-  <!-- QR Code Card -->
-  <div class="card fade-up stagger-1">
-    <div class="p-6 text-center border-b border-[var(--border-subtle)] bg-[var(--surface-1)]">
-      <div class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--brand-light)] mb-3">
-        <i data-lucide="qr-code" class="w-5 h-5 text-[var(--brand-primary)]"></i>
-      </div>
-      <h2 class="text-lg font-bold text-[var(--text-primary)]">Ready to Install</h2>
-      <p class="text-sm text-[var(--text-secondary)] mt-1">Scan the QR code below with your device camera</p>
-    </div>
-
-    <div class="p-8 flex justify-center">
-      <div class="bg-white p-5 rounded-2xl shadow-lg border border-gray-100">
-        <img src="data:image/png;base64,<%= qr.imageBase64 %>" alt="Data QR Code" class="qr-image w-64 h-64" />
-      </div>
-    </div>
-  </div>
-
-  <% if (esim && esim.smdpAddress && esim.activationCode) { %>
-  <%
-    var lpaString = 'LPA:1$' + esim.smdpAddress + '$' + esim.activationCode;
-    var appleLink = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + lpaString;
-    var androidLink = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + lpaString;
-  %>
-  <!-- One-Tap Install (iOS 17.4+ / Android 10+) -->
-  <div class="card fade-up stagger-2" id="directInstallCard" style="display:none">
-    <div class="card-header">
-      <h3>One-Tap Install</h3>
-      <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Easiest</span>
-    </div>
-    <div class="card-body">
-      <p class="text-sm text-[var(--text-secondary)] mb-4">Tap the button below to install the eSIM directly on this phone.</p>
-      <a href="<%= appleLink %>" id="iosDirectBtn" class="btn btn-primary btn-lg btn-block mb-2" style="display:none">
-        <i data-lucide="smartphone" class="w-4 h-4"></i>
-        Install eSIM Now
-      </a>
-      <a href="<%= androidLink %>" id="androidDirectBtn" class="btn btn-primary btn-lg btn-block mb-2" style="display:none">
-        <i data-lucide="smartphone" class="w-4 h-4"></i>
-        Install eSIM Now
-      </a>
-      <p class="text-xs text-[var(--text-tertiary)]" id="directNote"></p>
-    </div>
-  </div>
-  <script>
-  (function() {
-    var ua = navigator.userAgent || '';
-    var isIOS = /iPhone|iPad|iPod/.test(ua);
-    var isAndroid = /Android/.test(ua);
-    if (isIOS) {
-      document.getElementById('directInstallCard').style.display = 'block';
-      document.getElementById('iosDirectBtn').style.display = 'flex';
-      document.getElementById('directNote').textContent = 'Requires iOS 17.4+ and Safari. If it doesn\'t work, use manual entry below.';
-    } else if (isAndroid) {
-      document.getElementById('directInstallCard').style.display = 'block';
-      document.getElementById('androidDirectBtn').style.display = 'flex';
-      document.getElementById('directNote').textContent = 'Requires Android 10+ with Google Play services. If it doesn\'t work, use manual entry below.';
-    }
-    lucide.createIcons();
-  })();
-  </script>
-
-  <!-- Manual Entry (Always works) -->
-  <div class="card fade-up stagger-3">
-    <div class="card-header">
-      <h3>Manual Install</h3>
-    </div>
-    <div class="card-body space-y-4">
-      <p class="text-sm text-[var(--text-secondary)]">Copy the details below and enter them in your phone's eSIM settings.</p>
-
-      <div class="bg-[var(--surface-1)] rounded-lg p-3.5 border border-[var(--border-subtle)]">
-        <div class="flex items-center justify-between mb-1">
-          <span class="detail-label">SM-DP+ Address</span>
-          <button onclick="copyToClipboard('<%= esim.smdpAddress %>', this)" class="copy-btn" title="Copy">
-            <i data-lucide="copy" class="w-3 h-3"></i> <span class="text-[0.6875rem]">Copy</span>
-          </button>
-        </div>
-        <p class="text-sm font-mono text-[var(--text-primary)] break-all"><%= esim.smdpAddress %></p>
-      </div>
-
-      <div class="bg-[var(--surface-1)] rounded-lg p-3.5 border border-[var(--border-subtle)]">
-        <div class="flex items-center justify-between mb-1">
-          <span class="detail-label">Activation Code</span>
-          <button onclick="copyToClipboard('<%= esim.activationCode %>', this)" class="copy-btn" title="Copy">
-            <i data-lucide="copy" class="w-3 h-3"></i> <span class="text-[0.6875rem]">Copy</span>
-          </button>
-        </div>
-        <p class="text-sm font-mono text-[var(--text-primary)] break-all"><%= esim.activationCode %></p>
-      </div>
-
-      <div class="alert alert-warning">
-        <i data-lucide="info" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
-        <div class="text-sm">
-          <p><strong>iPhone:</strong> Settings → Cellular → Add eSIM → Use QR Code → Enter Details Manually</p>
-          <p class="mt-1"><strong>Android:</strong> Settings → Connections → SIM Manager → Add eSIM → Enter Activation Code</p>
-        </div>
-      </div>
-    </div>
-  </div>
-  <% } %>
-
-  <!-- Installation Steps (QR) -->
-  <div class="card fade-up stagger-4">
-    <div class="card-header">
-      <h3>Install via QR Code</h3>
-    </div>
-    <div class="card-body space-y-4">
-      <p class="text-sm text-[var(--text-secondary)] mb-2">If you want to install on a different device, scan the QR code above.</p>
       <ol class="space-y-4" role="list">
-      <li class="stepper-item">
-        <div class="stepper-number">1</div>
-        <div class="pb-3">
-          <p class="font-semibold text-[var(--text-primary)] text-sm">Open Settings</p>
-          <p class="text-sm text-[var(--text-secondary)] mt-0.5">Go to Settings > Cellular/Mobile Data</p>
+        <li class="stepper-item">
+          <div class="stepper-number">1</div>
+          <div class="pb-3">
+            <p class="font-semibold text-[var(--text-primary)] text-sm">Open Settings</p>
+            <p class="text-sm text-[var(--text-secondary)] mt-0.5">Go to <strong>Settings</strong> and navigate to <strong>Cellular</strong> (or Mobile Data).</p>
+          </div>
+        </li>
+        <li class="stepper-item">
+          <div class="stepper-number">2</div>
+          <div class="pb-3">
+            <p class="font-semibold text-[var(--text-primary)] text-sm">Add eSIM</p>
+            <p class="text-sm text-[var(--text-secondary)] mt-0.5">Tap <strong>Add eSIM</strong>. Your device will open the QR code scanner automatically.</p>
+          </div>
+        </li>
+        <li class="stepper-item">
+          <div class="stepper-number">3</div>
+          <div>
+            <p class="font-semibold text-[var(--text-primary)] text-sm">Scan QR Code</p>
+            <p class="text-sm text-[var(--text-secondary)] mt-0.5">Scan the <strong>QR code</strong> above. The eSIM will install in a few seconds.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <!-- Platform buttons -->
+    <div class="flex gap-3 mt-4">
+      <a href="#" class="flex-1 btn btn-secondary btn-sm text-center" onclick="return false;">
+        <i data-lucide="apple" class="w-4 h-4"></i> iOS Settings
+      </a>
+      <a href="#" class="flex-1 btn btn-secondary btn-sm text-center" onclick="return false;">
+        <i data-lucide="smartphone" class="w-4 h-4"></i> Android Settings
+      </a>
+    </div>
+  </div>
+
+  <!-- Manual Install Tab -->
+  <div id="tab-manual" style="display:none;" class="fade-up stagger-3">
+    <div class="card p-5 space-y-4">
+      <% if (smdpAddress || lpa) { %>
+      <div>
+        <div class="copy-field-label">SM-DP+ Address</div>
+        <div class="copy-field">
+          <div class="copy-field-value"><%= smdpAddress || (lpa ? lpa.split('$')[1] : 'N/A') %></div>
+          <button class="copy-btn" onclick="copyToClipboard('<%= smdpAddress || (lpa ? lpa.split("$")[1] : "") %>', this)" title="Copy">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+          </button>
         </div>
-      </li>
-      <li class="stepper-item">
-        <div class="stepper-number">2</div>
-        <div class="pb-3">
-          <p class="font-semibold text-[var(--text-primary)] text-sm">Add eSIM</p>
-          <p class="text-sm text-[var(--text-secondary)] mt-0.5">Tap "Add Cellular Plan" or "Add eSIM"</p>
+      </div>
+      <% } %>
+
+      <% if (activationCode || matchingId) { %>
+      <div>
+        <div class="copy-field-label">Activation Code</div>
+        <div class="copy-field">
+          <div class="copy-field-value"><%= activationCode || matchingId %></div>
+          <button class="copy-btn" onclick="copyToClipboard('<%= activationCode || matchingId %>', this)" title="Copy">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+          </button>
         </div>
-      </li>
-      <li class="stepper-item">
-        <div class="stepper-number">3</div>
-        <div class="pb-3">
-          <p class="font-semibold text-[var(--text-primary)] text-sm">Scan QR Code</p>
-          <p class="text-sm text-[var(--text-secondary)] mt-0.5">Use your camera to scan the QR code above</p>
+      </div>
+      <% } %>
+
+      <% if (lpa && !smdpAddress && !activationCode) { %>
+      <div>
+        <div class="copy-field-label">LPA String</div>
+        <div class="copy-field">
+          <div class="copy-field-value"><%= lpa %></div>
+          <button class="copy-btn" onclick="copyToClipboard('<%= lpa %>', this)" title="Copy">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+          </button>
         </div>
-      </li>
-      <li class="stepper-item">
-        <div class="stepper-number">4</div>
-        <div>
-          <p class="font-semibold text-[var(--text-primary)] text-sm">Complete Setup</p>
-          <p class="text-sm text-[var(--text-secondary)] mt-0.5">Follow the on-screen instructions to activate</p>
-        </div>
-      </li>
+      </div>
+      <% } %>
+
+      <ol class="space-y-4 mt-2" role="list">
+        <li class="stepper-item">
+          <div class="stepper-number">1</div>
+          <div class="pb-3">
+            <p class="font-semibold text-[var(--text-primary)] text-sm">Open eSIM Settings</p>
+            <p class="text-sm text-[var(--text-secondary)] mt-0.5">Go to <strong>Settings > Cellular > Add eSIM</strong> and select <strong>"Enter Details Manually"</strong>.</p>
+          </div>
+        </li>
+        <li class="stepper-item">
+          <div class="stepper-number">2</div>
+          <div class="pb-3">
+            <p class="font-semibold text-[var(--text-primary)] text-sm">Paste Details</p>
+            <p class="text-sm text-[var(--text-secondary)] mt-0.5">Paste the <strong>SM-DP+ address</strong> and <strong>activation code</strong> into the corresponding fields.</p>
+          </div>
+        </li>
+        <li class="stepper-item">
+          <div class="stepper-number">3</div>
+          <div>
+            <p class="font-semibold text-[var(--text-primary)] text-sm">Complete Setup</p>
+            <p class="text-sm text-[var(--text-secondary)] mt-0.5">Tap <strong>Continue</strong>. The eSIM will install in a few seconds.</p>
+          </div>
+        </li>
       </ol>
     </div>
   </div>
 
   <!-- Tips -->
-  <div class="alert alert-warning fade-up stagger-5">
+  <div class="alert alert-warning fade-up stagger-4">
     <i data-lucide="lightbulb" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
     <div class="text-sm space-y-1">
       <p>Make sure you have a stable internet connection</p>
@@ -299,15 +227,15 @@ function downloadAiraloQR() {
   </div>
 
   <!-- Actions -->
-  <div class="flex flex-col sm:flex-row gap-3 fade-up stagger-6">
+  <div class="flex flex-col sm:flex-row gap-3 fade-up stagger-5">
     <button onclick="downloadQR()" class="flex-1 btn btn-primary btn-lg">
       <i data-lucide="download" class="w-4 h-4"></i>
       Save QR Code
     </button>
-    <button onclick="printQR()" class="flex-1 btn btn-secondary btn-lg">
-      <i data-lucide="printer" class="w-4 h-4"></i>
-      Print QR Code
-    </button>
+    <a href="/purchases" class="flex-1 btn btn-secondary btn-lg">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      Back to Purchases
+    </a>
   </div>
 </div>
 
@@ -323,12 +251,20 @@ function downloadAiraloQR() {
 <% } %>
 
 <script>
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab-item').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('tab-auto').style.display = tab === 'auto' ? 'block' : 'none';
+  document.getElementById('tab-manual').style.display = tab === 'manual' ? 'block' : 'none';
+}
+
 function downloadQR() {
   var img = document.querySelector('.qr-image');
+  if (!img) return;
   var canvas = document.createElement('canvas');
   var ctx = canvas.getContext('2d');
-  canvas.width = img.naturalWidth;
-  canvas.height = img.naturalHeight;
+  canvas.width = img.naturalWidth || 256;
+  canvas.height = img.naturalHeight || 256;
   ctx.drawImage(img, 0, 0);
   var link = document.createElement('a');
   link.download = 'esim-qr-code.png';
@@ -336,22 +272,33 @@ function downloadQR() {
   link.click();
 }
 
-function printQR() {
-  var qrImg = document.querySelector('.qr-image').src;
-  var printWindow = window.open('', '_blank');
-  printWindow.document.write(
-    '<html><head><title>Data QR Code</title>' +
-    '<style>body{margin:0;padding:40px;text-align:center;font-family:Inter,Arial,sans-serif}' +
-    '.c{max-width:400px;margin:0 auto}img{width:100%;max-width:300px;margin:20px 0}' +
-    'h1{color:#0f172a;margin-bottom:10px;font-size:1.5rem}p{color:#475569;margin-bottom:20px}</style></head>' +
-    '<body><div class="c"><h1>Data QR Code</h1><p>Scan this code to install your Data</p>' +
-    '<img src="' + qrImg + '" alt="Data QR Code">' +
-    '<p><small>Keep this QR code private and secure</small></p></div></body></html>'
-  );
-  printWindow.document.close();
-  printWindow.focus();
-  printWindow.print();
-  printWindow.close();
+function copyToClipboard(text, btn) {
+  navigator.clipboard.writeText(text).then(function() {
+    var original = btn.querySelector('i');
+    btn.textContent = '';
+    var check = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    check.setAttribute('width', '16');
+    check.setAttribute('height', '16');
+    check.setAttribute('viewBox', '0 0 24 24');
+    check.setAttribute('fill', 'none');
+    check.setAttribute('stroke', 'var(--accent)');
+    check.setAttribute('stroke-width', '2');
+    check.setAttribute('stroke-linecap', 'round');
+    check.setAttribute('stroke-linejoin', 'round');
+    var polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    polyline.setAttribute('points', '20 6 9 17 4 12');
+    check.appendChild(polyline);
+    btn.appendChild(check);
+
+    setTimeout(function() {
+      btn.textContent = '';
+      var icon = document.createElement('i');
+      icon.setAttribute('data-lucide', 'copy');
+      icon.className = 'w-4 h-4';
+      btn.appendChild(icon);
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }, 1500);
+  });
 }
 </script>
 
