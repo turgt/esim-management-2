@@ -2,220 +2,76 @@
 
 <div class="mb-8 fade-up">
   <h1 class="text-page-title">My Datas</h1>
-  <p class="text-subtitle mt-1">Manage and monitor your purchased Data plans</p>
 </div>
 
 <% if (purchases.length > 0) { %>
 
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-  <div class="stat-card fade-up stagger-1">
-    <div class="stat-icon bg-[var(--brand-light)]">
-      <i data-lucide="smartphone" class="w-5 h-5 text-[var(--brand-primary)]"></i>
-    </div>
+<!-- Stats -->
+<div class="grid grid-cols-3 gap-4 mb-8">
+  <div class="stat-card fade-up stagger-1" style="border-left: 3px solid var(--brand-primary);">
     <div class="stat-content">
       <div class="stat-label">Total</div>
       <div class="stat-value"><%= purchases.length %></div>
     </div>
   </div>
-  <div class="stat-card fade-up stagger-2">
-    <div class="stat-icon bg-emerald-50 dark:bg-emerald-500/10">
-      <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
-    </div>
+  <div class="stat-card fade-up stagger-2" style="border-left: 3px solid var(--success);">
     <div class="stat-content">
       <div class="stat-label">Active</div>
-      <div class="stat-value text-emerald-600 dark:text-emerald-400"><%= purchases.filter(p => p.status === 'completed').length %></div>
+      <div class="stat-value" style="color: var(--success);"><%= purchases.filter(p => p.status === 'completed').length %></div>
     </div>
   </div>
-  <div class="stat-card fade-up stagger-3">
-    <div class="stat-icon bg-amber-50 dark:bg-amber-500/10">
-      <i data-lucide="clock" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
-    </div>
+  <div class="stat-card fade-up stagger-3" style="border-left: 3px solid var(--warning);">
     <div class="stat-content">
       <div class="stat-label">Pending</div>
-      <div class="stat-value text-amber-600 dark:text-amber-400"><%= purchases.filter(p => p.status === 'pending').length %></div>
+      <div class="stat-value" style="color: var(--warning);"><%= purchases.filter(p => p.status === 'pending').length %></div>
     </div>
   </div>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-5 fade-up stagger-4">
+<!-- Purchase List -->
+<div class="flex flex-col gap-2 fade-up stagger-4">
   <% purchases.forEach(function(purchase, idx) { %>
-  <div class="purchase-card fade-up stagger-<%= (idx % 6) + 1 %>">
-    <div class="purchase-header">
-      <div class="flex-1 min-w-0">
-        <h3 class="font-semibold text-[var(--text-primary)] truncate"><%= purchase.brandName || 'Data Plan' %></h3>
-        <p class="text-xs text-[var(--text-tertiary)] mt-0.5 font-mono"><%= purchase.offerId %></p>
-      </div>
-      <div class="flex items-center gap-1.5 flex-shrink-0">
-        <% if (purchase.vendor === 'zendit') { %>
-        <span class="badge badge-amber text-xs">Zendit</span>
-        <% } %>
-        <% if (purchase.status === 'completed') { %>
-        <span class="badge badge-success"><span class="badge-dot bg-emerald-500 animate-pulse-dot"></span>Active</span>
-        <% } else if (purchase.status === 'pending') { %>
-        <span class="badge badge-warning"><span class="badge-dot bg-amber-500 animate-pulse-dot"></span>Pending</span>
-        <% } else if (purchase.status === 'failed') { %>
-        <span class="badge badge-danger"><span class="badge-dot bg-rose-500"></span>Failed</span>
-        <% } else { %>
-        <span class="badge badge-neutral"><%= purchase.status %></span>
-        <% } %>
-      </div>
+  <a href="/status/<%= purchase.transactionId %>" class="purchase-card fade-up stagger-<%= (idx % 6) + 1 %>" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; text-decoration: none; cursor: pointer;">
+    <!-- Flag circle -->
+    <div style="width: 42px; height: 42px; min-width: 42px; border-radius: 50%; background: var(--brand-primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px;">
+      <%= (purchase.country || purchase.brandName || 'E').charAt(0).toUpperCase() %>
     </div>
-
-    <div class="purchase-body">
-      <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-[var(--text-secondary)]">
-        <% if (purchase.dataGB) { %>
-        <span class="flex items-center gap-1"><i data-lucide="database" class="w-3.5 h-3.5 text-[var(--text-tertiary)]"></i> <%= purchase.dataGB %> GB</span>
-        <% } %>
-        <% if (purchase.durationDays) { %>
-        <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3.5 h-3.5 text-[var(--text-tertiary)]"></i> <%= purchase.durationDays %> days</span>
-        <% } %>
-        <% if (purchase.country) { %>
-        <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-[var(--text-tertiary)]"></i> <%= purchase.country %></span>
-        <% } %>
+    <!-- Info -->
+    <div style="flex: 1; min-width: 0;">
+      <div style="font-weight: 600; color: var(--text-primary); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+        <%= purchase.country || purchase.brandName || 'Data Plan' %>
       </div>
       <% if (purchase.iccid) { %>
-      <p class="text-xs text-[var(--text-tertiary)] font-mono mt-2 flex items-center gap-1">
-        <i data-lucide="hash" class="w-3 h-3"></i> <%= purchase.iccid %>
-      </p>
-      <% } %>
-
-      <%
-        var usageInfo = purchase.iccid && typeof plansMap !== 'undefined' ? plansMap[purchase.iccid] : null;
-      %>
-      <% if (purchase.vendor === 'airalo' && usageInfo) { %>
-      <div class="mt-3 pt-3 border-t border-[var(--border-subtle)]">
-        <p class="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-2">Data Usage</p>
-        <div class="flex items-center justify-between text-xs p-2.5 rounded-lg bg-[var(--surface-1)] border border-[var(--border-subtle)]">
-          <span class="text-[var(--text-secondary)]">
-            <strong class="text-[var(--text-primary)]"><%= usageInfo.remaining %> MB</strong> / <%= usageInfo.total %> MB remaining
-          </span>
-          <span class="badge badge-success text-[10px]"><span class="badge-dot bg-emerald-500"></span><%= usageInfo.status || 'Active' %></span>
-        </div>
+      <div style="font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+        <%= purchase.iccid %>
       </div>
       <% } %>
     </div>
-
-    <div class="purchase-footer">
-      <div class="flex gap-2">
-        <a href="/status/<%= purchase.transactionId %>" class="btn btn-secondary btn-sm flex-1">
-          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-          Details
-        </a>
-        <% if (purchase.vendor === 'airalo' && purchase.iccid) { %>
-        <a href="/qrcode/<%= purchase.transactionId %>" class="btn btn-primary btn-sm flex-1">
-          <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
-          QR Code
-        </a>
-        <% } else if (purchase.status === 'completed' && purchase.smdpAddress && purchase.activationCode) { %>
-        <button type="button" data-smdp="<%= purchase.smdpAddress %>" data-code="<%= purchase.activationCode %>" onclick="showInstallModal(this.dataset.smdp, this.dataset.code)" class="btn btn-primary btn-sm flex-1">
-          <i data-lucide="download" class="w-3.5 h-3.5"></i>
-          Install
-        </button>
-        <% } %>
-        <% if (purchase.iccid && purchase.status === 'completed') { %>
-        <a href="/payment/topup/<%= purchase.id %>" class="btn btn-secondary btn-sm flex-1 text-emerald-600 dark:text-emerald-400">
-          <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
-          Top-up
-        </a>
-        <% } %>
-      </div>
+    <!-- Status badge -->
+    <% if (purchase.status === 'completed') { %>
+    <span class="badge badge-success">Active</span>
+    <% } else if (purchase.status === 'pending') { %>
+    <span class="badge badge-warning">Pending</span>
+    <% } else if (purchase.status === 'failed') { %>
+    <span class="badge badge-danger">Failed</span>
+    <% } else { %>
+    <span class="badge badge-neutral"><%= purchase.status %></span>
+    <% } %>
+    <!-- Arrow -->
+    <div style="color: var(--text-muted); width: 18px; height: 18px; flex-shrink: 0;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;"><path d="m9 18 6-6-6-6"/></svg>
     </div>
-  </div>
+  </a>
   <% }) %>
 </div>
 
-<%- include('partials/pagination') %>
-
 <% } else { %>
-<div class="empty-state fade-up">
-  <div class="empty-icon">
-    <i data-lucide="smartphone" class="w-6 h-6"></i>
-  </div>
-  <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">No Datas yet</h3>
-  <p class="text-sm text-[var(--text-secondary)] mb-5">Start by browsing our available Data plans</p>
-  <a href="/offers" class="btn btn-primary btn-lg">
-    <i data-lucide="globe" class="w-4 h-4"></i>
+<div style="text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 14px;" class="fade-up">
+  <p style="margin-bottom: 16px;">No Datas yet. Start by browsing available plans.</p>
+  <a href="/offers" class="btn btn-primary">
     Browse Plans
   </a>
 </div>
 <% } %>
-
-<!-- Install eSIM Modal -->
-<div id="installModal" class="modal-backdrop hidden" style="display:none">
-  <div class="confirm-modal">
-    <div class="flex items-center gap-3 mb-5">
-      <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
-        <i data-lucide="smartphone" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
-      </div>
-      <div>
-        <h3 class="text-base font-semibold text-[var(--text-primary)]">Install eSIM</h3>
-        <p class="text-xs text-[var(--text-secondary)]">Copy and enter in your phone's eSIM settings</p>
-      </div>
-    </div>
-    <!-- One-tap button (mobile only) -->
-    <div id="modalDirectBtns" style="display:none" class="mb-4">
-      <a href="#" id="modalDirectLink" class="btn btn-primary btn-lg btn-block">
-        <i data-lucide="smartphone" class="w-4 h-4"></i> Install eSIM Now
-      </a>
-      <p class="text-xs text-[var(--text-tertiary)] mt-2 mb-3">If the button doesn't work, use manual entry below.</p>
-      <div class="border-t border-[var(--border-subtle)] pt-3"></div>
-    </div>
-    <!-- Manual entry -->
-    <div class="space-y-2.5 mb-4">
-      <div class="bg-[var(--surface-1)] rounded-lg p-3 border border-[var(--border-subtle)]">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[0.6875rem] font-medium text-[var(--text-tertiary)] uppercase tracking-wide">SM-DP+ Address</span>
-          <button id="copySmdp" class="copy-btn"><i data-lucide="copy" class="w-3 h-3"></i> <span class="text-[0.6875rem]">Copy</span></button>
-        </div>
-        <p class="text-sm font-mono text-[var(--text-primary)] break-all" id="modalSmdp"></p>
-      </div>
-      <div class="bg-[var(--surface-1)] rounded-lg p-3 border border-[var(--border-subtle)]">
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-[0.6875rem] font-medium text-[var(--text-tertiary)] uppercase tracking-wide">Activation Code</span>
-          <button id="copyCode" class="copy-btn"><i data-lucide="copy" class="w-3 h-3"></i> <span class="text-[0.6875rem]">Copy</span></button>
-        </div>
-        <p class="text-sm font-mono text-[var(--text-primary)] break-all" id="modalCode"></p>
-      </div>
-    </div>
-    <p class="text-xs text-[var(--text-tertiary)] mb-4"><strong>iPhone:</strong> Settings → Cellular → Add eSIM → Enter Details Manually<br><strong>Android:</strong> Settings → Connections → SIM Manager → Add eSIM</p>
-    <button type="button" class="btn btn-secondary btn-block" onclick="closeInstallModal()">Close</button>
-  </div>
-</div>
-
-<script>
-function showInstallModal(smdpAddress, activationCode) {
-  document.getElementById('modalSmdp').textContent = smdpAddress;
-  document.getElementById('modalCode').textContent = activationCode;
-  document.getElementById('copySmdp').onclick = function() { copyToClipboard(smdpAddress, this); };
-  document.getElementById('copyCode').onclick = function() { copyToClipboard(activationCode, this); };
-
-  var ua = navigator.userAgent || '';
-  var isIOS = /iPhone|iPad|iPod/.test(ua);
-  var isAndroid = /Android/.test(ua);
-  var lpa = 'LPA:1$' + smdpAddress + '$' + activationCode;
-  if (isIOS) {
-    document.getElementById('modalDirectLink').href = 'https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=' + lpa;
-    document.getElementById('modalDirectBtns').style.display = 'block';
-  } else if (isAndroid) {
-    document.getElementById('modalDirectLink').href = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + lpa;
-    document.getElementById('modalDirectBtns').style.display = 'block';
-  } else {
-    document.getElementById('modalDirectBtns').style.display = 'none';
-  }
-
-  var modal = document.getElementById('installModal');
-  modal.classList.remove('hidden');
-  modal.style.display = 'flex';
-  lucide.createIcons();
-}
-function closeInstallModal() {
-  var modal = document.getElementById('installModal');
-  modal.classList.add('hidden');
-  modal.style.display = 'none';
-}
-document.getElementById('installModal').addEventListener('click', function(e) {
-  if (e.target === this) closeInstallModal();
-});
-</script>
 
 <%- include('partials/footer') %>
