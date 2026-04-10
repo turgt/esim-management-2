@@ -146,6 +146,7 @@
     <form id="purchaseForm" method="post" action="/payment/create">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="packageId" id="modalOfferId" value="">
+      <input type="hidden" name="vendor" value="airalo">
       <input type="hidden" name="amount" id="modalAmount" value="">
       <input type="hidden" name="currency" id="modalCurrency" value="">
       <input type="hidden" name="planName" id="modalPlanNameHidden" value="">

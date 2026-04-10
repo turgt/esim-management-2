@@ -108,9 +108,14 @@ export const assignEsimRules = [
 ];
 
 export const topupRules = [
-  body('offerId')
-    .trim()
-    .notEmpty().withMessage('Please select an offer for top-up')
+  body('offerId').optional(),
+  body('packageId').optional(),
+  body().custom((value, { req }) => {
+    if (!req.body.offerId && !req.body.packageId) {
+      throw new Error('Please select a package for top-up');
+    }
+    return true;
+  })
 ];
 
 export const forgotPasswordRules = [

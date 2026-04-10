@@ -1,5 +1,30 @@
 <%- include('partials/header', {title: 'QR Code', user: locals.user}) %>
 
+<%
+  // Vendor-aware LPA construction
+  var computedLpa = null;
+  var computedMatchingId = null;
+  var computedQrcodeUrl = null;
+  var computedDirectAppleUrl = null;
+
+  if (typeof esim !== 'undefined' && esim) {
+    if (esim.vendor === 'airalo' && esim.vendorData) {
+      computedLpa = (typeof lpa !== 'undefined' && lpa) || esim.vendorData.lpa || null;
+      computedMatchingId = (typeof matchingId !== 'undefined' && matchingId) || esim.vendorData.matchingId || null;
+      computedQrcodeUrl = (typeof qrcodeUrl !== 'undefined' && qrcodeUrl) || esim.vendorData.qrcodeUrl || esim.vendorData.qrcode || null;
+      computedDirectAppleUrl = (typeof directAppleUrl !== 'undefined' && directAppleUrl) || esim.vendorData.directAppleUrl || null;
+    } else if (esim.smdpAddress && esim.activationCode) {
+      computedLpa = 'LPA:1$' + esim.smdpAddress + '$' + esim.activationCode;
+    }
+  }
+
+  // Use computed values as fallbacks for template variables
+  if (typeof qrcodeUrl === 'undefined' || !qrcodeUrl) qrcodeUrl = computedQrcodeUrl;
+  if (typeof lpa === 'undefined' || !lpa) lpa = computedLpa;
+  if (typeof matchingId === 'undefined' || !matchingId) matchingId = computedMatchingId;
+  if (typeof directAppleUrl === 'undefined' || !directAppleUrl) directAppleUrl = computedDirectAppleUrl;
+%>
+
 <div class="mb-6">
   <div class="breadcrumb">
     <a href="/purchases"><i data-lucide="chevron-left" class="w-4 h-4"></i> Back to My Datas</a>

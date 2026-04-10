@@ -90,11 +90,21 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <% offers.forEach(function(offer, idx) { %>
       <%
-        var price = offer.price && offer.price.fixed ? (offer.price.fixed / (offer.price.currencyDivisor || 100)).toFixed(2) : null;
-        var currency = offer.price ? (offer.price.currency || 'USD') : 'USD';
-        var dataLabel = offer.dataGB ? offer.dataGB : null;
-        var dataUnit = offer.dataGB ? 'GB' : 'Unlimited';
-        var durationLabel = offer.durationDays ? offer.durationDays + ' days' : '';
+        // Support both Airalo and Zendit offer formats
+        var isAiraloOffer = !!(offer.id && !offer.offerId);
+        var offerId = isAiraloOffer ? offer.id : offer.offerId;
+        var price = isAiraloOffer
+          ? (offer.price ? parseFloat(offer.price).toFixed(2) : null)
+          : (offer.price && offer.price.fixed ? (offer.price.fixed / (offer.price.currencyDivisor || 100)).toFixed(2) : null);
+        var currency = isAiraloOffer
+          ? (offer.currency || 'USD')
+          : (offer.price ? (offer.price.currency || 'USD') : 'USD');
+        var dataLabel = isAiraloOffer ? (offer.data || null) : (offer.dataGB || null);
+        var dataUnit = dataLabel ? 'GB' : 'Unlimited';
+        var durationLabel = isAiraloOffer
+          ? (offer.day ? offer.day + ' days' : '')
+          : (offer.durationDays ? offer.durationDays + ' days' : '');
+        var brandLabel = isAiraloOffer ? (offer.title || 'Data') : (offer.brand || 'Data');
         var regionShort = '';
         if (offer.regions && offer.regions.length > 0) {
           regionShort = offer.regions[0];
@@ -103,7 +113,7 @@
           regionShort = offer.country;
         }
       %>
-      <button type="button" class="offer-card" onclick="confirmTopup('<%= offer.offerId %>', '<%= (offer.brand || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>')" data-price="<%= price || '0.00' %>" data-currency="<%= currency %>">
+      <button type="button" class="offer-card" onclick="confirmTopup('<%= offerId %>', '<%= brandLabel.replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>')" data-price="<%= price || '0.00' %>" data-currency="<%= currency %>">
         <div class="offer-header">
           <span class="offer-region"><%= regionShort || 'Global' %></span>
           <% if (durationLabel) { %>
@@ -163,7 +173,11 @@
     </div>
     <form id="topupForm" method="post" action="/payment/topup/create">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <% if (esim.vendor === 'airalo') { %>
+      <input type="hidden" name="packageId" id="modalOfferId" value="">
+      <% } else { %>
       <input type="hidden" name="offerId" id="modalOfferId" value="">
+      <% } %>
       <input type="hidden" name="amount" id="modalAmount" value="">
       <input type="hidden" name="currency" id="modalCurrency" value="">
       <input type="hidden" name="esimId" value="<%= esim.id %>">

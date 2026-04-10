@@ -22,7 +22,13 @@ router.post('/create', ensureAuth, async (req, res) => {
     // Support both packageId (Airalo) and offerId (Zendit legacy)
     const offerId = req.body.packageId || req.body.offerId;
     const { amount, currency } = req.body;
-    const vendor = req.body.packageId ? 'airalo' : (req.body.vendor || 'airalo');
+    let vendor;
+    if (req.body.vendor) {
+      vendor = req.body.vendor;
+    } else {
+      vendor = req.body.packageId ? 'airalo' : 'airalo';
+      log.warn({ offerId, hasPackageId: !!req.body.packageId, hasOfferId: !!req.body.offerId }, 'Vendor not explicitly set in payment request, inferring from field names');
+    }
 
     if (!offerId || !amount) {
       return res.render('error', { message: 'Missing offer or amount', title: 'Error' });
