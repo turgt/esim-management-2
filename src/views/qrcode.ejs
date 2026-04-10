@@ -36,7 +36,7 @@
 <% if (typeof vendor !== 'undefined' && vendor === 'airalo') { %>
 <div class="max-w-2xl space-y-6">
   <!-- Airalo QR Code -->
-  <div class="card">
+  <div class="card fade-up stagger-1">
     <div class="p-6 text-center border-b border-[var(--border-subtle)] bg-[var(--surface-1)]">
       <div class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--brand-light)] mb-3">
         <i data-lucide="qr-code" class="w-5 h-5 text-[var(--brand-primary)]"></i>
@@ -71,7 +71,7 @@
 
   <% if (lpa) { %>
   <!-- Manual Installation (LPA) -->
-  <div class="card">
+  <div class="card fade-up stagger-2">
     <div class="card-header">
       <h3>Manual Install</h3>
     </div>
@@ -108,7 +108,7 @@
   <% } %>
 
   <!-- Tips -->
-  <div class="alert alert-warning">
+  <div class="alert alert-warning fade-up stagger-3">
     <i data-lucide="lightbulb" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
     <div class="text-sm space-y-1">
       <p>Make sure you have a stable internet connection</p>
@@ -118,7 +118,7 @@
   </div>
 
   <!-- Actions -->
-  <div class="flex flex-col sm:flex-row gap-3">
+  <div class="flex flex-col sm:flex-row gap-3 fade-up stagger-4">
     <% if (qrcodeUrl) { %>
     <button onclick="downloadAiraloQR()" class="flex-1 btn btn-primary btn-lg">
       <i data-lucide="download" class="w-4 h-4"></i>
@@ -150,7 +150,7 @@ function downloadAiraloQR() {
 <% } else if (typeof qr !== 'undefined' && qr && qr.imageBase64) { %>
 <div class="max-w-2xl space-y-6">
   <!-- QR Code Card -->
-  <div class="card">
+  <div class="card fade-up stagger-1">
     <div class="p-6 text-center border-b border-[var(--border-subtle)] bg-[var(--surface-1)]">
       <div class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--brand-light)] mb-3">
         <i data-lucide="qr-code" class="w-5 h-5 text-[var(--brand-primary)]"></i>
@@ -173,7 +173,7 @@ function downloadAiraloQR() {
     var androidLink = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + lpaString;
   %>
   <!-- One-Tap Install (iOS 17.4+ / Android 10+) -->
-  <div class="card" id="directInstallCard" style="display:none">
+  <div class="card fade-up stagger-2" id="directInstallCard" style="display:none">
     <div class="card-header">
       <h3>One-Tap Install</h3>
       <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Easiest</span>
@@ -210,7 +210,7 @@ function downloadAiraloQR() {
   </script>
 
   <!-- Manual Entry (Always works) -->
-  <div class="card">
+  <div class="card fade-up stagger-3">
     <div class="card-header">
       <h3>Manual Install</h3>
     </div>
@@ -249,7 +249,7 @@ function downloadAiraloQR() {
   <% } %>
 
   <!-- Installation Steps (QR) -->
-  <div class="card">
+  <div class="card fade-up stagger-4">
     <div class="card-header">
       <h3>Install via QR Code</h3>
     </div>
@@ -289,7 +289,7 @@ function downloadAiraloQR() {
   </div>
 
   <!-- Tips -->
-  <div class="alert alert-warning">
+  <div class="alert alert-warning fade-up stagger-5">
     <i data-lucide="lightbulb" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
     <div class="text-sm space-y-1">
       <p>Make sure you have a stable internet connection</p>
@@ -299,7 +299,7 @@ function downloadAiraloQR() {
   </div>
 
   <!-- Actions -->
-  <div class="flex flex-col sm:flex-row gap-3">
+  <div class="flex flex-col sm:flex-row gap-3 fade-up stagger-6">
     <button onclick="downloadQR()" class="flex-1 btn btn-primary btn-lg">
       <i data-lucide="download" class="w-4 h-4"></i>
       Save QR Code

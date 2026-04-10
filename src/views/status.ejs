@@ -14,7 +14,7 @@
 
 <div class="max-w-2xl space-y-5">
   <!-- Status Banner -->
-  <div class="card overflow-hidden">
+  <div class="card overflow-hidden fade-up stagger-1">
     <%
       var currentStatusVal = (typeof status !== 'undefined' && status) ? status.status : (typeof dbStatus !== 'undefined' ? dbStatus : '');
     %>
@@ -161,7 +161,7 @@
 
   <!-- Activity Log -->
   <% if (typeof status !== 'undefined' && status && status.log && status.log.length > 0) { %>
-  <div class="card">
+  <div class="card fade-up stagger-2">
     <div class="card-header">
       <h3>Activity Log</h3>
       <span class="badge badge-neutral"><%= status.log.length %></span>
@@ -221,7 +221,7 @@
     var androidUrl = 'https://esimsetup.android.com/esim_qrcode_provisioning?carddata=' + lpaStr;
   %>
   <!-- Install on This Phone -->
-  <div class="card">
+  <div class="card fade-up stagger-3">
     <div class="card-header">
       <h3>Install on This Phone</h3>
     </div>
@@ -268,7 +268,7 @@
   <% } %>
 
   <!-- Actions -->
-  <div class="flex flex-col sm:flex-row gap-3">
+  <div class="flex flex-col sm:flex-row gap-3 fade-up stagger-4">
     <% if (isQrReady) { %>
     <a href="/qrcode/<%= esim ? esim.transactionId : (typeof status !== 'undefined' && status ? status.transactionId : '') %>" class="flex-1 btn btn-primary btn-lg">
       <i data-lucide="qr-code" class="w-4 h-4"></i>
@@ -282,7 +282,7 @@
   </div>
 
   <!-- Auto-refresh countdown (pending only) -->
-  <div id="refreshBar" style="display:none" class="card p-3 mt-4">
+  <div id="refreshBar" style="display:none" class="card p-3 mt-4 fade-up stagger-5">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
         <i data-lucide="timer" class="w-4 h-4 text-[var(--text-tertiary)]"></i>

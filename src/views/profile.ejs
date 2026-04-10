@@ -1,6 +1,6 @@
 <%- include('partials/header', {title: 'Profile', user: locals.user}) %>
 
-<div class="mb-8">
+<div class="mb-8 fade-up">
   <div class="flex items-center gap-4">
     <div class="avatar avatar-lg" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">
       <%= (user.displayName || user.username).charAt(0).toUpperCase() %>
@@ -41,7 +41,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
   <div class="lg:col-span-2 space-y-6">
     <!-- Account Info -->
-    <div class="card">
+    <div class="card fade-up stagger-1">
       <div class="card-header">
         <h2>Account Information</h2>
       </div>
@@ -80,7 +80,7 @@
     </div>
 
     <!-- Change Password -->
-    <div class="card">
+    <div class="card fade-up stagger-2">
       <div class="card-header">
         <h2>Change Password</h2>
       </div>
@@ -110,7 +110,7 @@
 
   <!-- My eSIMs Sidebar -->
   <div>
-    <div class="card">
+    <div class="card fade-up stagger-3">
       <div class="card-header">
         <h2>My Datas</h2>
         <% if (typeof esims !== 'undefined' && esims) { %>
