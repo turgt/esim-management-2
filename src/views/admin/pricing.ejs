@@ -31,7 +31,7 @@
   <div class="card-body">
     <p class="text-sm text-[var(--text-secondary)] mb-4">
       Applied to all packages that don't have a package-level override. The final price is calculated as:
-      <span class="font-mono text-[var(--text-primary)]">finalPrice = netPrice × (1 + markup / 100)</span>
+      <span class="font-mono text-[var(--text-primary)]">finalPrice = airaloPrice × (1 + markup / 100)</span>
     </p>
     <form method="post" action="/admin/pricing/global-markup" class="flex items-end gap-3">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -106,10 +106,10 @@
               </div>
             </td>
             <td>
-              <span class="text-sm font-mono text-[var(--text-secondary)]">$<%= (pkg.netPrice / 100).toFixed(2) %></span>
+              <span class="text-sm font-mono text-[var(--text-secondary)]">$<%= pkg.netPrice.toFixed(2) %></span>
             </td>
             <td>
-              <span class="text-sm font-mono text-[var(--text-secondary)]">$<%= (pkg.price / 100).toFixed(2) %></span>
+              <span class="text-sm font-mono text-[var(--text-secondary)]">$<%= pkg.price.toFixed(2) %></span>
             </td>
             <td>
               <select
@@ -140,7 +140,7 @@
             </td>
             <td>
               <span class="text-sm font-mono font-semibold text-[var(--text-primary)] final-price-cell">
-                $<%= (pkg.finalPrice / 100).toFixed(2) %>
+                $<%= pkg.finalPrice.toFixed(2) %>
               </span>
             </td>
             <td>
@@ -150,7 +150,7 @@
                 var profitPositive = profit >= 0;
               %>
               <span class="text-sm font-mono profit-cell <%= profitPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500' %>">
-                $<%= (profit / 100).toFixed(2) %>
+                $<%= profit.toFixed(2) %>
               </span>
             </td>
           </tr>
@@ -222,21 +222,22 @@
 
   // ─── Calc helpers ──────────────────────────────────────────────────────────
 
-  function calcFinal(netPrice, type, value, markup) {
+  function calcFinal(price, type, value, markup) {
+    price = parseFloat(price) || 0;
     if (type === 'fixed') {
-      return Math.round(parseFloat(value) * 100);
+      return parseFloat(value) || 0;
     }
     if (type === 'markup') {
       var pct = parseFloat(value);
       if (isNaN(pct)) pct = 0;
-      return Math.round(netPrice * (1 + pct / 100));
+      return Math.round(price * (1 + pct / 100) * 100) / 100;
     }
     // none — use global markup
-    return Math.round(netPrice * (1 + markup / 100));
+    return Math.round(price * (1 + markup / 100) * 100) / 100;
   }
 
-  function formatPrice(cents) {
-    return '$' + (cents / 100).toFixed(2);
+  function formatPrice(dollars) {
+    return '$' + dollars.toFixed(2);
   }
 
   // ─── Row update ────────────────────────────────────────────────────────────
@@ -250,16 +251,17 @@
     if (!sel || !finalCell || !profitCell) return;
 
     var type = sel.value;
-    var netPrice = parseInt(sel.dataset.netPrice, 10) || 0;
+    var price = parseFloat(sel.dataset.price) || 0;
+    var netPrice = parseFloat(sel.dataset.netPrice) || 0;
     var value = inp ? inp.value : '';
 
-    var finalCents = calcFinal(netPrice, type, value, GLOBAL_MARKUP);
-    var profitCents = finalCents - netPrice;
+    var finalDollars = calcFinal(price, type, value, GLOBAL_MARKUP);
+    var profitDollars = finalDollars - netPrice;
 
-    finalCell.textContent = formatPrice(finalCents);
+    finalCell.textContent = formatPrice(finalDollars);
 
-    profitCell.textContent = formatPrice(profitCents);
-    if (profitCents >= 0) {
+    profitCell.textContent = formatPrice(profitDollars);
+    if (profitDollars >= 0) {
       profitCell.className = 'text-sm font-mono profit-cell text-emerald-600 dark:text-emerald-400';
     } else {
       profitCell.className = 'text-sm font-mono profit-cell text-red-500';
@@ -450,10 +452,10 @@
 
       // Profit
       var tdProfit = document.createElement('td');
-      var profitCents = change.profit != null ? change.profit : (change.newPrice != null && change.netPrice != null ? change.newPrice - change.netPrice : null);
-      if (profitCents != null) {
-        tdProfit.className = 'font-mono ' + (profitCents >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500');
-        tdProfit.textContent = formatPrice(profitCents);
+      var profitVal = change.profit != null ? change.profit : (change.newPrice != null && change.netPrice != null ? change.newPrice - change.netPrice : null);
+      if (profitVal != null) {
+        tdProfit.className = 'font-mono ' + (profitVal >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500');
+        tdProfit.textContent = formatPrice(profitVal);
       } else {
         tdProfit.className = 'text-[var(--text-tertiary)]';
         tdProfit.textContent = '—';

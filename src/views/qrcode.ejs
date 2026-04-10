@@ -18,7 +18,8 @@
     if (esim.vendor === 'airalo' && esim.vendorData) {
       computedLpa = (typeof lpa !== 'undefined' && lpa) || esim.vendorData.lpa || null;
       computedMatchingId = (typeof matchingId !== 'undefined' && matchingId) || esim.vendorData.matchingId || null;
-      computedQrcodeUrl = (typeof qrcodeUrl !== 'undefined' && qrcodeUrl) || esim.vendorData.qrcodeUrl || esim.vendorData.qrcode || null;
+      // Don't fall back to vendorData URLs — controller proxies the QR image as base64
+      computedQrcodeUrl = (typeof qrcodeUrl !== 'undefined' && qrcodeUrl) || null;
       computedDirectAppleUrl = (typeof directAppleUrl !== 'undefined' && directAppleUrl) || esim.vendorData.directAppleUrl || null;
       // Use controller-provided values first, then derive from vendorData
       // Airalo: vd.lpa = SM-DP+ address, vd.qrcode = full LPA string, vd.matchingId = activation code
