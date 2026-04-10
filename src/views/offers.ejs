@@ -50,53 +50,39 @@
     var type = offer.type || '';
     var detailParts = [];
     if (operatorTitle) detailParts.push(operatorTitle);
-    if (type) detailParts.push('Type: ' + type);
-    if (offer.isUnlimited) detailParts.push('Unlimited Data');
-    var detailStr = detailParts.join(' \u00b7 ');
+    if (type) detailParts.push(type);
+    if (offer.isUnlimited) detailParts.push('Unlimited');
+    var detailStr = detailParts.join(' · ');
     var priceNum = price ? parseFloat(price) : 0;
     var dataMatch = dataLabel ? dataLabel.match(/(\d+)/) : null;
     var dataNum = offer.isUnlimited ? 99999 : (dataMatch ? parseInt(dataMatch[1]) : 0);
     var durationNum = offer.day || 0;
+    var metaParts = [];
+    if (offer.isUnlimited) metaParts.push('Unlimited');
+    else if (dataLabel) metaParts.push(dataLabel);
+    if (durationLabel) metaParts.push(durationLabel);
+    var metaStr = metaParts.join(' · ');
   %>
   <button type="button" class="offer-card fade-up stagger-<%= (idx % 6) + 1 %>"
-    aria-label="<%= offer.isUnlimited ? 'Unlimited' : (dataLabel || 'Data') %> plan, <%= durationLabel || '' %>, $<%= price || '0' %>"
     data-price="<%= priceNum %>"
     data-data="<%= dataNum %>"
     data-duration="<%= durationNum %>"
     data-unlimited="<%= offer.isUnlimited ? '1' : '0' %>"
     data-subtypes="<%= type %>"
-    onclick="confirmPurchase('<%= offer.packageId %>', '<%= (operatorTitle || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>', '<%= detailStr.replace(/'/g, "\\'") %>')">
-    <div class="offer-header">
-      <div class="flex items-center gap-2.5">
-        <% if (offer.imageUrl) { %><img src="<%= offer.imageUrl %>" alt="" class="w-10 h-10 rounded-lg"><% } %>
-        <div>
-          <div class="flex items-center gap-1.5">
-            <span class="offer-region"><%= regionShort || 'Global' %></span>
-            <% if (type) { %><span class="offer-subtype-badge"><%= type %></span><% } %>
-          </div>
-          <div class="flex items-center gap-2 mt-1 text-xs text-[var(--text-secondary)]">
-            <% if (offer.isUnlimited) { %>
-              <span class="offer-data">Unlimited</span>
-            <% } else if (dataLabel) { %>
-              <span class="offer-data"><%= dataLabel %></span>
-            <% } %>
-            <% if (durationLabel) { %>
-              <span class="offer-duration"><%= durationLabel %></span>
-            <% } %>
-          </div>
+    onclick="confirmPurchase('<%= offer.packageId %>', '<%= (operatorTitle || regionShort || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>', '<%= detailStr.replace(/'/g, "\\'") %>')">
+    <div class="offer-top">
+      <div class="offer-flag"><% if (offer.imageUrl) { %><img src="<%= offer.imageUrl %>" alt=""><% } else { %><%= regionShort || '🌍' %><% } %></div>
+      <div>
+        <div class="offer-name">
+          <%= operatorTitle || regionShort || 'Global' %>
+          <% if (type) { %><span class="offer-type-badge"><%= type %></span><% } %>
         </div>
+        <div class="offer-meta"><%= metaStr %></div>
       </div>
     </div>
-    <div class="offer-footer">
-      <div>
-        <% if (price) { %>
-        <span class="offer-price">$<%= price %></span>
-        <span class="offer-price-currency"><%= currency %></span>
-        <% } %>
-      </div>
-      <span class="offer-cta">
-        Buy <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-      </span>
+    <div class="offer-foot">
+      <span class="offer-price"><% if (price) { %>$<%= price %><% } %></span>
+      <span class="offer-cta">Buy →</span>
     </div>
   </button>
   <% }) %>
