@@ -38,116 +38,77 @@
 </div>
 <% } %>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <div class="lg:col-span-2 space-y-6">
-    <!-- Account Info -->
-    <div class="card fade-up stagger-1">
-      <div class="card-header">
-        <h2>Account Information</h2>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Account Info -->
+  <div class="section-card fade-up stagger-1">
+    <div class="section-card-title">Account Information</div>
+    <form method="post" action="/profile" class="space-y-4">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div>
+        <label for="prof-username" class="input-label">Username</label>
+        <input type="text" id="prof-username" value="<%= user.username %>" disabled class="input">
       </div>
-      <form method="post" action="/profile" class="card-body space-y-4">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label for="prof-username" class="input-label">Username</label>
-            <input type="text" id="prof-username" value="<%= user.username %>" disabled class="input">
-          </div>
-          <div>
-            <label for="prof-displayname" class="input-label">Display Name</label>
-            <input type="text" id="prof-displayname" name="displayName" value="<%= user.displayName || '' %>" maxlength="50" placeholder="Your display name" class="input">
-          </div>
-          <div>
-            <label for="prof-email" class="input-label">Email</label>
-            <input type="email" id="prof-email" name="email" value="<%= user.email || '' %>" placeholder="your@email.com" class="input">
-          </div>
-          <div>
-            <label for="prof-phone" class="input-label">Phone</label>
-            <input type="text" id="prof-phone" name="phone" value="<%= user.phone || '' %>" placeholder="+90 555 123 4567" class="input">
-          </div>
-        </div>
-        <div>
-          <label for="prof-theme" class="input-label">Theme</label>
-          <select id="prof-theme" name="theme" class="input">
-            <option value="light" <%= user.theme === 'light' ? 'selected' : '' %>>Light</option>
-            <option value="dark" <%= user.theme === 'dark' ? 'selected' : '' %>>Dark</option>
-          </select>
-        </div>
-        <button type="submit" class="btn btn-primary">
-          <i data-lucide="save" class="w-4 h-4"></i>
-          Save Changes
-        </button>
-      </form>
-    </div>
-
-    <!-- Change Password -->
-    <div class="card fade-up stagger-2">
-      <div class="card-header">
-        <h2>Change Password</h2>
+      <div>
+        <label for="prof-displayname" class="input-label">Display Name</label>
+        <input type="text" id="prof-displayname" name="displayName" value="<%= user.displayName || '' %>" maxlength="50" placeholder="Your display name" class="input">
       </div>
-      <form method="post" action="/profile/password" class="card-body space-y-4">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <div>
-          <label for="prof-curpw" class="input-label">Current Password</label>
-          <input type="password" id="prof-curpw" name="currentPassword" required class="input">
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label for="prof-newpw" class="input-label">New Password</label>
-            <input type="password" id="prof-newpw" name="newPassword" required minlength="8" class="input">
-          </div>
-          <div>
-            <label for="prof-confirmpw" class="input-label">Confirm Password</label>
-            <input type="password" id="prof-confirmpw" name="confirmPassword" required minlength="8" class="input">
-          </div>
-        </div>
-        <button type="submit" class="btn btn-secondary">
-          <i data-lucide="key" class="w-4 h-4"></i>
-          Update Password
-        </button>
-      </form>
-    </div>
+      <div>
+        <label for="prof-email" class="input-label">Email</label>
+        <input type="email" id="prof-email" name="email" value="<%= user.email || '' %>" placeholder="your@email.com" class="input">
+      </div>
+      <div>
+        <label for="prof-phone" class="input-label">Phone</label>
+        <input type="text" id="prof-phone" name="phone" value="<%= user.phone || '' %>" placeholder="+90 555 123 4567" class="input">
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <i data-lucide="save" class="w-4 h-4"></i>
+        Save Changes
+      </button>
+    </form>
   </div>
 
-  <!-- My eSIMs Sidebar -->
-  <div>
-    <div class="card fade-up stagger-3">
-      <div class="card-header">
-        <h2>My Datas</h2>
-        <% if (typeof esims !== 'undefined' && esims) { %>
-        <span class="badge badge-info"><%= esims.length %></span>
-        <% } %>
+  <!-- Change Password -->
+  <div class="section-card fade-up stagger-2">
+    <div class="section-card-title">Change Password</div>
+    <form method="post" action="/profile/password" class="space-y-4">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div>
+        <label for="prof-curpw" class="input-label">Current Password</label>
+        <input type="password" id="prof-curpw" name="currentPassword" required class="input">
       </div>
-      <div class="p-4">
-        <% if (typeof esims !== 'undefined' && esims && esims.length > 0) { %>
-        <div class="space-y-2">
-          <% esims.forEach(function(esim) { %>
-          <a href="/status/<%= esim.transactionId %>" class="block p-3 rounded-lg bg-[var(--surface-1)] border border-[var(--border-subtle)] hover:border-[var(--brand-primary)] hover:shadow-sm cursor-pointer">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-sm font-medium text-[var(--text-primary)] truncate"><%= esim.brandName || esim.offerId %></span>
-              <% if (esim.status === 'completed') { %>
-              <span class="badge-dot bg-emerald-500"></span>
-              <% } else if (esim.status === 'pending') { %>
-              <span class="badge-dot bg-amber-500 animate-pulse-dot"></span>
-              <% } else { %>
-              <span class="badge-dot bg-rose-500"></span>
-              <% } %>
-            </div>
-            <% if (esim.iccid) { %>
-            <p class="text-xs text-[var(--text-tertiary)] font-mono"><%= esim.iccid %></p>
-            <% } %>
-          </a>
-          <% }) %>
-        </div>
-        <% } else { %>
-        <div class="text-center py-8">
-          <div class="empty-icon mx-auto mb-3" style="width:2.5rem;height:2.5rem;border-radius:0.625rem;">
-            <i data-lucide="smartphone" class="w-5 h-5"></i>
-          </div>
-          <p class="text-sm text-[var(--text-tertiary)] mb-2">No Datas yet</p>
-          <a href="/offers" class="text-sm font-semibold text-[var(--brand-primary)] hover:underline">Browse Plans</a>
-        </div>
-        <% } %>
+      <div>
+        <label for="prof-newpw" class="input-label">New Password</label>
+        <input type="password" id="prof-newpw" name="newPassword" required minlength="8" class="input">
       </div>
+      <div>
+        <label for="prof-confirmpw" class="input-label">Confirm Password</label>
+        <input type="password" id="prof-confirmpw" name="confirmPassword" required minlength="8" class="input">
+      </div>
+      <button type="submit" class="btn btn-secondary">
+        <i data-lucide="key" class="w-4 h-4"></i>
+        Update Password
+      </button>
+    </form>
+  </div>
+
+  <!-- Preferences -->
+  <div class="section-card fade-up stagger-3">
+    <div class="section-card-title">Preferences</div>
+    <div class="flex items-center justify-between">
+      <div>
+        <div class="text-sm font-semibold" style="color: var(--text-primary);">Theme</div>
+        <div class="text-xs" style="color: var(--text-tertiary);">Adjust interface appearance</div>
+      </div>
+      <form method="post" action="/profile" class="flex items-center gap-2">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="displayName" value="<%= user.displayName || '' %>">
+        <input type="hidden" name="email" value="<%= user.email || '' %>">
+        <input type="hidden" name="phone" value="<%= user.phone || '' %>">
+        <select id="prof-theme" name="theme" class="input" onchange="this.form.submit()">
+          <option value="light" <%= user.theme === 'light' ? 'selected' : '' %>>Light</option>
+          <option value="dark" <%= user.theme === 'dark' ? 'selected' : '' %>>Dark</option>
+        </select>
+      </form>
     </div>
   </div>
 </div>
