@@ -6,6 +6,7 @@ import db from '../db/models/index.js';
 import { getPaginationParams, buildPagination } from '../utils/pagination.js';
 import { logAudit, ACTIONS, getIp } from '../services/auditService.js';
 import logger from '../lib/logger.js';
+import { calcFinalPrice, getGlobalMarkup } from '../services/pricingService.js';
 import { createOrder as airaloCreateOrder, getUsage as airaloGetUsage } from '../services/airaloClient.js';
 
 const log = logger.child({ module: 'esim' });
@@ -23,10 +24,16 @@ function isQrReady(status) {
 // Public landing page with offers
 export async function showLandingPage(req, res) {
   try {
-    const featuredOffers = await db.AiraloPackage.findAll({
-      //where: { countryCode: process.env.COUNTRY || 'TR' },
+    const packages = await db.AiraloPackage.findAll({
       order: [['price', 'ASC']],
       limit: 6,
+    });
+
+    const globalMarkup = await getGlobalMarkup();
+    const featuredOffers = packages.map(pkg => {
+      const plain = pkg.get({ plain: true });
+      plain.finalPrice = calcFinalPrice(pkg, globalMarkup);
+      return plain;
     });
 
     res.render('landing', {
@@ -93,6 +100,15 @@ export async function showOffers(req, res) {
       limit: parseInt(process.env.OFFERS_LIMIT) || 100,
     });
 
+    const globalMarkup = await getGlobalMarkup();
+
+    // Attach finalPrice to each package
+    const offers = packages.map(pkg => {
+      const plain = pkg.get({ plain: true });
+      plain.finalPrice = calcFinalPrice(pkg, globalMarkup);
+      return plain;
+    });
+
     // Retrieve distinct synced countries for the filter UI
     const syncedCountries = await db.AiraloPackage.findAll({
       attributes: [[db.Sequelize.fn('DISTINCT', db.Sequelize.col('countryCode')), 'countryCode']],
@@ -105,7 +121,7 @@ export async function showOffers(req, res) {
 
     res.render('offers', {
       title: 'Offers',
-      offers: packages,
+      offers,
       availableCountries,
       selectedCountry: country,
     });
@@ -283,16 +299,41 @@ export async function showQrCode(req, res) {
 
     if (esimRecord.vendor === 'airalo') {
       const vd = esimRecord.vendorData || {};
+
+      // Proxy QR image through our server so users don't need direct access to Airalo CDN
+      let proxiedQrBase64 = null;
+      const qrUrl = vd.qrcodeUrl || vd.qrcode || null;
+      if (qrUrl) {
+        try {
+          const response = await fetch(qrUrl);
+          if (response.ok) {
+            const buffer = Buffer.from(await response.arrayBuffer());
+            proxiedQrBase64 = buffer.toString('base64');
+          }
+        } catch (e) {
+          log.warn({ err: e, qrUrl }, 'Failed to proxy Airalo QR image');
+        }
+      }
+
+      // Airalo data layout:
+      //   vd.lpa = SM-DP+ address (e.g. "lpa.airalo.com")
+      //   vd.qrcode = full LPA string (e.g. "LPA:1$lpa.airalo.com$MATCHING_ID")
+      //   vd.matchingId = activation code
+      const fullLpa = vd.qrcode || null;
+      const smdpAddr = vd.lpa || (fullLpa ? fullLpa.split('$')[1] : null);
+      const actCode = vd.matchingId || (fullLpa ? fullLpa.split('$')[2] : null);
+
       return res.render('qrcode', {
         title: 'QR Code',
         esim: esimRecord,
         vendor: 'airalo',
-        qrcodeUrl: vd.qrcodeUrl || null,
+        qrcodeUrl: null,
+        qr: proxiedQrBase64 ? { imageBase64: proxiedQrBase64 } : null,
         directAppleUrl: vd.directAppleUrl || null,
-        lpa: vd.lpa || null,
+        lpa: fullLpa,
         matchingId: vd.matchingId || null,
-        manualInstallation: vd.manualInstallation || null,
-        qrcodeInstallation: vd.qrcodeInstallation || null,
+        smdpAddress: smdpAddr,
+        activationCode: actCode,
       });
     }
 

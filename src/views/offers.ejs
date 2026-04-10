@@ -51,7 +51,7 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="offersGrid">
   <% offers.forEach(function(offer, idx) { %>
   <%
-    var price = offer.price ? parseFloat(offer.price).toFixed(2) : null;
+    var price = offer.finalPrice ? parseFloat(offer.finalPrice).toFixed(2) : (offer.price ? parseFloat(offer.price).toFixed(2) : null);
     var currency = 'USD';
     var dataLabel = offer.data || null;
     var durationLabel = offer.day ? offer.day + ' days' : '';
