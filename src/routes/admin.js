@@ -13,6 +13,9 @@ import {
   showVendorDetail, showEditVendor, updateVendor,
   deleteVendor, downloadQrCode
 } from '../controllers/vendorController.js';
+import {
+  showPricing, updateGlobalMarkup, previewChanges, saveOverrides, resetOverride
+} from '../controllers/pricingController.js';
 import { adminCreateUserRules, assignEsimRules, topupRules, validate } from '../middleware/validation.js';
 
 const router = express.Router();
@@ -60,5 +63,12 @@ router.get('/emails/:id/attachment/:attachmentIndex', ensureAuth, ensureAdmin, d
 // Zendit Purchase (admin-only)
 router.get('/zendit/purchase', ensureAuth, ensureAdmin, showZenditPurchase);
 router.post('/zendit/purchase', ensureAuth, ensureAdmin, zenditPurchase);
+
+// Pricing Management
+router.get('/pricing', ensureAuth, ensureAdmin, showPricing);
+router.post('/pricing/global-markup', ensureAuth, ensureAdmin, updateGlobalMarkup);
+router.post('/pricing/preview', ensureAuth, ensureAdmin, express.json(), previewChanges);
+router.post('/pricing/override', ensureAuth, ensureAdmin, express.json(), saveOverrides);
+router.post('/pricing/reset/:packageId', ensureAuth, ensureAdmin, express.json(), resetOverride);
 
 export default router;
