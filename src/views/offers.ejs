@@ -2,7 +2,7 @@
 
 <div class="mb-6 fade-up">
   <h1 class="text-page-title">Available Plans</h1>
-  <p class="text-subtitle mt-1">Choose a Data plan for seamless connectivity worldwide</p>
+  <p class="text-subtitle mt-1">Choose a data plan for seamless connectivity worldwide</p>
 </div>
 
 <% if (typeof error !== 'undefined' && error) { %>
@@ -14,21 +14,21 @@
 
 <% if (typeof offers !== 'undefined' && offers && offers.length > 0) { %>
 
-<!-- Filters & Sort Bar -->
-<div class="flex flex-col sm:flex-row gap-3 mb-6 fade-up stagger-1">
-  <!-- Data Type Filter -->
-  <div class="flex gap-1.5 flex-wrap flex-1" id="filterChips">
-    <button type="button" class="filter-chip active" data-filter="all" onclick="filterOffers('all', this)">All</button>
-    <button type="button" class="filter-chip" data-filter="unlimited" onclick="filterOffers('unlimited', this)">Unlimited</button>
-    <button type="button" class="filter-chip" data-filter="gb" onclick="filterOffers('gb', this)">Fixed GB</button>
-  </div>
-  <!-- Sort -->
+<!-- Filters -->
+<div class="flex gap-1.5 flex-wrap mb-4 fade-up stagger-1" id="filterChips">
+  <button type="button" class="filter-chip active" data-filter="all" onclick="filterOffers('all', this)">All</button>
+  <button type="button" class="filter-chip" data-filter="unlimited" onclick="filterOffers('unlimited', this)">Unlimited</button>
+  <button type="button" class="filter-chip" data-filter="gb" onclick="filterOffers('gb', this)">Fixed GB</button>
+</div>
+
+<!-- Sort & Results Count -->
+<div class="flex items-center justify-between mb-4 fade-up stagger-2">
+  <span class="text-xs text-[var(--text-tertiary)]" id="resultsCount"></span>
   <div class="flex items-center gap-2">
-    <span class="text-xs text-[var(--text-tertiary)]">Sort:</span>
     <label for="sortSelect" class="sr-only">Sort plans</label>
     <select id="sortSelect" onchange="sortOffers(this.value)" class="input text-sm !py-2 !px-3 !w-auto !min-w-0">
-      <option value="price-asc">Price: Low → High</option>
-      <option value="price-desc">Price: High → Low</option>
+      <option value="price-asc">Price: Low to High</option>
+      <option value="price-desc">Price: High to Low</option>
       <option value="data-desc">Data: Most First</option>
       <option value="data-asc">Data: Least First</option>
       <option value="duration-desc">Duration: Longest</option>
@@ -37,11 +37,8 @@
   </div>
 </div>
 
-<!-- Results Count -->
-<p class="text-xs text-[var(--text-tertiary)] mb-4 fade-up stagger-2" id="resultsCount"></p>
-
 <!-- Offers Grid -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 fade-up stagger-3" id="offersGrid">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="offersGrid">
   <% offers.forEach(function(offer, idx) { %>
   <%
     var price = offer.price ? parseFloat(offer.price).toFixed(2) : null;
@@ -55,7 +52,7 @@
     if (operatorTitle) detailParts.push(operatorTitle);
     if (type) detailParts.push('Type: ' + type);
     if (offer.isUnlimited) detailParts.push('Unlimited Data');
-    var detailStr = detailParts.join(' · ');
+    var detailStr = detailParts.join(' \u00b7 ');
     var priceNum = price ? parseFloat(price) : 0;
     var dataMatch = dataLabel ? dataLabel.match(/(\d+)/) : null;
     var dataNum = offer.isUnlimited ? 99999 : (dataMatch ? parseInt(dataMatch[1]) : 0);
@@ -70,27 +67,25 @@
     data-subtypes="<%= type %>"
     onclick="confirmPurchase('<%= offer.packageId %>', '<%= (operatorTitle || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>', '<%= detailStr.replace(/'/g, "\\'") %>')">
     <div class="offer-header">
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2.5">
         <% if (offer.imageUrl) { %><img src="<%= offer.imageUrl %>" alt="" class="w-10 h-10 rounded-lg"><% } %>
-        <span class="offer-region"><%= regionShort || 'Global' %></span>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="offer-region"><%= regionShort || 'Global' %></span>
+            <% if (type) { %><span class="offer-subtype-badge"><%= type %></span><% } %>
+          </div>
+          <div class="flex items-center gap-2 mt-1 text-xs text-[var(--text-secondary)]">
+            <% if (offer.isUnlimited) { %>
+              <span class="offer-data">Unlimited</span>
+            <% } else if (dataLabel) { %>
+              <span class="offer-data"><%= dataLabel %></span>
+            <% } %>
+            <% if (durationLabel) { %>
+              <span class="offer-duration"><%= durationLabel %></span>
+            <% } %>
+          </div>
+        </div>
       </div>
-      <div class="flex items-center gap-1">
-        <% if (type) { %>
-        <span class="offer-subtype-badge"><%= type %></span>
-        <% } %>
-      </div>
-    </div>
-    <div class="offer-body">
-      <% if (offer.isUnlimited) { %>
-      <span class="offer-data">Unlimited</span>
-      <% } else if (dataLabel) { %>
-      <span class="offer-data"><%= dataLabel %></span>
-      <% } else { %>
-      <span class="offer-data">Data</span>
-      <% } %>
-      <% if (durationLabel) { %>
-      <span class="offer-duration"><%= durationLabel %></span>
-      <% } %>
     </div>
     <div class="offer-footer">
       <div>
@@ -162,8 +157,7 @@
     document.getElementById('purchaseForm').addEventListener('submit', function() {
       var btn = document.getElementById('confirmBtn');
       btn.disabled = true;
-      btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Processing...';
-      lucide.createIcons();
+      btn.textContent = 'Processing...';
     });
     </script>
   </div>
