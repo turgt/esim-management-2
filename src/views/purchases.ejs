@@ -1,6 +1,6 @@
 <%- include('partials/header', {title: 'My Datas', user: locals.user}) %>
 
-<div class="mb-8">
+<div class="mb-8 fade-up">
   <h1 class="text-page-title">My Datas</h1>
   <p class="text-subtitle mt-1">Manage and monitor your purchased Data plans</p>
 </div>
@@ -8,7 +8,7 @@
 <% if (purchases.length > 0) { %>
 
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-  <div class="stat-card">
+  <div class="stat-card fade-up stagger-1">
     <div class="stat-icon bg-[var(--brand-light)]">
       <i data-lucide="smartphone" class="w-5 h-5 text-[var(--brand-primary)]"></i>
     </div>
@@ -17,7 +17,7 @@
       <div class="stat-value"><%= purchases.length %></div>
     </div>
   </div>
-  <div class="stat-card">
+  <div class="stat-card fade-up stagger-2">
     <div class="stat-icon bg-emerald-50 dark:bg-emerald-500/10">
       <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
     </div>
@@ -26,7 +26,7 @@
       <div class="stat-value text-emerald-600 dark:text-emerald-400"><%= purchases.filter(p => p.status === 'completed').length %></div>
     </div>
   </div>
-  <div class="stat-card">
+  <div class="stat-card fade-up stagger-3">
     <div class="stat-icon bg-amber-50 dark:bg-amber-500/10">
       <i data-lucide="clock" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
     </div>
@@ -37,9 +37,9 @@
   </div>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-  <% purchases.forEach(function(purchase) { %>
-  <div class="purchase-card">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5 fade-up stagger-4">
+  <% purchases.forEach(function(purchase, idx) { %>
+  <div class="purchase-card fade-up stagger-<%= (idx % 6) + 1 %>">
     <div class="purchase-header">
       <div class="flex-1 min-w-0">
         <h3 class="font-semibold text-[var(--text-primary)] truncate"><%= purchase.brandName || 'Data Plan' %></h3>
@@ -127,7 +127,7 @@
 <%- include('partials/pagination') %>
 
 <% } else { %>
-<div class="empty-state">
+<div class="empty-state fade-up">
   <div class="empty-icon">
     <i data-lucide="smartphone" class="w-6 h-6"></i>
   </div>

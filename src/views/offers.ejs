@@ -1,6 +1,6 @@
 <%- include('partials/header', {title: 'Offers', user: locals.user}) %>
 
-<div class="mb-6">
+<div class="mb-6 fade-up">
   <h1 class="text-page-title">Available Plans</h1>
   <p class="text-subtitle mt-1">Choose a Data plan for seamless connectivity worldwide</p>
 </div>
@@ -15,7 +15,7 @@
 <% if (typeof offers !== 'undefined' && offers && offers.length > 0) { %>
 
 <!-- Filters & Sort Bar -->
-<div class="flex flex-col sm:flex-row gap-3 mb-6">
+<div class="flex flex-col sm:flex-row gap-3 mb-6 fade-up stagger-1">
   <!-- Data Type Filter -->
   <div class="flex gap-1.5 flex-wrap flex-1" id="filterChips">
     <button type="button" class="filter-chip active" data-filter="all" onclick="filterOffers('all', this)">All</button>
@@ -38,10 +38,10 @@
 </div>
 
 <!-- Results Count -->
-<p class="text-xs text-[var(--text-tertiary)] mb-4" id="resultsCount"></p>
+<p class="text-xs text-[var(--text-tertiary)] mb-4 fade-up stagger-2" id="resultsCount"></p>
 
 <!-- Offers Grid -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="offersGrid">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 fade-up stagger-3" id="offersGrid">
   <% offers.forEach(function(offer, idx) { %>
   <%
     var price = offer.price ? parseFloat(offer.price).toFixed(2) : null;
@@ -61,7 +61,7 @@
     var dataNum = offer.isUnlimited ? 99999 : (dataMatch ? parseInt(dataMatch[1]) : 0);
     var durationNum = offer.day || 0;
   %>
-  <button type="button" class="offer-card"
+  <button type="button" class="offer-card fade-up stagger-<%= (idx % 6) + 1 %>"
     aria-label="<%= offer.isUnlimited ? 'Unlimited' : (dataLabel || 'Data') %> plan, <%= durationLabel || '' %>, $<%= price || '0' %>"
     data-price="<%= priceNum %>"
     data-data="<%= dataNum %>"
