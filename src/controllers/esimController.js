@@ -92,6 +92,8 @@ export async function showOffers(req, res) {
     }
     if (type) {
       where.type = type;
+    } else {
+      where.type = { [db.Sequelize.Op.ne]: 'topup' };
     }
 
     const packages = await db.AiraloPackage.findAll({

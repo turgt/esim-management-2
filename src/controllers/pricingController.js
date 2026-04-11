@@ -12,6 +12,7 @@ export async function showPricing(req, res) {
     const globalMarkup = await getGlobalMarkup();
 
     const packages = await db.AiraloPackage.findAll({
+      where: { type: { [db.Sequelize.Op.ne]: 'topup' } },
       order: [['countryCode', 'ASC'], ['price', 'ASC']],
     });
 
@@ -94,7 +95,9 @@ export async function previewChanges(req, res) {
       }
     }
 
-    const packages = await db.AiraloPackage.findAll();
+    const packages = await db.AiraloPackage.findAll({
+      where: { type: { [db.Sequelize.Op.ne]: 'topup' } },
+    });
     const changes = [];
 
     for (const pkg of packages) {
