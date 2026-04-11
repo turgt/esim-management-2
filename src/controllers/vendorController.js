@@ -163,7 +163,7 @@ export async function showVendorDetail(req, res) {
 
     const { Op } = db.Sequelize;
     const appUrl = process.env.APP_URL || 'http://localhost:3000';
-    const refUrl = `${appUrl}/auth/register?ref=${vendor.code}`;
+    const refUrl = `${appUrl}/?ref=${vendor.code}`;
 
     // Generate QR code as data URL
     const qrDataUrl = await QRCode.toDataURL(refUrl, {
@@ -411,7 +411,7 @@ export async function downloadQrCode(req, res) {
     }
 
     const appUrl = process.env.APP_URL || 'http://localhost:3000';
-    const refUrl = `${appUrl}/auth/register?ref=${vendor.code}`;
+    const refUrl = `${appUrl}/?ref=${vendor.code}`;
 
     const buffer = await QRCode.toBuffer(refUrl, {
       width: 600,

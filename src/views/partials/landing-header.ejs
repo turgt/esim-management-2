@@ -46,7 +46,7 @@
           <a href="/auth/login" class="btn btn-secondary btn-sm">
             <i data-lucide="log-in" class="w-4 h-4"></i> Login
           </a>
-          <a href="/auth/register" class="btn btn-primary btn-sm">
+          <a href="/auth/register<%= locals.vendorRef ? '?ref=' + vendorRef : '' %>" class="btn btn-primary btn-sm">
             Get Started
           </a>
         </div>

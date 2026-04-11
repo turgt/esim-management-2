@@ -11,7 +11,7 @@
       Affordable eSIM data plans in 190+ countries with instant activation. No roaming fees, no physical SIM card needed.
     </p>
     <div class="landing-hero-ctas">
-      <a href="/auth/register" class="btn btn-primary btn-lg">Get Started Free</a>
+      <a href="/auth/register<%= locals.vendorRef ? '?ref=' + vendorRef : '' %>" class="btn btn-primary btn-lg">Get Started Free</a>
       <a href="#plans" class="btn btn-secondary btn-lg">View Plans</a>
     </div>
   </div>
@@ -68,7 +68,7 @@
   <div class="landing-plans fade-up">
     <div class="landing-plans-head">
       <h2 class="landing-section-title" style="margin-bottom:0;text-align:left;">Available Plans</h2>
-      <a href="/auth/register" class="landing-plans-link">View All →</a>
+      <a href="/auth/register<%= locals.vendorRef ? '?ref=' + vendorRef : '' %>" class="landing-plans-link">View All →</a>
     </div>
 
     <% if (typeof offers !== 'undefined' && offers && offers.length > 0) { %>
@@ -165,7 +165,7 @@
     <div class="text-center mt-12 p-8 rounded-2xl bg-[var(--brand-light)] dark:bg-[rgba(79,70,229,0.08)]">
       <h3 class="text-lg font-bold text-[var(--text-primary)] mb-2">Ready to get connected?</h3>
       <p class="text-sm text-[var(--text-secondary)] mb-4">Create a free account and purchase your first eSIM in minutes.</p>
-      <a href="/auth/register" class="btn btn-primary btn-lg">
+      <a href="/auth/register<%= locals.vendorRef ? '?ref=' + vendorRef : '' %>" class="btn btn-primary btn-lg">
         <i data-lucide="zap" class="w-5 h-5"></i>
         Create Free Account
       </a>

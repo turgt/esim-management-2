@@ -24,6 +24,12 @@ function isQrReady(status) {
 // Public landing page with offers
 export async function showLandingPage(req, res) {
   try {
+    // Capture vendor ref code from QR and store in session
+    if (req.query.ref) {
+      req.session.vendorRef = req.query.ref;
+    }
+    const vendorRef = req.session.vendorRef || null;
+
     const packages = await db.AiraloPackage.findAll({
       order: [['price', 'ASC']],
       limit: 6,
@@ -39,7 +45,8 @@ export async function showLandingPage(req, res) {
     res.render('landing', {
       title: 'DataPatch - eSIM Data Plans',
       offers: featuredOffers,
-      user: req.session?.user || null
+      user: req.session?.user || null,
+      vendorRef
     });
   } catch (err) {
     log.error({ err }, 'showLandingPage error');
