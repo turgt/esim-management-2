@@ -72,10 +72,10 @@ export async function getAllPackages() {
   return airalo.getAllPackages(true);
 }
 
-// Get packages by country
+// Get packages by country (non-flat to retain full operator data including networks)
 export async function getCountryPackages(countryCode) {
   if (!airalo) throw new Error('Airalo not initialized');
-  return airalo.getCountryPackages(countryCode, true);
+  return airalo.getCountryPackages(countryCode, false);
 }
 
 // Place an order (returns order with sims array containing iccid, qrcode_url, lpa, etc.)

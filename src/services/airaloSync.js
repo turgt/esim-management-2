@@ -23,47 +23,75 @@ function getSyncCountries() {
  */
 async function syncCountryPackages(countryCode) {
   const result = await getCountryPackages(countryCode);
-  const packages = result?.data || [];
+  const entries = result?.data || [];
 
-  if (!packages.length) {
+  if (!entries.length) {
     log.warn({ countryCode }, 'No packages returned from Airalo API');
     return { countryCode, total: 0, upserted: 0 };
   }
 
   let upserted = 0;
+  let total = 0;
   const now = new Date();
 
-  for (const pkg of packages) {
-    try {
-      // Note: overrideType and overrideValue are intentionally excluded
-      // so admin pricing overrides are preserved across syncs
-      await db.AiraloPackage.upsert({
-        packageId: pkg.package_id || pkg.id,
-        slug: pkg.slug || '',
-        countryCode,
-        title: pkg.title || '',
-        operatorTitle: pkg.operator_title || pkg.operator?.title || '',
-        type: pkg.type || 'local',
-        data: pkg.data || '',
-        day: pkg.day || 0,
-        amount: pkg.amount || 0,
-        price: pkg.price || 0,
-        netPrice: pkg.net_price || 0,
-        isUnlimited: pkg.is_unlimited || false,
-        voice: pkg.voice || null,
-        text: pkg.text || null,
-        rechargeability: pkg.rechargeability || false,
-        imageUrl: pkg.image?.url || pkg.operator?.image?.url || null,
-        rawData: pkg,
-        lastSyncedAt: now,
-      });
-      upserted++;
-    } catch (err) {
-      log.error({ err, packageId: pkg.package_id || pkg.id }, 'Failed to upsert package');
+  // Non-flat format: entries → operators → packages
+  for (const entry of entries) {
+    const operators = entry.operators || [];
+    for (const operator of operators) {
+      const pkgs = operator.packages || [];
+      for (const pkg of pkgs) {
+        total++;
+        try {
+          // Build rawData with full operator context for UI (networks, countries, etc.)
+          const rawData = {
+            ...pkg,
+            slug: entry.slug,
+            operator: {
+              title: operator.title,
+              is_roaming: operator.is_roaming,
+              info: operator.info,
+              image: operator.image,
+              networks: operator.networks || [],
+              countries: operator.countries || [],
+              plan_type: operator.plan_type,
+              activation_policy: operator.activation_policy,
+              other_info: operator.other_info,
+            },
+          };
+
+          const countries = (operator.countries || []).map(c => c.country_code);
+
+          // Note: overrideType and overrideValue are intentionally excluded
+          // so admin pricing overrides are preserved across syncs
+          await db.AiraloPackage.upsert({
+            packageId: pkg.id || pkg.package_id,
+            slug: entry.slug || '',
+            countryCode,
+            title: pkg.title || '',
+            operatorTitle: operator.title || '',
+            type: pkg.type || 'sim',
+            data: pkg.data || '',
+            day: pkg.day || 0,
+            amount: pkg.amount || 0,
+            price: pkg.price || 0,
+            netPrice: pkg.net_price || 0,
+            isUnlimited: pkg.is_unlimited || false,
+            voice: pkg.voice || null,
+            text: pkg.text || null,
+            rechargeability: pkg.rechargeability || false,
+            imageUrl: operator.image?.url || null,
+            rawData,
+            lastSyncedAt: now,
+          });
+          upserted++;
+        } catch (err) {
+          log.error({ err, packageId: pkg.id || pkg.package_id }, 'Failed to upsert package');
+        }
+      }
     }
   }
 
-  return { countryCode, total: packages.length, upserted };
+  return { countryCode, total, upserted };
 }
 
 export async function syncPackages() {

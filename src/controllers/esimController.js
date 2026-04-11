@@ -110,20 +110,21 @@ export async function showOffers(req, res) {
       plain.finalPrice = calcFinalPrice(pkg, globalMarkup);
 
       const raw = plain.rawData || {};
+      const op = raw.operator || {};
 
       // Best network speed from operator networks
-      const networks = raw.operator?.networks || [];
+      const networks = op.networks || [];
       const allTypes = networks.flatMap(n => n.types || []);
       plain.bestSpeed = allTypes.includes('5G') ? '5G'
         : (allTypes.includes('4G') || allTypes.includes('LTE')) ? '4G'
         : allTypes.includes('3G') ? '3G' : '';
 
       // Coverage countries
-      const countries = raw.operator?.countries || [];
-      plain.coverageCountries = countries.map(c => c.title).filter(Boolean);
+      const countries = op.countries || [];
+      plain.coverageCountries = countries.map(c => c.title || c.country_code).filter(Boolean);
 
-      // Note
-      plain.note = raw.note || '';
+      // Note (short_info from package, or operator info)
+      plain.note = raw.short_info || '';
 
       return plain;
     });
