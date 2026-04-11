@@ -455,16 +455,22 @@ function closePlanPanel() {
   setTimeout(function() { backdrop.style.display = 'none'; }, 300);
 }
 
-// Swipe-down to close (touch + mouse)
+// Swipe-down to close (touch + mouse) — works from top AND bottom overscroll
 (function() {
   var panel = document.getElementById('planPanel');
   var scroll = panel.querySelector('.plan-panel-scroll');
   var startY = 0;
   var currentY = 0;
   var dragging = false;
+  var dragEdge = ''; // 'top' or 'bottom'
+
+  function isAtTop() { return scroll.scrollTop <= 0; }
+  function isAtBottom() { return scroll.scrollTop + scroll.clientHeight >= scroll.scrollHeight - 2; }
 
   function onStart(y) {
-    if (scroll.scrollTop > 0) return;
+    if (isAtTop()) { dragEdge = 'top'; }
+    else if (isAtBottom()) { dragEdge = 'bottom'; }
+    else { return; }
     startY = y;
     currentY = y;
     dragging = true;
@@ -474,33 +480,77 @@ function closePlanPanel() {
     if (!dragging) return;
     currentY = y;
     var diff = currentY - startY;
-    if (diff < 0) { diff = 0; dragging = false; panel.style.transform = ''; panel.style.transition = ''; return; }
-    panel.style.transform = 'translateY(' + diff + 'px)';
+    if (dragEdge === 'top') {
+      if (diff < 0) { diff = 0; dragging = false; panel.style.transform = ''; panel.style.transition = ''; return; }
+      panel.style.transform = 'translateY(' + diff + 'px)';
+    } else {
+      // bottom: pulling up further does nothing, pulling down closes
+      if (diff < 0) { diff = 0; dragging = false; panel.style.transform = ''; panel.style.transition = ''; return; }
+      panel.style.transform = 'translateY(' + diff + 'px)';
+    }
   }
   function onEnd() {
     if (!dragging) return;
     dragging = false;
     var diff = currentY - startY;
     panel.style.transition = '';
+    panel.style.transform = '';
     if (diff > 80) {
       closePlanPanel();
     } else {
-      panel.style.transform = '';
       requestAnimationFrame(function() { panel.classList.add('active'); });
     }
+    dragEdge = '';
   }
 
+  // Touch events
   panel.addEventListener('touchstart', function(e) {
-    if (scroll.scrollTop <= 0) onStart(e.touches[0].clientY);
+    onStart(e.touches[0].clientY);
   }, { passive: true });
   panel.addEventListener('touchmove', function(e) { onMove(e.touches[0].clientY); }, { passive: true });
   panel.addEventListener('touchend', onEnd);
 
+  // Mouse events
   panel.addEventListener('mousedown', function(e) {
-    if (scroll.scrollTop <= 0) onStart(e.clientY);
+    onStart(e.clientY);
   });
   document.addEventListener('mousemove', function(e) { onMove(e.clientY); });
   document.addEventListener('mouseup', onEnd);
+
+  // Also close on continued scroll past bottom
+  var bottomScrollTimeout = null;
+  scroll.addEventListener('scroll', function() {
+    if (isAtBottom()) {
+      if (!bottomScrollTimeout) {
+        bottomScrollTimeout = setTimeout(function() { bottomScrollTimeout = null; }, 600);
+      }
+    }
+  });
+  scroll.addEventListener('touchmove', function(e) {
+    if (isAtBottom() && !dragging) {
+      // If user keeps swiping up at the bottom, close the panel
+      var touch = e.touches[0];
+      if (!this._lastTouchY) { this._lastTouchY = touch.clientY; return; }
+      var dy = this._lastTouchY - touch.clientY;
+      this._lastTouchY = touch.clientY;
+      if (dy > 3 && isAtBottom()) {
+        if (!this._overscrollAccum) this._overscrollAccum = 0;
+        this._overscrollAccum += dy;
+        if (this._overscrollAccum > 80) {
+          this._overscrollAccum = 0;
+          this._lastTouchY = 0;
+          closePlanPanel();
+        }
+      }
+    } else {
+      this._overscrollAccum = 0;
+      this._lastTouchY = 0;
+    }
+  }, { passive: true });
+  scroll.addEventListener('touchend', function() {
+    this._overscrollAccum = 0;
+    this._lastTouchY = 0;
+  });
 })();
 
 // Backdrop click
