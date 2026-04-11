@@ -130,9 +130,33 @@
         <i data-lucide="arrow-left" class="w-[18px] h-[18px]"></i>
       </a>
       <% } %>
-      <a href="/profile" class="topbar-avatar"><%= (user.displayName || user.username).charAt(0).toUpperCase() %></a>
+      <div class="topbar-avatar-wrap">
+        <button type="button" class="topbar-avatar" onclick="toggleAvatarMenu()" aria-label="User menu"><%= (user.displayName || user.username).charAt(0).toUpperCase() %></button>
+        <div class="avatar-menu" id="avatarMenu">
+          <div class="avatar-menu-name"><%= user.displayName || user.username %></div>
+          <a href="/profile" class="avatar-menu-item">
+            <i data-lucide="user" class="w-4 h-4"></i>
+            Profile
+          </a>
+          <a href="/auth/logout" class="avatar-menu-item avatar-menu-logout">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            Logout
+          </a>
+        </div>
+      </div>
     </div>
   </header>
+  <script>
+  function toggleAvatarMenu() {
+    document.getElementById('avatarMenu').classList.toggle('active');
+  }
+  document.addEventListener('click', function(e) {
+    var wrap = document.querySelector('.topbar-avatar-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('avatarMenu').classList.remove('active');
+    }
+  });
+  </script>
 
   <% if (locals.backUrl) { %>
   <div class="breadcrumb">

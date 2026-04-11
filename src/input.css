@@ -309,6 +309,10 @@ body {
   border: 2px solid var(--surface);
 }
 
+.topbar-avatar-wrap {
+  position: relative;
+}
+
 .topbar-avatar {
   width: 40px;
   height: 40px;
@@ -323,6 +327,55 @@ body {
   text-decoration: none;
   cursor: pointer;
   flex-shrink: 0;
+  border: none;
+}
+
+.avatar-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 6px;
+  z-index: 300;
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+.avatar-menu.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.avatar-menu-name {
+  padding: 8px 10px 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 4px;
+}
+.avatar-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: background 150ms;
+}
+.avatar-menu-item:hover {
+  background: var(--surface-1);
+  color: var(--text);
+}
+.avatar-menu-logout:hover {
+  color: #ef4444;
 }
 
 .topbar-back {
