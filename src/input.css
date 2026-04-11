@@ -1338,8 +1338,21 @@ body {
   margin-bottom: 16px;
 }
 .plan-panel-note-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.plan-panel-note-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   font-size: 13px;
   color: var(--text-secondary);
+  line-height: 1.5;
+}
+.plan-panel-note-bullet {
+  color: var(--text-muted);
+  flex-shrink: 0;
   line-height: 1.5;
 }
 .plan-panel-coverage-list {
