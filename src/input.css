@@ -1297,6 +1297,8 @@ body {
 .plan-panel-handle {
   text-align: center;
   padding: 10px 0 4px;
+  cursor: grab;
+  touch-action: none;
 }
 .plan-panel-handle > div {
   width: 36px;
@@ -1311,6 +1313,7 @@ body {
   overflow-y: auto;
   padding: 0 20px 16px;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 /* Header */
