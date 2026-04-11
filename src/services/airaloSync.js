@@ -119,8 +119,16 @@ export async function syncPackages() {
     }
   }
 
+  // Remove packages from countries no longer in sync list
+  const deleted = await db.AiraloPackage.destroy({
+    where: { countryCode: { [db.Sequelize.Op.notIn]: countries } },
+  });
+  if (deleted > 0) {
+    log.info({ deleted, activeCountries: countries }, 'Removed packages from countries no longer in sync list');
+  }
+
   log.info(
-    { countriesTotal: countries.length, countriesFailed: failed.length, failed, totalPackages, totalUpserted },
+    { countriesTotal: countries.length, countriesFailed: failed.length, failed, totalPackages, totalUpserted, deleted },
     'Airalo package sync complete'
   );
 }

@@ -99,7 +99,7 @@
     data-price-display="<%= price || '0.00' %>"
     onclick="openPlanPanel(this)">
     <div class="offer-top">
-      <div class="offer-flag"><% if (regionShort) { %><img src="https://flagcdn.com/<%= regionShort.toLowerCase() %>.svg" alt="<%= regionShort %>"><% } else { %>🌍<% } %></div>
+      <div class="offer-flag"><% if (regionShort) { %><img src="https://hatscripts.github.io/circle-flags/flags/<%= regionShort.toLowerCase() %>.svg" alt="<%= regionShort %>"><% } else { %>🌍<% } %></div>
       <div>
         <div class="offer-name">
           <%= operatorTitle || regionShort || 'Global' %>
@@ -327,7 +327,7 @@ function openPlanPanel(card) {
   while (flagEl.firstChild) flagEl.removeChild(flagEl.firstChild);
   if (cc) {
     var flagImg = document.createElement('img');
-    flagImg.src = 'https://flagcdn.com/' + cc.toLowerCase() + '.svg';
+    flagImg.src = 'https://hatscripts.github.io/circle-flags/flags/' + cc.toLowerCase() + '.svg';
     flagImg.alt = cc;
     flagEl.appendChild(flagImg);
   } else {
