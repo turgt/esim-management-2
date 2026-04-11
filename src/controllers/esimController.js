@@ -119,28 +119,44 @@ export async function showOffers(req, res) {
       const raw = plain.rawData || {};
       const op = raw.operator || {};
 
-      // Best network speed from operator networks
+      // Best network speed: try operator.networks first, fall back to op.info text
       const networks = op.networks || [];
       const allTypes = networks.flatMap(n => n.types || []);
-      plain.bestSpeed = allTypes.includes('5G') ? '5G'
-        : (allTypes.includes('4G') || allTypes.includes('LTE')) ? '4G'
-        : allTypes.includes('3G') ? '3G' : '';
+      if (allTypes.length > 0) {
+        plain.bestSpeed = allTypes.includes('5G') ? '5G'
+          : (allTypes.includes('4G') || allTypes.includes('LTE')) ? '4G'
+          : allTypes.includes('3G') ? '3G' : '';
+      } else {
+        // Parse speed from op.info strings like "5G Data-only eSIM."
+        const infoArr = Array.isArray(op.info) ? op.info : (op.info ? [op.info] : []);
+        const infoJoined = infoArr.join(' ');
+        plain.bestSpeed = /\b5G\b/i.test(infoJoined) ? '5G'
+          : /\b4G\b|LTE/i.test(infoJoined) ? '4G'
+          : /\b3G\b/i.test(infoJoined) ? '3G' : '';
+      }
+
+      // Data title for display (e.g. "1 GB - 7 days")
+      plain.dataTitle = raw.title || raw.data || '';
 
       // Coverage countries
       const countries = op.countries || [];
       plain.coverageCountries = countries.map(c => c.title || c.country_code).filter(Boolean);
 
-      // Collect all notes from available sources
+      // Fair usage policy
+      plain.hasFairUsage = !!raw.is_fair_usage_policy;
+      plain.fairUsagePolicy = raw.fair_usage_policy || '';
+
+      // Notes: op.info only (excluding other_info), plus short_info and fair_usage_policy
       const noteParts = [];
       if (raw.short_info) noteParts.push(raw.short_info);
-      if (op.other_info) {
-        const otherInfo = Array.isArray(op.other_info) ? op.other_info.join('. ') : String(op.other_info);
-        if (otherInfo) noteParts.push(otherInfo);
-      }
       if (op.info) {
-        const opInfo = Array.isArray(op.info) ? op.info.join('. ') : String(op.info);
-        if (opInfo && !noteParts.includes(opInfo)) noteParts.push(opInfo);
+        const infoItems = Array.isArray(op.info) ? op.info : [op.info];
+        infoItems.forEach(item => {
+          const s = String(item).trim();
+          if (s && !noteParts.includes(s)) noteParts.push(s);
+        });
       }
+      if (raw.fair_usage_policy) noteParts.push(raw.fair_usage_policy);
       plain.note = noteParts.join(' — ');
 
       return plain;

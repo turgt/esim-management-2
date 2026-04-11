@@ -95,6 +95,8 @@
     data-activation="<%= activationPolicy %>"
     data-networks="<%= networkNames %>"
     data-note="<%= (offer.note || '').replace(/"/g, '&quot;') %>"
+    data-fair-usage="<%= offer.hasFairUsage ? '1' : '0' %>"
+    data-data-title="<%= (offer.dataTitle || '').replace(/"/g, '&quot;') %>"
     data-coverage="<%= coverageJson.replace(/"/g, '&quot;') %>"
     data-price-display="<%= price || '0.00' %>"
     onclick="openPlanPanel(this)">
@@ -102,7 +104,7 @@
       <div class="offer-flag"><% if (regionShort) { %><img src="https://hatscripts.github.io/circle-flags/flags/<%= regionShort.toLowerCase() %>.svg" alt="<%= regionShort %>"><% } else { %>🌍<% } %></div>
       <div>
         <div class="offer-name">
-          <%= operatorTitle || regionShort || 'Global' %>
+          <%= offer.dataTitle || dataLabel || regionShort || 'Plan' %>
           <% if (type) { %><span class="offer-type-badge"><%= type %></span><% } %>
           <% if (offer.bestSpeed) { %><span class="offer-speed-badge speed-<%= offer.bestSpeed.toLowerCase() %>"><%= offer.bestSpeed %></span><% } %>
         </div>
@@ -333,15 +335,16 @@ function openPlanPanel(card) {
   } else {
     flagEl.textContent = '🌍';
   }
-  document.getElementById('ppOperator').textContent = d.operator || cc || 'Global';
-  document.getElementById('ppSub').textContent = [cc, d.type].filter(Boolean).join(' · ');
+  document.getElementById('ppOperator').textContent = d.dataTitle || d.dataLabel || cc || 'Plan';
+  document.getElementById('ppSub').textContent = [d.operator, cc, d.type].filter(Boolean).join(' · ');
   document.getElementById('ppPrice').textContent = '$' + d.priceDisplay;
 
   // Stats
   var dataLabel = d.unlimited === '1' ? 'Unlimited' : (d.dataLabel || '—');
   document.getElementById('ppData').textContent = dataLabel;
   document.getElementById('ppDuration').textContent = d.day ? d.day + ' days' : '—';
-  document.getElementById('ppSpeed').textContent = d.speed || '—';
+  var speedVal = d.speed || '';
+  document.getElementById('ppSpeed').textContent = speedVal || 'LTE';
 
   // Details
   var detailsEl = document.getElementById('ppDetails');
@@ -356,11 +359,13 @@ function openPlanPanel(card) {
     detailsEl.appendChild(buildDetailRow('signal', 'rgba(99,102,241,0.12)', '#6366f1', 'Network', netDesc));
   }
 
-  // Note
+  // Note / Fair Usage Policy
   var noteEl = document.getElementById('ppNote');
   var noteTextEl = document.getElementById('ppNoteText');
+  var noteLabelEl = noteEl.querySelector('.plan-panel-section-label');
   while (noteTextEl.firstChild) noteTextEl.removeChild(noteTextEl.firstChild);
   if (d.note) {
+    noteLabelEl.textContent = d.fairUsage === '1' ? 'Fair Usage Policy' : 'Notes';
     var parts = d.note.split(/\s*—\s*/);
     parts.forEach(function(part) {
       if (!part.trim()) return;
@@ -398,7 +403,7 @@ function openPlanPanel(card) {
   // Purchase form
   document.getElementById('ppPackageId').value = d.packageId;
   document.getElementById('ppAmount').value = d.priceDisplay;
-  document.getElementById('ppPlanName').value = d.operator || cc || 'Plan';
+  document.getElementById('ppPlanName').value = d.dataTitle || d.dataLabel || cc || 'Plan';
   document.getElementById('ppBuyBtn').textContent = 'Buy for $' + d.priceDisplay;
   document.getElementById('ppBuyBtn').disabled = false;
 
