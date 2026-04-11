@@ -73,13 +73,33 @@
     if (durationLabel) metaParts.push(durationLabel);
     var metaStr = metaParts.join(' · ');
   %>
+  <%
+    var rawOp = (offer.rawData && offer.rawData.operator) || {};
+    var activationPolicy = rawOp.activation_policy || '';
+    var isRechargeable = offer.rechargeability || false;
+    var networkNames = (rawOp.networks || []).map(function(n) { return n.types ? n.types.join('/') : ''; }).filter(Boolean).join(', ');
+    var coverageJson = JSON.stringify(offer.coverageCountries || []);
+  %>
   <button type="button" class="offer-card fade-up stagger-<%= (idx % 6) + 1 %>"
     data-price="<%= priceNum %>"
     data-data="<%= dataNum %>"
     data-duration="<%= durationNum %>"
     data-unlimited="<%= offer.isUnlimited ? '1' : '0' %>"
     data-subtypes="<%= type %>"
-    onclick="confirmPurchase('<%= offer.packageId %>', '<%= (operatorTitle || regionShort || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>', '<%= detailStr.replace(/'/g, "\\'") %>')">
+    data-package-id="<%= offer.packageId %>"
+    data-operator="<%= (operatorTitle || '').replace(/"/g, '&quot;') %>"
+    data-country="<%= regionShort %>"
+    data-type="<%= type %>"
+    data-data-label="<%= dataLabel || '' %>"
+    data-day="<%= offer.day || 0 %>"
+    data-speed="<%= offer.bestSpeed || '' %>"
+    data-activation="<%= activationPolicy %>"
+    data-rechargeable="<%= isRechargeable ? '1' : '0' %>"
+    data-networks="<%= networkNames %>"
+    data-note="<%= (offer.note || '').replace(/"/g, '&quot;') %>"
+    data-coverage="<%= coverageJson.replace(/"/g, '&quot;') %>"
+    data-price-display="<%= price || '0.00' %>"
+    onclick="openPlanPanel(this)">
     <div class="offer-top">
       <div class="offer-flag"><% if (regionShort) { %><img src="https://flagcdn.com/w80/<%= regionShort.toLowerCase() %>.png" alt="<%= regionShort %>"><% } else { %>🌍<% } %></div>
       <div>
@@ -134,45 +154,93 @@
 </div>
 <% } %>
 
-<!-- Purchase Confirmation Modal -->
-<div id="purchaseModal" class="modal-backdrop hidden" style="display:none">
-  <div class="confirm-modal">
-    <div class="flex items-center gap-3 mb-5">
-      <div class="w-10 h-10 rounded-xl bg-[var(--brand-light)] flex items-center justify-center">
-        <i data-lucide="shopping-cart" class="w-5 h-5 text-[var(--brand-primary)]"></i>
+<!-- Plan Detail Slide-up Panel -->
+<div id="planBackdrop" class="plan-panel-backdrop" style="display:none">
+  <div id="planPanel" class="plan-panel">
+    <!-- Drag handle -->
+    <div class="plan-panel-handle"><div></div></div>
+
+    <!-- Scrollable content -->
+    <div class="plan-panel-scroll">
+
+      <!-- Header -->
+      <div class="plan-panel-header">
+        <div class="plan-panel-header-left">
+          <div class="plan-panel-flag" id="ppFlag"></div>
+          <div>
+            <div class="plan-panel-operator" id="ppOperator"></div>
+            <div class="plan-panel-sub" id="ppSub"></div>
+          </div>
+        </div>
+        <div class="plan-panel-price" id="ppPrice"></div>
       </div>
-      <div>
-        <h3 class="text-base font-semibold text-[var(--text-primary)]">Confirm Purchase</h3>
-        <p class="text-xs text-[var(--text-secondary)]">Review your selection</p>
+
+      <!-- Stats grid -->
+      <div class="plan-panel-stats">
+        <div>
+          <div class="plan-panel-stats-label">Data</div>
+          <div class="plan-panel-stats-value" id="ppData"></div>
+        </div>
+        <div>
+          <div class="plan-panel-stats-label">Duration</div>
+          <div class="plan-panel-stats-value" id="ppDuration"></div>
+        </div>
+        <div>
+          <div class="plan-panel-stats-label">Speed</div>
+          <div class="plan-panel-stats-value" id="ppSpeed"></div>
+        </div>
       </div>
+
+      <!-- Detail rows -->
+      <div class="plan-panel-details" id="ppDetails"></div>
+
+      <!-- Note -->
+      <div class="plan-panel-note" id="ppNote" style="display:none">
+        <div class="plan-panel-section-label">Note</div>
+        <div class="plan-panel-note-text" id="ppNoteText"></div>
+      </div>
+
+      <!-- Coverage -->
+      <div class="plan-panel-coverage" id="ppCoverage" style="display:none">
+        <div class="plan-panel-section-label">Coverage</div>
+        <div class="plan-panel-coverage-list" id="ppCoverageList"></div>
+      </div>
+
+      <!-- Compatibility check -->
+      <div class="plan-panel-compat">
+        <div class="plan-panel-section-label">Device Compatibility</div>
+        <div class="plan-panel-compat-selects">
+          <select id="ppBrand" class="input">
+            <option value="">Select brand...</option>
+            <% if (typeof compatBrands !== 'undefined' && compatBrands) { %>
+            <% compatBrands.forEach(function(b) { %>
+            <option value="<%= b %>"><%= b %></option>
+            <% }); %>
+            <% } %>
+          </select>
+          <select id="ppModel" class="input" disabled>
+            <option value="">Select model...</option>
+          </select>
+        </div>
+        <div id="ppCompatResult"></div>
+      </div>
+
     </div>
-    <div class="p-4 rounded-lg bg-[var(--surface-1)] border border-[var(--border-subtle)] mb-5">
-      <p class="text-sm text-[var(--text-secondary)]">Plan: <strong class="text-[var(--text-primary)]" id="modalPlanName"></strong></p>
-      <p class="text-lg font-bold text-[var(--brand-primary)] mt-1" id="modalPlanPrice"></p>
-      <p class="text-xs text-[var(--text-tertiary)] mt-1.5" id="modalPlanDetails" style="display:none"></p>
-    </div>
-    <form id="purchaseForm" method="post" action="/payment/create">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <input type="hidden" name="packageId" id="modalOfferId" value="">
-      <input type="hidden" name="vendor" value="airalo">
-      <input type="hidden" name="amount" id="modalAmount" value="">
-      <input type="hidden" name="currency" id="modalCurrency" value="">
-      <input type="hidden" name="planName" id="modalPlanNameHidden" value="">
-      <div class="flex gap-3">
-        <button type="button" class="btn btn-secondary flex-1" onclick="closeModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary flex-1" id="confirmBtn">
-          <i data-lucide="check" class="w-4 h-4"></i>
-          Confirm
+
+    <!-- Purchase button (sticky) -->
+    <div class="plan-panel-buy">
+      <form id="purchaseForm" method="post" action="/payment/create" data-no-protect="1">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="packageId" id="ppPackageId" value="">
+        <input type="hidden" name="vendor" value="airalo">
+        <input type="hidden" name="amount" id="ppAmount" value="">
+        <input type="hidden" name="currency" value="USD">
+        <input type="hidden" name="planName" id="ppPlanName" value="">
+        <button type="submit" class="btn btn-primary plan-panel-buy-btn" id="ppBuyBtn">
+          Buy for $0.00
         </button>
-      </div>
-    </form>
-    <script>
-    document.getElementById('purchaseForm').addEventListener('submit', function() {
-      var btn = document.getElementById('confirmBtn');
-      btn.disabled = true;
-      btn.textContent = 'Processing...';
-    });
-    </script>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -257,37 +325,240 @@ function applyFilterAndSort() {
   grid.style.display = visibleCount === 0 ? 'none' : '';
 }
 
-function confirmPurchase(offerId, planName, price, currency, details) {
-  document.getElementById('modalOfferId').value = offerId;
-  document.getElementById('modalAmount').value = price;
-  document.getElementById('modalCurrency').value = currency;
-  document.getElementById('modalPlanNameHidden').value = planName;
-  document.getElementById('modalPlanName').textContent = planName;
-  document.getElementById('modalPlanPrice').textContent = price + ' ' + currency;
-  var detailsEl = document.getElementById('modalPlanDetails');
-  if (details) {
-    detailsEl.textContent = details;
-    detailsEl.style.display = 'block';
+// ─── Plan Detail Panel ─────────────────────────────────────────────────────
+function openPlanPanel(card) {
+  var d = card.dataset;
+  var backdrop = document.getElementById('planBackdrop');
+  var panel = document.getElementById('planPanel');
+
+  // Header
+  var cc = d.country || '';
+  var flagEl = document.getElementById('ppFlag');
+  while (flagEl.firstChild) flagEl.removeChild(flagEl.firstChild);
+  if (cc) {
+    var flagImg = document.createElement('img');
+    flagImg.src = 'https://flagcdn.com/w80/' + cc.toLowerCase() + '.png';
+    flagImg.alt = cc;
+    flagEl.appendChild(flagImg);
   } else {
-    detailsEl.style.display = 'none';
+    flagEl.textContent = '🌍';
   }
-  var modal = document.getElementById('purchaseModal');
-  modal.classList.remove('hidden');
-  modal.style.display = 'flex';
+  document.getElementById('ppOperator').textContent = d.operator || cc || 'Global';
+  document.getElementById('ppSub').textContent = [cc, d.type].filter(Boolean).join(' · ');
+  document.getElementById('ppPrice').textContent = '$' + d.priceDisplay;
+
+  // Stats
+  var dataLabel = d.unlimited === '1' ? 'Unlimited' : (d.dataLabel || '—');
+  document.getElementById('ppData').textContent = dataLabel;
+  document.getElementById('ppDuration').textContent = d.day ? d.day + ' days' : '—';
+  document.getElementById('ppSpeed').textContent = d.speed || '—';
+
+  // Details
+  var detailsEl = document.getElementById('ppDetails');
+  while (detailsEl.firstChild) detailsEl.removeChild(detailsEl.firstChild);
+  var activation = d.activation;
+  if (activation) {
+    var actLabel = activation === 'first-usage' ? 'Starts on first use' : (activation.charAt(0).toUpperCase() + activation.slice(1));
+    detailsEl.appendChild(buildDetailRow('zap', 'var(--brand-light)', 'var(--accent)', 'Activation', actLabel));
+  }
+  var rechargeColor = d.rechargeable === '1' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.1)';
+  var rechargeIcon = d.rechargeable === '1' ? 'refresh-cw' : 'x';
+  var rechargeIconColor = d.rechargeable === '1' ? '#16a34a' : '#ef4444';
+  var rechargeText = d.rechargeable === '1' ? 'Rechargeable' : 'Not rechargeable';
+  detailsEl.appendChild(buildDetailRow(rechargeIcon, rechargeColor, rechargeIconColor, 'Top-up', rechargeText));
+  if (d.networks) {
+    var netDesc = (d.operator ? d.operator + ' · ' : '') + d.networks;
+    detailsEl.appendChild(buildDetailRow('signal', 'rgba(99,102,241,0.12)', '#6366f1', 'Network', netDesc));
+  }
+
+  // Note
+  var noteEl = document.getElementById('ppNote');
+  if (d.note) {
+    document.getElementById('ppNoteText').textContent = d.note;
+    noteEl.style.display = '';
+  } else {
+    noteEl.style.display = 'none';
+  }
+
+  // Coverage
+  var coverageEl = document.getElementById('ppCoverage');
+  try {
+    var countries = JSON.parse(d.coverage || '[]');
+    if (countries.length > 1) {
+      document.getElementById('ppCoverageList').textContent = countries.join(', ');
+      coverageEl.style.display = '';
+    } else {
+      coverageEl.style.display = 'none';
+    }
+  } catch (e) { coverageEl.style.display = 'none'; }
+
+  // Purchase form
+  document.getElementById('ppPackageId').value = d.packageId;
+  document.getElementById('ppAmount').value = d.priceDisplay;
+  document.getElementById('ppPlanName').value = d.operator || cc || 'Plan';
+  document.getElementById('ppBuyBtn').textContent = 'Buy for $' + d.priceDisplay;
+  document.getElementById('ppBuyBtn').disabled = false;
+
+  // Reset compatibility
+  document.getElementById('ppBrand').value = '';
+  document.getElementById('ppModel').value = '';
+  document.getElementById('ppModel').disabled = true;
+  var compatResult = document.getElementById('ppCompatResult');
+  while (compatResult.firstChild) compatResult.removeChild(compatResult.firstChild);
+
+  // Show panel
+  backdrop.style.display = 'flex';
+  requestAnimationFrame(function() {
+    backdrop.classList.add('active');
+    panel.classList.add('active');
+  });
+  document.body.style.overflow = 'hidden';
+
+  // Render lucide icons in panel
+  if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: panel.querySelectorAll('[data-lucide]') });
 }
-function closeModal() {
-  var modal = document.getElementById('purchaseModal');
-  modal.classList.add('hidden');
-  modal.style.display = 'none';
+
+function buildDetailRow(iconName, bgColor, iconColor, title, desc) {
+  var row = document.createElement('div');
+  row.className = 'plan-panel-detail-row';
+  var iconWrap = document.createElement('div');
+  iconWrap.className = 'plan-panel-detail-icon';
+  iconWrap.style.background = bgColor;
+  var icon = document.createElement('i');
+  icon.setAttribute('data-lucide', iconName);
+  icon.className = 'w-3.5 h-3.5';
+  icon.style.color = iconColor;
+  iconWrap.appendChild(icon);
+  var textWrap = document.createElement('div');
+  var titleEl = document.createElement('div');
+  titleEl.className = 'plan-panel-detail-title';
+  titleEl.textContent = title;
+  var descEl = document.createElement('div');
+  descEl.className = 'plan-panel-detail-desc';
+  descEl.textContent = desc;
+  textWrap.appendChild(titleEl);
+  textWrap.appendChild(descEl);
+  row.appendChild(iconWrap);
+  row.appendChild(textWrap);
+  return row;
 }
-document.getElementById('purchaseModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
+
+function closePlanPanel() {
+  var backdrop = document.getElementById('planBackdrop');
+  var panel = document.getElementById('planPanel');
+  backdrop.classList.remove('active');
+  panel.classList.remove('active');
+  document.body.style.overflow = '';
+  setTimeout(function() { backdrop.style.display = 'none'; }, 300);
+}
+
+// Backdrop click
+document.getElementById('planBackdrop').addEventListener('click', function(e) {
+  if (e.target === this) closePlanPanel();
 });
+// Escape key
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
-    var modal = document.getElementById('purchaseModal');
-    if (modal && !modal.classList.contains('hidden')) closeModal();
+    var backdrop = document.getElementById('planBackdrop');
+    if (backdrop && backdrop.style.display !== 'none') closePlanPanel();
   }
+});
+// Purchase form submit
+document.getElementById('purchaseForm').addEventListener('submit', function() {
+  var btn = document.getElementById('ppBuyBtn');
+  btn.disabled = true;
+  btn.textContent = 'Processing...';
+});
+
+// ─── Compatibility Check ───────────────────────────────────────────────────
+document.getElementById('ppBrand').addEventListener('change', function() {
+  var brand = this.value;
+  var modelSel = document.getElementById('ppModel');
+  var resultEl = document.getElementById('ppCompatResult');
+  modelSel.length = 1; // keep first option
+  modelSel.disabled = true;
+  while (resultEl.firstChild) resultEl.removeChild(resultEl.firstChild);
+  if (!brand) return;
+
+  fetch('/compatibility/check?brand=' + encodeURIComponent(brand))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.models && data.models.length) {
+        data.models.forEach(function(m) {
+          var name = typeof m === 'string' ? m : m.name;
+          var opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          modelSel.appendChild(opt);
+        });
+        modelSel.disabled = false;
+      }
+    })
+    .catch(function() {});
+});
+
+document.getElementById('ppModel').addEventListener('change', function() {
+  var brand = document.getElementById('ppBrand').value;
+  var model = this.value;
+  var resultEl = document.getElementById('ppCompatResult');
+  while (resultEl.firstChild) resultEl.removeChild(resultEl.firstChild);
+  if (!brand || !model) return;
+
+  fetch('/compatibility/check?brand=' + encodeURIComponent(brand) + '&model=' + encodeURIComponent(model))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var row = document.createElement('div');
+      var iconSpan = document.createElement('span');
+      iconSpan.className = 'compat-icon';
+      var textWrap = document.createElement('div');
+      var titleEl = document.createElement('div');
+      titleEl.className = 'compat-title';
+      var descEl = document.createElement('div');
+      descEl.className = 'compat-desc';
+
+      if (data.result) {
+        if (data.result.esim) {
+          row.className = 'compat-result compat-ok';
+          iconSpan.textContent = '✅';
+          titleEl.textContent = 'Compatible';
+          descEl.textContent = model + ' supports eSIM.' + (data.result.notes ? ' ' + data.result.notes : '');
+        } else {
+          row.className = 'compat-result compat-fail';
+          iconSpan.textContent = '❌';
+          titleEl.textContent = 'Not Compatible';
+          descEl.textContent = model + ' does not support eSIM.';
+        }
+      } else {
+        row.className = 'compat-result compat-unknown';
+        iconSpan.textContent = 'ℹ️';
+        titleEl.textContent = 'Not Found';
+        descEl.textContent = model + ' is not in our database. Check your device settings for eSIM support.';
+      }
+      textWrap.appendChild(titleEl);
+      textWrap.appendChild(descEl);
+      row.appendChild(iconSpan);
+      row.appendChild(textWrap);
+      resultEl.appendChild(row);
+    })
+    .catch(function() {
+      var row = document.createElement('div');
+      row.className = 'compat-result compat-unknown';
+      var iconSpan = document.createElement('span');
+      iconSpan.className = 'compat-icon';
+      iconSpan.textContent = '⚠️';
+      var textWrap = document.createElement('div');
+      var titleEl = document.createElement('div');
+      titleEl.className = 'compat-title';
+      titleEl.textContent = 'Error';
+      var descEl = document.createElement('div');
+      descEl.className = 'compat-desc';
+      descEl.textContent = 'Could not check compatibility. Try again.';
+      textWrap.appendChild(titleEl);
+      textWrap.appendChild(descEl);
+      row.appendChild(iconSpan);
+      row.appendChild(textWrap);
+      resultEl.appendChild(row);
+    });
 });
 
 // Initial sort

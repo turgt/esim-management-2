@@ -144,6 +144,7 @@ export async function showOffers(req, res) {
       offers,
       availableCountries,
       selectedCountry: country,
+      compatBrands: esimDevices.brands.map(b => b.name),
     });
   } catch (err) {
     log.error({ err }, 'showOffers error');
