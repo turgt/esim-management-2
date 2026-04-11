@@ -104,10 +104,27 @@ export async function showOffers(req, res) {
 
     const globalMarkup = await getGlobalMarkup();
 
-    // Attach finalPrice to each package
+    // Attach finalPrice and rawData-derived fields to each package
     const offers = packages.map(pkg => {
       const plain = pkg.get({ plain: true });
       plain.finalPrice = calcFinalPrice(pkg, globalMarkup);
+
+      const raw = plain.rawData || {};
+
+      // Best network speed from operator networks
+      const networks = raw.operator?.networks || [];
+      const allTypes = networks.flatMap(n => n.types || []);
+      plain.bestSpeed = allTypes.includes('5G') ? '5G'
+        : (allTypes.includes('4G') || allTypes.includes('LTE')) ? '4G'
+        : allTypes.includes('3G') ? '3G' : '';
+
+      // Coverage countries
+      const countries = raw.operator?.countries || [];
+      plain.coverageCountries = countries.map(c => c.title).filter(Boolean);
+
+      // Note
+      plain.note = raw.note || '';
+
       return plain;
     });
 

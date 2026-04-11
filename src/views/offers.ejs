@@ -86,10 +86,27 @@
         <div class="offer-name">
           <%= operatorTitle || regionShort || 'Global' %>
           <% if (type) { %><span class="offer-type-badge"><%= type %></span><% } %>
+          <% if (offer.bestSpeed) { %><span class="offer-speed-badge speed-<%= offer.bestSpeed.toLowerCase() %>"><%= offer.bestSpeed %></span><% } %>
         </div>
         <div class="offer-meta"><%= metaStr %></div>
       </div>
     </div>
+    <% if ((offer.coverageCountries && offer.coverageCountries.length > 1) || offer.note) { %>
+    <div class="offer-extras">
+      <% if (offer.coverageCountries && offer.coverageCountries.length > 1) { %>
+      <div class="offer-coverage">
+        <i data-lucide="map-pin" class="w-3 h-3"></i>
+        <span><%= offer.coverageCountries.slice(0, 4).join(', ') %><% if (offer.coverageCountries.length > 4) { %> +<%= offer.coverageCountries.length - 4 %> more<% } %></span>
+      </div>
+      <% } %>
+      <% if (offer.note) { %>
+      <div class="offer-note">
+        <i data-lucide="info" class="w-3 h-3"></i>
+        <span><%= offer.note %></span>
+      </div>
+      <% } %>
+    </div>
+    <% } %>
     <div class="offer-foot">
       <span class="offer-price"><% if (price) { %>$<%= price %><% } %></span>
       <span class="offer-cta">Buy →</span>

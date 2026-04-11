@@ -1091,6 +1091,47 @@ body {
   color: #fed7aa;
 }
 
+/* Speed badge */
+.offer-card .offer-speed-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.offer-speed-badge.speed-5g { background: #dbeafe; color: #1d4ed8; }
+.offer-speed-badge.speed-4g { background: #dcfce7; color: #16a34a; }
+.offer-speed-badge.speed-3g { background: #fef9c3; color: #a16207; }
+.dark .offer-speed-badge.speed-5g { background: rgba(59,130,246,0.3); color: #93c5fd; }
+.dark .offer-speed-badge.speed-4g { background: rgba(34,197,94,0.3); color: #86efac; }
+.dark .offer-speed-badge.speed-3g { background: rgba(234,179,8,0.3); color: #fde68a; }
+
+/* Extras section (coverage + note) */
+.offer-card .offer-extras {
+  padding: 8px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.offer-card .offer-coverage,
+.offer-card .offer-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+.offer-card .offer-coverage svg,
+.offer-card .offer-note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--text-muted);
+}
+
 .offer-card .offer-foot {
   display: flex;
   align-items: center;
