@@ -76,7 +76,6 @@
   <%
     var rawOp = (offer.rawData && offer.rawData.operator) || {};
     var activationPolicy = rawOp.activation_policy || '';
-    var isRechargeable = offer.rechargeability || false;
     var networkNames = (rawOp.networks || []).map(function(n) { return n.types ? n.types.join('/') : ''; }).filter(Boolean).join(', ');
     var coverageJson = JSON.stringify(offer.coverageCountries || []);
   %>
@@ -94,14 +93,13 @@
     data-day="<%= offer.day || 0 %>"
     data-speed="<%= offer.bestSpeed || '' %>"
     data-activation="<%= activationPolicy %>"
-    data-rechargeable="<%= isRechargeable ? '1' : '0' %>"
     data-networks="<%= networkNames %>"
     data-note="<%= (offer.note || '').replace(/"/g, '&quot;') %>"
     data-coverage="<%= coverageJson.replace(/"/g, '&quot;') %>"
     data-price-display="<%= price || '0.00' %>"
     onclick="openPlanPanel(this)">
     <div class="offer-top">
-      <div class="offer-flag"><% if (regionShort) { %><img src="https://flagcdn.com/w80/<%= regionShort.toLowerCase() %>.png" alt="<%= regionShort %>"><% } else { %>🌍<% } %></div>
+      <div class="offer-flag"><% if (regionShort) { %><img src="https://flagcdn.com/<%= regionShort.toLowerCase() %>.svg" alt="<%= regionShort %>"><% } else { %>🌍<% } %></div>
       <div>
         <div class="offer-name">
           <%= operatorTitle || regionShort || 'Global' %>
@@ -337,7 +335,7 @@ function openPlanPanel(card) {
   while (flagEl.firstChild) flagEl.removeChild(flagEl.firstChild);
   if (cc) {
     var flagImg = document.createElement('img');
-    flagImg.src = 'https://flagcdn.com/w80/' + cc.toLowerCase() + '.png';
+    flagImg.src = 'https://flagcdn.com/' + cc.toLowerCase() + '.svg';
     flagImg.alt = cc;
     flagEl.appendChild(flagImg);
   } else {
@@ -361,11 +359,6 @@ function openPlanPanel(card) {
     var actLabel = activation === 'first-usage' ? 'Starts on first use' : (activation.charAt(0).toUpperCase() + activation.slice(1));
     detailsEl.appendChild(buildDetailRow('zap', 'var(--brand-light)', 'var(--accent)', 'Activation', actLabel));
   }
-  var rechargeColor = d.rechargeable === '1' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.1)';
-  var rechargeIcon = d.rechargeable === '1' ? 'refresh-cw' : 'x';
-  var rechargeIconColor = d.rechargeable === '1' ? '#16a34a' : '#ef4444';
-  var rechargeText = d.rechargeable === '1' ? 'Rechargeable' : 'Not rechargeable';
-  detailsEl.appendChild(buildDetailRow(rechargeIcon, rechargeColor, rechargeIconColor, 'Top-up', rechargeText));
   if (d.networks) {
     var netDesc = (d.operator ? d.operator + ' · ' : '') + d.networks;
     detailsEl.appendChild(buildDetailRow('signal', 'rgba(99,102,241,0.12)', '#6366f1', 'Network', netDesc));
@@ -480,7 +473,7 @@ document.getElementById('ppBrand').addEventListener('change', function() {
   while (resultEl.firstChild) resultEl.removeChild(resultEl.firstChild);
   if (!brand) return;
 
-  fetch('/compatibility/check?brand=' + encodeURIComponent(brand))
+  fetch('/api/compatibility?brand=' + encodeURIComponent(brand))
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.models && data.models.length) {
@@ -504,7 +497,7 @@ document.getElementById('ppModel').addEventListener('change', function() {
   while (resultEl.firstChild) resultEl.removeChild(resultEl.firstChild);
   if (!brand || !model) return;
 
-  fetch('/compatibility/check?brand=' + encodeURIComponent(brand) + '&model=' + encodeURIComponent(model))
+  fetch('/api/compatibility?brand=' + encodeURIComponent(brand) + '&model=' + encodeURIComponent(model))
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var row = document.createElement('div');

@@ -123,8 +123,18 @@ export async function showOffers(req, res) {
       const countries = op.countries || [];
       plain.coverageCountries = countries.map(c => c.title || c.country_code).filter(Boolean);
 
-      // Note (short_info from package, or operator info)
-      plain.note = raw.short_info || '';
+      // Collect all notes from available sources
+      const noteParts = [];
+      if (raw.short_info) noteParts.push(raw.short_info);
+      if (op.other_info) {
+        const otherInfo = Array.isArray(op.other_info) ? op.other_info.join('. ') : String(op.other_info);
+        if (otherInfo) noteParts.push(otherInfo);
+      }
+      if (op.info) {
+        const opInfo = Array.isArray(op.info) ? op.info.join('. ') : String(op.info);
+        if (opInfo && !noteParts.includes(opInfo)) noteParts.push(opInfo);
+      }
+      plain.note = noteParts.join(' — ');
 
       return plain;
     });
