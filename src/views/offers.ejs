@@ -364,8 +364,10 @@ function openPlanPanel(card) {
   var noteTextEl = document.getElementById('ppNoteText');
   var noteLabelEl = noteEl.querySelector('.plan-panel-section-label');
   while (noteTextEl.firstChild) noteTextEl.removeChild(noteTextEl.firstChild);
+  var isFairUsage = d.fairUsage === '1';
+  if (isFairUsage) { noteEl.classList.add('fair-usage'); } else { noteEl.classList.remove('fair-usage'); }
   if (d.note) {
-    noteLabelEl.textContent = d.fairUsage === '1' ? 'Fair Usage Policy' : 'Notes';
+    noteLabelEl.textContent = isFairUsage ? 'Fair Usage Policy' : 'Notes';
     var parts = d.note.split(/\s*—\s*/);
     parts.forEach(function(part) {
       if (!part.trim()) return;

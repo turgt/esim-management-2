@@ -1455,6 +1455,26 @@ body {
   flex-shrink: 0;
   line-height: 1.5;
 }
+.plan-panel-note.fair-usage {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.dark .plan-panel-note.fair-usage {
+  background: rgba(245,158,11,0.08);
+  border-color: rgba(245,158,11,0.25);
+}
+.plan-panel-note.fair-usage .plan-panel-section-label {
+  color: #b45309;
+}
+.dark .plan-panel-note.fair-usage .plan-panel-section-label {
+  color: #fbbf24;
+}
+.plan-panel-note.fair-usage .plan-panel-note-bullet {
+  color: #d97706;
+}
+.dark .plan-panel-note.fair-usage .plan-panel-note-bullet {
+  color: #f59e0b;
+}
 .plan-panel-coverage-list {
   font-size: 13px;
   color: var(--text-secondary);
