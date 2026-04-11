@@ -33,7 +33,7 @@
       Applied to all packages that don't have a package-level override. The final price is calculated as:
       <span class="font-mono text-[var(--text-primary)]">finalPrice = airaloPrice × (1 + markup / 100)</span>
     </p>
-    <form method="post" action="/admin/pricing/global-markup" class="flex items-end gap-3">
+    <form method="post" action="/admin/pricing/global-markup" class="flex flex-wrap items-end gap-3">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div>
         <label for="globalMarkupInput" class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Markup Percentage</label>
@@ -163,7 +163,7 @@
 </div>
 
 <!-- Sticky Change Bar -->
-<div id="changeBar" class="fixed bottom-0 left-0 right-0 z-40 transform translate-y-full transition-transform duration-300 ease-in-out" style="left: 260px;">
+<div id="changeBar" class="fixed bottom-0 left-0 right-0 z-[101] transform translate-y-full transition-transform duration-300 ease-in-out">
   <div class="bg-[var(--surface-0)] border-t border-[var(--border-subtle)] shadow-lg px-6 py-3 flex items-center justify-between gap-4">
     <div class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
       <i data-lucide="edit-3" class="w-4 h-4 text-[var(--brand-primary)]"></i>
@@ -596,19 +596,7 @@
 
   // ─── Adjust change bar for sidebar ────────────────────────────────────────
 
-  function adjustChangeBar() {
-    var bar = document.getElementById('changeBar');
-    if (!bar) return;
-    // On mobile, extend full width
-    if (window.innerWidth < 768) {
-      bar.style.left = '0';
-    } else {
-      bar.style.left = '260px';
-    }
-  }
-
-  adjustChangeBar();
-  window.addEventListener('resize', adjustChangeBar);
+  // No sidebar adjustment needed — topbar layout uses full width
 
 }());
 </script>
