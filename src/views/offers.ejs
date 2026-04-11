@@ -81,7 +81,7 @@
     data-subtypes="<%= type %>"
     onclick="confirmPurchase('<%= offer.packageId %>', '<%= (operatorTitle || regionShort || 'Data').replace(/'/g, "\\'") %>', '<%= price || '0.00' %>', '<%= currency %>', '<%= detailStr.replace(/'/g, "\\'") %>')">
     <div class="offer-top">
-      <div class="offer-flag"><% if (offer.imageUrl) { %><img src="<%= offer.imageUrl %>" alt=""><% } else { %><%= regionShort || '🌍' %><% } %></div>
+      <div class="offer-flag"><% if (regionShort) { %><img src="https://flagcdn.com/w80/<%= regionShort.toLowerCase() %>.png" alt="<%= regionShort %>"><% } else { %>🌍<% } %></div>
       <div>
         <div class="offer-name">
           <%= operatorTitle || regionShort || 'Global' %>
