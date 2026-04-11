@@ -109,7 +109,7 @@
         var dataNum = offer.isUnlimited ? 99999 : (dataMatch ? parseInt(dataMatch[1]) : 0);
         var durationNum = offer.day || 0;
       %>
-      <a href="/auth/login" class="offer-card block no-underline"
+      <a href="/auth/register<%= locals.vendorRef ? '?ref=' + vendorRef : '' %>" class="offer-card block no-underline"
         aria-label="<%= offer.dataUnlimited ? 'Unlimited' : (dataLabel ? dataLabel + ' GB' : 'Data') %> plan, <%= durationLabel %>, $<%= price || '0' %>"
         data-price="<%= priceNum %>"
         data-data="<%= dataNum %>"
@@ -153,6 +153,20 @@
         </div>
       </a>
       <% }) %>
+
+      <!-- View More Card -->
+      <a href="/auth/register<%= locals.vendorRef ? '?ref=' + vendorRef : '' %>" class="offer-card offer-card-more block no-underline">
+        <div class="offer-card-more-inner">
+          <div class="offer-card-more-icon">
+            <i data-lucide="plus" class="w-8 h-8"></i>
+          </div>
+          <div class="offer-card-more-title">View All Plans</div>
+          <div class="offer-card-more-desc">Register to browse 100+ plans across 190+ countries</div>
+          <span class="offer-cta">
+            Get Started <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </span>
+        </div>
+      </a>
     </div>
 
     <div id="noResults" class="empty-state" style="display:none">

@@ -1163,6 +1163,51 @@ body {
   border-color: var(--accent);
 }
 
+/* View More card */
+.offer-card.offer-card-more {
+  border: 2px dashed var(--border-subtle);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+}
+.offer-card.offer-card-more:hover {
+  border-color: var(--accent);
+  background: var(--brand-light);
+}
+.offer-card-more-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.offer-card-more-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--surface-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+.offer-card.offer-card-more:hover .offer-card-more-icon {
+  background: var(--accent);
+  color: #fff;
+}
+.offer-card-more-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.offer-card-more-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  max-width: 180px;
+}
+
 /* ============================================
    PLAN DETAIL SLIDE-UP PANEL
    ============================================ */
