@@ -455,6 +455,54 @@ function closePlanPanel() {
   setTimeout(function() { backdrop.style.display = 'none'; }, 300);
 }
 
+// Swipe-down to close (touch + mouse)
+(function() {
+  var panel = document.getElementById('planPanel');
+  var scroll = panel.querySelector('.plan-panel-scroll');
+  var startY = 0;
+  var currentY = 0;
+  var dragging = false;
+
+  function onStart(y) {
+    if (scroll.scrollTop > 0) return;
+    startY = y;
+    currentY = y;
+    dragging = true;
+    panel.style.transition = 'none';
+  }
+  function onMove(y) {
+    if (!dragging) return;
+    currentY = y;
+    var diff = currentY - startY;
+    if (diff < 0) { diff = 0; dragging = false; panel.style.transform = ''; panel.style.transition = ''; return; }
+    panel.style.transform = 'translateY(' + diff + 'px)';
+  }
+  function onEnd() {
+    if (!dragging) return;
+    dragging = false;
+    var diff = currentY - startY;
+    panel.style.transition = '';
+    if (diff > 80) {
+      closePlanPanel();
+    } else {
+      panel.style.transform = '';
+      requestAnimationFrame(function() { panel.classList.add('active'); });
+    }
+  }
+
+  panel.addEventListener('touchstart', function(e) {
+    if (scroll.scrollTop <= 0) onStart(e.touches[0].clientY);
+  }, { passive: true });
+  panel.addEventListener('touchmove', function(e) { onMove(e.touches[0].clientY); }, { passive: true });
+  panel.addEventListener('touchend', onEnd);
+
+  panel.addEventListener('mousedown', function(e) {
+    if (scroll.scrollTop <= 0) onStart(e.clientY);
+  });
+  document.addEventListener('mousemove', function(e) { onMove(e.clientY); });
+  document.addEventListener('mouseup', onEnd);
+})();
+
 // Backdrop click
 document.getElementById('planBackdrop').addEventListener('click', function(e) {
   if (e.target === this) closePlanPanel();
