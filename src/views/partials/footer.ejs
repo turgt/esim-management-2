@@ -45,6 +45,10 @@
       <i data-lucide="store" class="w-5 h-5"></i>
       <span>Vendors</span>
     </a>
+    <a href="/offers" class="tabbar-back-app">
+      <i data-lucide="arrow-left" class="w-5 h-5"></i>
+      <span>App</span>
+    </a>
   </nav>
   <% } else { %>
   <nav class="tabbar">
@@ -64,6 +68,12 @@
       <i data-lucide="user" class="w-5 h-5"></i>
       <span>Profile</span>
     </a>
+    <% if (user.isAdmin) { %>
+    <a href="/admin/dashboard" class="tabbar-admin">
+      <i data-lucide="shield" class="w-5 h-5"></i>
+      <span>Admin</span>
+    </a>
+    <% } %>
   </nav>
   <% } %>
 

@@ -462,6 +462,16 @@ body {
 
 .no-tabbar .tabbar { display: none; }
 
+/* Admin switch button in user tabbar */
+.tabbar a.tabbar-admin svg { color: var(--accent); }
+.tabbar a.tabbar-admin span { color: var(--accent); }
+.dark .tabbar a.tabbar-admin svg { color: var(--accent); }
+.dark .tabbar a.tabbar-admin span { color: var(--accent); }
+
+/* Back to App button in admin tabbar */
+.tabbar a.tabbar-back-app svg { color: var(--text-muted); }
+.tabbar a.tabbar-back-app span { color: var(--text-muted); }
+
 /* ============================================
    CONTENT AREA — User Layout
    ============================================ */
