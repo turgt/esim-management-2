@@ -855,7 +855,7 @@ export async function replyToEmail(req, res) {
   }
 }
 
-/ Admin-only: Zendit purchase page (for consuming remaining balance)
+// Admin-only: Zendit purchase page (for consuming remaining balance)
 export async function showZenditPurchase(req, res) {
   try {
     const users = await db.User.findAll({
