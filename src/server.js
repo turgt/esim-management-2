@@ -26,6 +26,8 @@ import legalRoutes from './routes/legal.js';
 import vendorRoutes from './routes/vendor.js';
 import webhookRoutes from './routes/webhook.js';
 import demoRoutes from './routes/demo.js';
+import agencyRoutes from './routes/agency.js';
+import proxyRoutes from './routes/proxy.js';
 import { startSync as startAiraloSync } from './services/airaloSync.js';
 import { cookieParser, doubleCsrfProtection, csrfTokenMiddleware, csrfErrorHandler } from './middleware/csrf.js';
 import { verifyPaddleWebhook, processPaddleWebhook } from './services/paymentService.js';
@@ -185,6 +187,12 @@ app.post('/api/webhooks/airalo', handleAiraloWebhook);
 // Webhook routes (before CSRF - external calls don't have CSRF tokens)
 app.use('/webhooks', webhookRoutes);
 
+// Proxy routes — public, no CSRF needed (traveler-facing eSIM pages)
+// Rate limit: 30 req/min per IP on /e and /api/booking-status
+app.use('/e', smartRateLimit(60 * 1000, 30));
+app.use('/api/booking-status', smartRateLimit(60 * 1000, 30));
+app.use('/', proxyRoutes);
+
 // CSRF protection (after session, before routes)
 app.use(doubleCsrfProtection);
 app.use(csrfTokenMiddleware);
@@ -230,6 +238,7 @@ app.use('/payment', paymentRoutes);
 app.use('/legal', legalRoutes);
 app.use('/vendor', vendorRoutes);
 app.use('/demo', demoRoutes);
+app.use('/agency', agencyRoutes);
 app.use('/', esimRoutes);
 
 // Root route: landing page for guests, redirect for authenticated users
