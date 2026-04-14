@@ -1,5 +1,6 @@
 import { Airalo } from 'airalo-sdk';
 import axios from 'axios';
+import crypto from 'crypto';
 import logger from '../lib/logger.js';
 
 const log = logger.child({ module: 'airalo' });
@@ -144,4 +145,31 @@ export async function checkBalance(amount) {
 
 export function isInitialized() {
   return airalo !== null;
+}
+
+export async function createFutureOrder({ packageId, dueDate, webhookUrl, description }) {
+  if (!airalo) throw new Error('Airalo not initialized');
+  const result = await airalo.createFutureOrder(
+    packageId, 1, dueDate, webhookUrl,
+    description || `DataPatch future order ${Date.now()}`
+  );
+  log.info({ packageId, dueDate, requestId: result?.data?.request_id }, 'Airalo future order created');
+  return result;
+}
+
+export async function cancelFutureOrder(requestId) {
+  if (!airalo) throw new Error('Airalo not initialized');
+  const result = await airalo.cancelFutureOrder(requestId);
+  log.info({ requestId }, 'Airalo future order cancelled');
+  return result;
+}
+
+export async function getFutureOrder(requestId) {
+  const res = await restApi().get(`/orders/future/${requestId}`);
+  return res.data;
+}
+
+export function verifyWebhookSignature(rawBody, signature, secret) {
+  const computed = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+  return computed === signature;
 }
