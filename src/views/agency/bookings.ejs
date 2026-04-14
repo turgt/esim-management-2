@@ -1,0 +1,142 @@
+<%- include('../partials/header', {title: 'Bookings', user: locals.user}) %>
+
+<div class="mb-8 flex items-center justify-between">
+  <div>
+    <p class="text-sm text-[var(--text-secondary)] mb-1">Acente Portali</p>
+    <h1 class="text-page-title">Rezervasyonlar</h1>
+  </div>
+  <a href="/agency/bookings/new" class="btn btn-primary">
+    <i data-lucide="plus" class="w-4 h-4"></i>
+    Yeni
+  </a>
+</div>
+
+<!-- Filter Tabs + Search -->
+<div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+  <!-- Status Tabs -->
+  <div class="flex items-center gap-1 flex-wrap">
+    <%
+      const tabDefs = [
+        { value: '', label: 'Tumu' },
+        { value: 'pending_provisioning', label: 'Bekliyor' },
+        { value: 'provisioned', label: 'Saglanmis' },
+        { value: 'installed', label: 'Aktif' },
+        { value: 'cancelled', label: 'Iptal' }
+      ];
+      const currentStatus = typeof filters !== 'undefined' ? filters.status || '' : '';
+    %>
+    <% tabDefs.forEach(function(tab) { %>
+    <a href="/agency/bookings?status=<%= tab.value %><%= typeof filters !== 'undefined' && filters.search ? '&search=' + encodeURIComponent(filters.search) : '' %>"
+      class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+      <%= currentStatus === tab.value
+        ? 'bg-[var(--brand-primary)] text-white'
+        : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]' %>">
+      <%= tab.label %>
+    </a>
+    <% }) %>
+  </div>
+
+  <!-- Search -->
+  <form method="get" action="/agency/bookings" class="flex items-center gap-2 sm:ml-auto">
+    <% if (typeof filters !== 'undefined' && filters.status) { %>
+    <input type="hidden" name="status" value="<%= filters.status %>">
+    <% } %>
+    <div class="relative">
+      <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] pointer-events-none"></i>
+      <input type="text" name="search"
+        value="<%= typeof filters !== 'undefined' ? filters.search || '' : '' %>"
+        placeholder="Yolcu, ref..."
+        class="input !pl-9 !w-48">
+    </div>
+    <button type="submit" class="btn btn-secondary">Ara</button>
+    <% if (typeof filters !== 'undefined' && filters.search) { %>
+    <a href="/agency/bookings<%= typeof filters !== 'undefined' && filters.status ? '?status=' + filters.status : '' %>" class="btn btn-secondary">Temizle</a>
+    <% } %>
+  </form>
+</div>
+
+<!-- Bookings Table -->
+<div class="table-container">
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Yolcu</th>
+          <th>Paket</th>
+          <th>Aktivasyon Tarihi</th>
+          <th>Durum</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (typeof bookings !== 'undefined' && bookings.length > 0) { %>
+        <% bookings.forEach(function(booking) { %>
+        <tr>
+          <td>
+            <div>
+              <p class="font-medium text-[var(--text-primary)]"><%= booking.travelerName %></p>
+              <% if (booking.agencyBookingRef) { %>
+              <p class="text-xs text-[var(--text-tertiary)] font-mono"><%= booking.agencyBookingRef %></p>
+              <% } %>
+            </div>
+          </td>
+          <td>
+            <% if (booking.contract && booking.contract.package) { %>
+            <div>
+              <p class="text-sm text-[var(--text-primary)]"><%= booking.contract.package.title %></p>
+              <p class="text-xs text-[var(--text-tertiary)]">
+                <%= booking.contract.package.data %> / <%= booking.contract.package.day %> gun
+              </p>
+            </div>
+            <% } else { %>
+            <span class="text-sm text-[var(--text-tertiary)]">—</span>
+            <% } %>
+          </td>
+          <td>
+            <% if (booking.dueDate) { %>
+            <p class="text-sm text-[var(--text-primary)]"><%= new Date(booking.dueDate).toLocaleDateString('tr-TR') %></p>
+            <p class="text-xs text-[var(--text-tertiary)]"><%= new Date(booking.dueDate).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}) %></p>
+            <% } else { %>
+            <span class="text-sm text-[var(--text-tertiary)]">—</span>
+            <% } %>
+          </td>
+          <td>
+            <% if (booking.status === 'pending_provisioning') { %>
+            <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Bekliyor</span>
+            <% } else if (booking.status === 'provisioned') { %>
+            <span class="badge badge-info"><span class="badge-dot bg-sky-500"></span>Saglanmis</span>
+            <% } else if (booking.status === 'installed') { %>
+            <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Aktif</span>
+            <% } else if (booking.status === 'cancelled') { %>
+            <span class="badge badge-error"><span class="badge-dot bg-rose-500"></span>Iptal</span>
+            <% } else { %>
+            <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span><%= booking.status %></span>
+            <% } %>
+          </td>
+          <td>
+            <a href="/agency/bookings/<%= booking.id %>" class="btn btn-secondary btn-sm">
+              <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+              Detay
+            </a>
+          </td>
+        </tr>
+        <% }) %>
+        <% } else { %>
+        <tr>
+          <td colspan="5" class="text-center py-12 text-sm text-[var(--text-tertiary)]">
+            <i data-lucide="calendar" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+            <p>Rezervasyon bulunamadi</p>
+            <a href="/agency/bookings/new" class="text-[var(--brand-primary)] hover:underline mt-1 inline-block">Yeni rezervasyon olustur</a>
+          </td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<% if (typeof pagination !== 'undefined' && pagination.totalPages > 1) { %>
+<%- include('../partials/pagination', { pagination }) %>
+<% } %>
+
+<%- include('../partials/footer') %>

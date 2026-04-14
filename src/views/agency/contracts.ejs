@@ -1,0 +1,117 @@
+<%- include('../partials/header', {title: 'Contracts', user: locals.user}) %>
+
+<div class="mb-8 flex items-center justify-between">
+  <div>
+    <p class="text-sm text-[var(--text-secondary)] mb-1">Acente Portali</p>
+    <h1 class="text-page-title">Kontratlar</h1>
+  </div>
+</div>
+
+<% if (typeof contracts !== 'undefined' && contracts.length > 0) { %>
+<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+  <% contracts.forEach(function(contract) { %>
+  <%
+    const used = contract.usedQuantity || 0;
+    const total = contract.quantity || 0;
+    const remaining = total - used;
+    const pct = total > 0 ? Math.round((used / total) * 100) : 0;
+    const isExpiring = contract.contractEndAt && (new Date(contract.contractEndAt) - new Date()) < 7 * 24 * 60 * 60 * 1000;
+  %>
+  <div class="card p-5 flex flex-col gap-4">
+    <!-- Header -->
+    <div class="flex items-start gap-3">
+      <% if (contract.package && contract.package.imageUrl) { %>
+      <img src="<%= contract.package.imageUrl %>" alt="" class="w-11 h-11 object-contain rounded-lg bg-[var(--bg-secondary)] p-1 flex-shrink-0">
+      <% } else { %>
+      <div class="w-11 h-11 rounded-lg bg-[var(--brand-light)] flex items-center justify-center flex-shrink-0">
+        <i data-lucide="sim-card" class="w-5 h-5 text-[var(--brand-primary)]"></i>
+      </div>
+      <% } %>
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-[var(--text-primary)] leading-snug">
+          <%= contract.package ? contract.package.title : 'Kontrat #' + contract.id %>
+        </p>
+        <% if (contract.package) { %>
+        <p class="text-xs text-[var(--text-tertiary)] mt-0.5">
+          <%= contract.package.data %> / <%= contract.package.day %> gun
+          <% if (contract.package.countryCode) { %>&bull; <%= contract.package.countryCode %><% } %>
+        </p>
+        <% } %>
+      </div>
+      <!-- Status Badge -->
+      <% if (contract.status === 'active') { %>
+      <span class="badge badge-success flex-shrink-0"><span class="badge-dot bg-emerald-500"></span>Aktif</span>
+      <% } else if (contract.status === 'expired') { %>
+      <span class="badge badge-neutral flex-shrink-0"><span class="badge-dot bg-gray-400"></span>Bitti</span>
+      <% } else { %>
+      <span class="badge badge-neutral flex-shrink-0"><span class="badge-dot bg-gray-400"></span><%= contract.status %></span>
+      <% } %>
+    </div>
+
+    <!-- Progress Bar -->
+    <div>
+      <div class="flex items-center justify-between text-xs mb-1.5">
+        <span class="text-[var(--text-tertiary)]">Kullanim</span>
+        <span class="font-semibold text-[var(--text-secondary)]">
+          <%= used %> / <%= total %>
+          <span class="text-[var(--text-tertiary)] font-normal">(%<%= pct %>)</span>
+        </span>
+      </div>
+      <div class="w-full h-2.5 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+        <div class="h-2.5 rounded-full transition-all
+          <%= pct >= 90 ? 'bg-rose-500' : pct >= 70 ? 'bg-amber-500' : 'bg-emerald-500' %>"
+          style="width: <%= pct %>%"></div>
+      </div>
+      <p class="text-xs text-[var(--text-tertiary)] mt-1.5">
+        <% if (remaining > 0) { %>
+          <span class="text-[var(--text-primary)] font-medium"><%= remaining %></span> adet kaldi
+        <% } else { %>
+          <span class="text-rose-500 font-medium">Kontrat dolu</span>
+        <% } %>
+      </p>
+    </div>
+
+    <!-- Details -->
+    <div class="grid grid-cols-2 gap-3 text-sm pt-1 border-t border-[var(--border-subtle)]">
+      <div>
+        <p class="text-[var(--text-tertiary)] text-xs mb-0.5">Birim Fiyat</p>
+        <p class="font-semibold text-[var(--text-primary)]">
+          <%= Number(contract.unitPriceAmount).toFixed(2) %>
+          <span class="text-xs text-[var(--text-tertiary)] font-normal"><%= contract.unitPriceCurrency %></span>
+        </p>
+      </div>
+      <div>
+        <p class="text-[var(--text-tertiary)] text-xs mb-0.5">Bitis Tarihi</p>
+        <p class="font-medium <%= isExpiring ? 'text-amber-600 dark:text-amber-400' : 'text-[var(--text-primary)]' %>">
+          <%= new Date(contract.contractEndAt).toLocaleDateString('tr-TR') %>
+        </p>
+        <% if (isExpiring && contract.status === 'active') { %>
+        <p class="text-xs text-amber-600 dark:text-amber-400">7 gun icinde bitiyor</p>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Action -->
+    <% if (contract.status === 'active' && remaining > 0) { %>
+    <a href="/agency/bookings/new" class="btn btn-secondary w-full justify-center text-sm">
+      <i data-lucide="plus" class="w-4 h-4"></i>
+      Bu Kontrat ile Rezervasyon
+    </a>
+    <% } %>
+  </div>
+  <% }) %>
+</div>
+
+<% if (typeof pagination !== 'undefined' && pagination.totalPages > 1) { %>
+<%- include('../partials/pagination', { pagination }) %>
+<% } %>
+
+<% } else { %>
+<div class="card p-12 text-center">
+  <i data-lucide="file-text" class="w-10 h-10 mx-auto mb-3 opacity-40 text-[var(--text-tertiary)]"></i>
+  <p class="font-medium text-[var(--text-primary)] mb-1">Kontrat bulunamadi</p>
+  <p class="text-sm text-[var(--text-tertiary)]">Aktif kontratlariniz burada gorunecek. Lutfen yonetici ile iletisime gecin.</p>
+</div>
+<% } %>
+
+<%- include('../partials/footer') %>

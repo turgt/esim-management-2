@@ -1,0 +1,112 @@
+<%- include('../partials/header', {title: 'New Booking', user: locals.user}) %>
+
+<div class="mb-8">
+  <a href="/agency/bookings" class="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] inline-flex items-center gap-1 mb-3">
+    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+    Rezervasyonlara Don
+  </a>
+  <h1 class="text-page-title">Yeni Rezervasyon</h1>
+  <p class="text-sm text-[var(--text-secondary)] mt-1">Yolcu icin eSIM aktivasyon rezervasyonu olusturun</p>
+</div>
+
+<% if (typeof error !== 'undefined' && error) { %>
+<div class="alert alert-error mb-6">
+  <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+  <p><%= error %></p>
+</div>
+<% } %>
+
+<div class="max-w-2xl">
+  <form method="post" action="/agency/bookings" class="card p-6 space-y-5">
+    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+
+    <!-- Contract Selection -->
+    <div>
+      <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
+        Kontrat <span class="text-rose-500">*</span>
+      </label>
+      <select name="contractId" required class="input" onchange="updateRemaining(this)">
+        <option value="">Kontrat secin...</option>
+        <% if (typeof contracts !== 'undefined' && contracts.length > 0) { %>
+        <% contracts.forEach(function(contract) { %>
+        <% const remaining = contract.quantity - contract.usedQuantity; %>
+        <option value="<%= contract.id %>"
+          data-remaining="<%= remaining %>"
+          <%= remaining <= 0 ? 'disabled' : '' %>>
+          <%= contract.package ? contract.package.title : 'Kontrat #' + contract.id %>
+          — <%= contract.package ? contract.package.data + ' / ' + contract.package.day + ' gun' : '' %>
+          (Kalan: <%= remaining %>)
+        </option>
+        <% }) %>
+        <% } %>
+      </select>
+      <p id="remaining-hint" class="text-xs text-[var(--text-tertiary)] mt-1 hidden">
+        Bu kontratta <span id="remaining-count" class="font-semibold text-[var(--brand-primary)]"></span> adet kalmistir.
+      </p>
+      <% if (typeof contracts === 'undefined' || contracts.length === 0) { %>
+      <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">
+        Aktif kontrat bulunamadi. Lutfen yonetici ile iletisime gecin.
+      </p>
+      <% } %>
+    </div>
+
+    <!-- Traveler Info -->
+    <div>
+      <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
+        Yolcu Adi <span class="text-rose-500">*</span>
+      </label>
+      <input type="text" name="travelerName" required class="input" placeholder="Ad Soyad">
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">E-posta</label>
+        <input type="email" name="travelerEmail" class="input" placeholder="yolcu@ornek.com">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Telefon</label>
+        <input type="tel" name="travelerPhone" class="input" placeholder="+90 555 000 0000">
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Referans No</label>
+      <input type="text" name="agencyBookingRef" class="input" placeholder="Rezervasyon referans numarasi">
+      <p class="text-xs text-[var(--text-tertiary)] mt-1">Isteğe baglidir. Kendi sisteminizle eslestirmek icin kullanabilirsiniz.</p>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
+        Aktivasyon Tarihi <span class="text-rose-500">*</span>
+      </label>
+      <input type="datetime-local" name="dueDate" required class="input">
+      <p class="text-xs text-[var(--text-tertiary)] mt-1">
+        eSIM bu tarihte aktiflestirilecektir. En az 1 saat ilerisi olmalidir.
+      </p>
+    </div>
+
+    <div class="flex items-center justify-between pt-2 border-t border-[var(--border-subtle)]">
+      <a href="/agency/bookings" class="btn btn-secondary">Iptal</a>
+      <button type="submit" class="btn btn-primary">
+        <i data-lucide="check" class="w-4 h-4"></i>
+        Rezervasyon Olustur
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+function updateRemaining(select) {
+  const option = select.options[select.selectedIndex];
+  const hint = document.getElementById('remaining-hint');
+  const count = document.getElementById('remaining-count');
+  if (option && option.dataset.remaining) {
+    hint.classList.remove('hidden');
+    count.textContent = option.dataset.remaining;
+  } else {
+    hint.classList.add('hidden');
+  }
+}
+</script>
+
+<%- include('../partials/footer') %>
