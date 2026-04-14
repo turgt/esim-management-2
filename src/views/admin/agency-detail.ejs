@@ -1,0 +1,257 @@
+<%- include('../partials/header', {title: agency.name, user: locals.user}) %>
+
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+  <div>
+    <a href="/admin/agencies" class="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] inline-flex items-center gap-1 mb-2">
+      <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+      Acentelere Don
+    </a>
+    <h1 class="text-page-title flex items-center gap-3">
+      <%= agency.name %>
+      <% if (agency.status === 'active') { %>
+      <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Aktif</span>
+      <% } else { %>
+      <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span>Pasif</span>
+      <% } %>
+    </h1>
+    <p class="text-sm text-[var(--text-secondary)] mt-1">
+      <span class="font-mono text-[var(--brand-primary)]"><%= agency.slug %></span>
+      <% if (agency.contactEmail) { %> &bull; <%= agency.contactEmail %><% } %>
+    </p>
+  </div>
+  <button onclick="document.getElementById('new-contract-modal').classList.remove('hidden')" class="btn btn-primary self-start sm:self-auto">
+    <i data-lucide="plus" class="w-4 h-4"></i>
+    Yeni Kontrat
+  </button>
+</div>
+
+<!-- Info Cards -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  <div class="stat-card">
+    <div class="stat-icon bg-[var(--brand-light)]">
+      <i data-lucide="file-text" class="w-5 h-5 text-[var(--brand-primary)]"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Toplam Kontrat</p>
+      <p class="stat-value"><%= agency.AgencyContracts ? agency.AgencyContracts.length : 0 %></p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon bg-emerald-50 dark:bg-emerald-500/10">
+      <i data-lucide="file-check" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Aktif Kontrat</p>
+      <p class="stat-value text-emerald-600 dark:text-emerald-400"><%= agency.AgencyContracts ? agency.AgencyContracts.filter(c => c.status === 'active').length : 0 %></p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon bg-sky-50 dark:bg-sky-500/10">
+      <i data-lucide="users" class="w-5 h-5 text-sky-600 dark:text-sky-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Kullanici</p>
+      <p class="stat-value"><%= agency.users ? agency.users.length : 0 %></p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon bg-amber-50 dark:bg-amber-500/10">
+      <i data-lucide="calendar" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Kayit Tarihi</p>
+      <p class="stat-value text-sm"><%= new Date(agency.createdAt).toLocaleDateString('tr-TR') %></p>
+    </div>
+  </div>
+</div>
+
+<!-- Contracts Section -->
+<div class="mb-8">
+  <h2 class="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+    <i data-lucide="file-text" class="w-4 h-4 text-[var(--text-tertiary)]"></i>
+    Kontratlar
+  </h2>
+  <div class="table-container">
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Paket</th>
+            <th>Adet</th>
+            <th>Kullanilan</th>
+            <th>Birim Fiyat</th>
+            <th>Bitis Tarihi</th>
+            <th>Durum</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (agency.AgencyContracts && agency.AgencyContracts.length > 0) { %>
+          <% agency.AgencyContracts.forEach(function(contract) { %>
+          <tr>
+            <td>
+              <div>
+                <p class="font-medium text-[var(--text-primary)]">
+                  <%= contract.package ? contract.package.title : 'Paket #' + contract.airaloPackageId %>
+                </p>
+                <% if (contract.package) { %>
+                <p class="text-xs text-[var(--text-tertiary)]">
+                  <%= contract.package.data %> / <%= contract.package.day %> gun
+                </p>
+                <% } %>
+              </div>
+            </td>
+            <td class="font-semibold"><%= contract.quantity %></td>
+            <td>
+              <% const pct = contract.quantity > 0 ? Math.round((contract.usedQuantity / contract.quantity) * 100) : 0; %>
+              <p class="font-semibold"><%= contract.usedQuantity %></p>
+              <div class="w-20 h-1.5 bg-[var(--bg-tertiary)] rounded-full mt-1">
+                <div class="h-1.5 rounded-full <%= pct >= 90 ? 'bg-rose-500' : pct >= 70 ? 'bg-amber-500' : 'bg-emerald-500' %>" style="width: <%= pct %>%"></div>
+              </div>
+            </td>
+            <td class="text-sm">
+              <span class="font-semibold"><%= Number(contract.unitPriceAmount).toFixed(2) %></span>
+              <span class="text-[var(--text-tertiary)]"><%= contract.unitPriceCurrency %></span>
+            </td>
+            <td class="text-sm text-[var(--text-secondary)]">
+              <%= new Date(contract.contractEndAt).toLocaleDateString('tr-TR') %>
+            </td>
+            <td>
+              <% if (contract.status === 'active') { %>
+              <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Aktif</span>
+              <% } else if (contract.status === 'expired') { %>
+              <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span>Suresi Dolmus</span>
+              <% } else { %>
+              <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span><%= contract.status %></span>
+              <% } %>
+            </td>
+          </tr>
+          <% }) %>
+          <% } else { %>
+          <tr>
+            <td colspan="6" class="text-center py-10 text-sm text-[var(--text-tertiary)]">
+              <i data-lucide="file-text" class="w-7 h-7 mx-auto mb-2 opacity-40"></i>
+              <p>Henuz kontrat yok</p>
+            </td>
+          </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Users Section -->
+<div class="mb-8">
+  <h2 class="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+    <i data-lucide="users" class="w-4 h-4 text-[var(--text-tertiary)]"></i>
+    Kullanicilar
+  </h2>
+  <div class="table-container">
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Kullanici</th>
+            <th>Rol</th>
+            <th>Durum</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (agency.users && agency.users.length > 0) { %>
+          <% agency.users.forEach(function(u) { %>
+          <tr>
+            <td>
+              <div>
+                <p class="font-medium text-[var(--text-primary)]"><%= u.username %></p>
+                <% if (u.email) { %>
+                <p class="text-xs text-[var(--text-tertiary)]"><%= u.email %></p>
+                <% } %>
+              </div>
+            </td>
+            <td>
+              <span class="text-sm text-[var(--text-secondary)]"><%= u.agencyRole || 'user' %></span>
+            </td>
+            <td>
+              <% if (u.isActive !== false) { %>
+              <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Aktif</span>
+              <% } else { %>
+              <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span>Pasif</span>
+              <% } %>
+            </td>
+          </tr>
+          <% }) %>
+          <% } else { %>
+          <tr>
+            <td colspan="3" class="text-center py-10 text-sm text-[var(--text-tertiary)]">
+              <i data-lucide="users" class="w-7 h-7 mx-auto mb-2 opacity-40"></i>
+              <p>Henuz kullanici atanmamis</p>
+            </td>
+          </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- New Contract Modal -->
+<div id="new-contract-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="document.getElementById('new-contract-modal').classList.add('hidden')"></div>
+  <div class="relative bg-[var(--bg-primary)] rounded-2xl shadow-xl w-full max-w-lg p-6">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-lg font-semibold text-[var(--text-primary)]">Yeni Kontrat</h2>
+      <button onclick="document.getElementById('new-contract-modal').classList.add('hidden')" class="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <form method="post" action="/admin/agencies/<%= agency.id %>/contracts" class="space-y-4">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Paket <span class="text-rose-500">*</span></label>
+        <select name="airaloPackageId" required class="input">
+          <option value="">Paket secin...</option>
+          <% if (packages && packages.length > 0) { %>
+          <% packages.forEach(function(pkg) { %>
+          <option value="<%= pkg.id %>">
+            <%= pkg.title %> — <%= pkg.data %> / <%= pkg.day %> gun (<%= pkg.countryCode %>)
+          </option>
+          <% }) %>
+          <% } %>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Adet <span class="text-rose-500">*</span></label>
+          <input type="number" name="quantity" required min="1" class="input" placeholder="100">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Bitis Tarihi <span class="text-rose-500">*</span></label>
+          <input type="date" name="contractEndAt" required class="input">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Birim Fiyat <span class="text-rose-500">*</span></label>
+          <input type="number" name="unitPriceAmount" required min="0" step="0.01" class="input" placeholder="12.50">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Para Birimi</label>
+          <select name="unitPriceCurrency" class="input">
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+            <option value="TRY">TRY</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" onclick="document.getElementById('new-contract-modal').classList.add('hidden')" class="btn btn-secondary">Iptal</button>
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          Kontrat Olustur
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

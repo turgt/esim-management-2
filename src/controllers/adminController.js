@@ -909,3 +909,111 @@ export async function zenditPurchase(req, res) {
     res.redirect('/admin/zendit/purchase');
   }
 }
+
+// --- Agency Management ---
+export async function listAgencies(req, res) {
+  try {
+    const agencies = await db.Agency.findAll({
+      order: [['createdAt', 'DESC']],
+      include: [{ model: db.AgencyContract, attributes: ['id', 'quantity', 'usedQuantity', 'status'] }]
+    });
+    res.render('admin/agencies', { title: 'Acenteler', user: req.session.user, agencies });
+  } catch (err) {
+    log.error({ err }, 'listAgencies failed');
+    res.status(500).render('error', { title: 'Hata', user: req.session.user, message: 'Acenteler yuklenemedi.' });
+  }
+}
+
+export async function showAgencyDetail(req, res) {
+  try {
+    const agency = await db.Agency.findByPk(req.params.id, {
+      include: [
+        { model: db.AgencyContract, include: [{ model: db.AiraloPackage, as: 'package' }] },
+        { model: db.User, as: 'users', attributes: ['id', 'username', 'email', 'agencyRole', 'isActive'] }
+      ]
+    });
+    if (!agency) return res.status(404).render('error', { title: 'Hata', user: req.session.user, message: 'Acente bulunamadi.' });
+
+    const bookingStats = await db.TravelerBooking.count({ where: { agencyId: agency.id }, group: ['status'] });
+    const packages = await db.AiraloPackage.findAll({ where: { type: 'sim' }, order: [['title', 'ASC']] });
+    res.render('admin/agency-detail', { title: agency.name, user: req.session.user, agency, bookingStats, packages });
+  } catch (err) {
+    log.error({ err }, 'showAgencyDetail failed');
+    res.status(500).render('error', { title: 'Hata', user: req.session.user, message: 'Acente detayi yuklenemedi.' });
+  }
+}
+
+export async function createAgency(req, res) {
+  const { name, slug, contactEmail, contactName, phone } = req.body;
+  try {
+    const agency = await db.Agency.create({
+      name, slug: slug.toLowerCase().replace(/[^a-z0-9-]/g, ''),
+      contactEmail, contactName, phone: phone || null, status: 'active'
+    });
+    await logAudit(ACTIONS.AGENCY_CREATE, { userId: req.session.user.id, entity: 'Agency', entityId: agency.id, details: { name, slug }, ipAddress: getIp(req) });
+    res.redirect(`/admin/agencies/${agency.id}`);
+  } catch (err) {
+    if (err.name === 'SequelizeUniqueConstraintError') return res.render('error', { title: 'Hata', user: req.session.user, message: 'Bu slug zaten kullanilmakta.' });
+    log.error({ err }, 'createAgency failed');
+    res.render('error', { title: 'Hata', user: req.session.user, message: 'Acente olusturulamadi.' });
+  }
+}
+
+export async function createContract(req, res) {
+  const agencyId = Number(req.params.id);
+  const { airaloPackageId, quantity, unitPriceAmount, unitPriceCurrency, contractEndAt } = req.body;
+  try {
+    const agency = await db.Agency.findByPk(agencyId);
+    if (!agency) return res.status(404).render('error', { title: 'Hata', user: req.session.user, message: 'Acente bulunamadi.' });
+    const pkg = await db.AiraloPackage.findByPk(airaloPackageId);
+    if (!pkg) return res.status(400).render('error', { title: 'Hata', user: req.session.user, message: 'Paket bulunamadi.' });
+
+    const contract = await db.AgencyContract.create({
+      agencyId, airaloPackageId: Number(airaloPackageId), quantity: Number(quantity), usedQuantity: 0,
+      unitPriceAmount: Number(unitPriceAmount), unitPriceCurrency: unitPriceCurrency || 'USD',
+      contractEndAt: new Date(contractEndAt), status: 'active'
+    });
+    await logAudit(ACTIONS.CONTRACT_CREATE, { userId: req.session.user.id, entity: 'AgencyContract', entityId: contract.id, details: { agencyId, packageId: pkg.packageId, quantity }, ipAddress: getIp(req) });
+    res.redirect(`/admin/agencies/${agencyId}`);
+  } catch (err) {
+    log.error({ err }, 'createContract failed');
+    res.status(500).render('error', { title: 'Hata', user: req.session.user, message: 'Kontrat olusturulamadi.' });
+  }
+}
+
+export async function listWebhookLogs(req, res) {
+  try {
+    const { status, page = 1 } = req.query;
+    const limit = 50;
+    const offset = (page - 1) * limit;
+    const where = {};
+    if (status && status !== 'all') where.processStatus = status;
+    const { count, rows: logs } = await db.AiraloWebhookLog.findAndCountAll({
+      where, include: [{ model: db.TravelerBooking, as: 'booking', attributes: ['id', 'travelerName', 'token'] }],
+      order: [['receivedAt', 'DESC']], limit, offset
+    });
+    res.render('admin/webhook-logs', { title: 'Webhook Logs', user: req.session.user, logs, total: count, page: Number(page), totalPages: Math.ceil(count / limit), filter: status || 'all' });
+  } catch (err) {
+    log.error({ err }, 'listWebhookLogs failed');
+    res.status(500).render('error', { title: 'Hata', user: req.session.user, message: 'Webhook logs yuklenemedi.' });
+  }
+}
+
+export async function retryWebhook(req, res) {
+  try {
+    const { processWebhook } = await import('./webhookController.js');
+    const webhookLog = await db.AiraloWebhookLog.findByPk(req.params.id);
+    if (!webhookLog || webhookLog.processStatus === 'success') return res.redirect('/admin/webhook-logs');
+    try {
+      await webhookLog.update({ processStatus: 'retrying', retryCount: webhookLog.retryCount + 1 });
+      await processWebhook(webhookLog);
+      await logAudit(ACTIONS.WEBHOOK_RETRIED, { userId: req.session.user.id, entity: 'AiraloWebhookLog', entityId: webhookLog.id, ipAddress: getIp(req) });
+    } catch (innerErr) {
+      log.error({ err: innerErr, webhookLogId: webhookLog.id }, 'Manual webhook retry failed');
+    }
+    res.redirect('/admin/webhook-logs');
+  } catch (err) {
+    log.error({ err }, 'retryWebhook failed');
+    res.redirect('/admin/webhook-logs');
+  }
+}

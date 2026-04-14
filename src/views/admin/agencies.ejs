@@ -1,0 +1,176 @@
+<%- include('../partials/header', {title: 'Acenteler', user: locals.user}) %>
+
+<div class="mb-8 flex items-center justify-between">
+  <div>
+    <p class="text-sm text-[var(--text-secondary)] mb-1">Acente Yonetimi</p>
+    <h1 class="text-page-title">Acenteler</h1>
+  </div>
+  <button onclick="document.getElementById('new-agency-modal').classList.remove('hidden')" class="btn btn-primary">
+    <i data-lucide="plus" class="w-4 h-4"></i>
+    Yeni Acente
+  </button>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  <div class="stat-card">
+    <div class="stat-icon bg-[var(--brand-light)]">
+      <i data-lucide="building-2" class="w-5 h-5 text-[var(--brand-primary)]"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Toplam Acente</p>
+      <p class="stat-value"><%= agencies.length %></p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon bg-emerald-50 dark:bg-emerald-500/10">
+      <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Aktif</p>
+      <p class="stat-value text-emerald-600 dark:text-emerald-400"><%= agencies.filter(a => a.status === 'active').length %></p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon bg-sky-50 dark:bg-sky-500/10">
+      <i data-lucide="file-text" class="w-5 h-5 text-sky-600 dark:text-sky-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Toplam Kontrat</p>
+      <p class="stat-value"><%= agencies.reduce((sum, a) => sum + (a.AgencyContracts ? a.AgencyContracts.length : 0), 0) %></p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon bg-amber-50 dark:bg-amber-500/10">
+      <i data-lucide="file-check" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Aktif Kontrat</p>
+      <p class="stat-value text-amber-600 dark:text-amber-400"><%= agencies.reduce((sum, a) => sum + (a.AgencyContracts ? a.AgencyContracts.filter(c => c.status === 'active').length : 0), 0) %></p>
+    </div>
+  </div>
+</div>
+
+<!-- Agencies Table -->
+<div class="table-container">
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Acente Adi</th>
+          <th>Slug</th>
+          <th>Iletisim</th>
+          <th>Kontrat</th>
+          <th>Durum</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (agencies.length > 0) { %>
+        <% agencies.forEach(function(agency) { %>
+        <tr>
+          <td>
+            <div>
+              <p class="font-medium text-[var(--text-primary)]"><%= agency.name %></p>
+              <% if (agency.contactName) { %>
+              <p class="text-xs text-[var(--text-tertiary)]"><%= agency.contactName %></p>
+              <% } %>
+            </div>
+          </td>
+          <td>
+            <span class="font-mono text-sm text-[var(--brand-primary)] bg-[var(--brand-light)] px-2 py-0.5 rounded"><%= agency.slug %></span>
+          </td>
+          <td class="text-sm text-[var(--text-secondary)]">
+            <% if (agency.contactEmail) { %>
+            <p><%= agency.contactEmail %></p>
+            <% } %>
+            <% if (agency.phone) { %>
+            <p class="text-xs text-[var(--text-tertiary)]"><%= agency.phone %></p>
+            <% } %>
+          </td>
+          <td>
+            <% const totalContracts = agency.AgencyContracts ? agency.AgencyContracts.length : 0; %>
+            <% const activeContracts = agency.AgencyContracts ? agency.AgencyContracts.filter(c => c.status === 'active').length : 0; %>
+            <p class="font-semibold text-[var(--text-primary)]"><%= totalContracts %></p>
+            <% if (activeContracts > 0) { %>
+            <p class="text-xs text-emerald-600 dark:text-emerald-400"><%= activeContracts %> aktif</p>
+            <% } %>
+          </td>
+          <td>
+            <% if (agency.status === 'active') { %>
+            <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Aktif</span>
+            <% } else { %>
+            <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span>Pasif</span>
+            <% } %>
+          </td>
+          <td>
+            <a href="/admin/agencies/<%= agency.id %>" class="btn btn-secondary btn-sm">
+              <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+              Detay
+            </a>
+          </td>
+        </tr>
+        <% }) %>
+        <% } else { %>
+        <tr>
+          <td colspan="6" class="text-center py-12 text-sm text-[var(--text-tertiary)]">
+            <i data-lucide="building-2" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+            <p>Henuz acente yok</p>
+            <button onclick="document.getElementById('new-agency-modal').classList.remove('hidden')" class="text-[var(--brand-primary)] hover:underline mt-1 inline-block">
+              Ilk acenteyi olustur
+            </button>
+          </td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- New Agency Modal -->
+<div id="new-agency-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="document.getElementById('new-agency-modal').classList.add('hidden')"></div>
+  <div class="relative bg-[var(--bg-primary)] rounded-2xl shadow-xl w-full max-w-lg p-6">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-lg font-semibold text-[var(--text-primary)]">Yeni Acente</h2>
+      <button onclick="document.getElementById('new-agency-modal').classList.add('hidden')" class="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <form method="post" action="/admin/agencies" class="space-y-4">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Acente Adi <span class="text-rose-500">*</span></label>
+        <input type="text" name="name" required class="input" placeholder="Ornek Turizm A.S.">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Slug <span class="text-rose-500">*</span></label>
+        <input type="text" name="slug" required class="input" placeholder="ornek-turizm" pattern="[a-z0-9-]+" title="Sadece kucuk harf, rakam ve tire">
+        <p class="text-xs text-[var(--text-tertiary)] mt-1">Sadece kucuk harf, rakam ve tire kullanin</p>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Yetkili Adi</label>
+          <input type="text" name="contactName" class="input" placeholder="Ali Veli">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Telefon</label>
+          <input type="tel" name="phone" class="input" placeholder="+90 555 000 0000">
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">E-posta <span class="text-rose-500">*</span></label>
+        <input type="email" name="contactEmail" required class="input" placeholder="info@ornek.com">
+      </div>
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" onclick="document.getElementById('new-agency-modal').classList.add('hidden')" class="btn btn-secondary">Iptal</button>
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          Olustur
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

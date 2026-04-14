@@ -1,0 +1,134 @@
+<%- include('../partials/header', {title: 'Webhook Logs', user: locals.user}) %>
+
+<div class="mb-8 flex items-center justify-between">
+  <div>
+    <p class="text-sm text-[var(--text-secondary)] mb-1">Airalo Entegrasyonu</p>
+    <h1 class="text-page-title">Webhook Logs</h1>
+  </div>
+</div>
+
+<!-- Status Filter -->
+<div class="flex items-center gap-2 mb-6 flex-wrap">
+  <% const statuses = ['all', 'pending', 'success', 'failed', 'retrying']; %>
+  <% statuses.forEach(function(s) { %>
+  <a href="/admin/webhook-logs?status=<%= s %>"
+    class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+    <%= filter === s
+      ? 'bg-[var(--brand-primary)] text-white'
+      : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]' %>">
+    <%= s === 'all' ? 'Tumu' : s === 'pending' ? 'Bekliyor' : s === 'success' ? 'Basarili' : s === 'failed' ? 'Basarisiz' : 'Yeniden Deneniyor' %>
+  </a>
+  <% }) %>
+  <span class="ml-auto text-sm text-[var(--text-tertiary)]">Toplam: <%= total %></span>
+</div>
+
+<!-- Logs Table -->
+<div class="table-container">
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Tip</th>
+          <th>Request ID</th>
+          <th>Rezervasyon</th>
+          <th>Durum</th>
+          <th>Deneme</th>
+          <th>Alinma Zamani</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (logs.length > 0) { %>
+        <% logs.forEach(function(log) { %>
+        <tr>
+          <td>
+            <span class="font-mono text-xs bg-[var(--bg-secondary)] px-2 py-0.5 rounded text-[var(--text-secondary)]">
+              <%= log.eventType || '-' %>
+            </span>
+          </td>
+          <td>
+            <span class="font-mono text-xs text-[var(--text-tertiary)]">
+              <%= log.airaloRequestId ? log.airaloRequestId.substring(0, 16) + '...' : '-' %>
+            </span>
+          </td>
+          <td>
+            <% if (log.booking) { %>
+            <div>
+              <p class="text-sm font-medium text-[var(--text-primary)]"><%= log.booking.travelerName %></p>
+              <a href="/agency/bookings/<%= log.booking.id %>" class="text-xs text-[var(--brand-primary)] hover:underline">#<%= log.booking.id %></a>
+            </div>
+            <% } else if (log.bookingId) { %>
+            <span class="text-xs text-[var(--text-tertiary)]">Booking #<%= log.bookingId %></span>
+            <% } else { %>
+            <span class="text-xs text-[var(--text-tertiary)]">—</span>
+            <% } %>
+          </td>
+          <td>
+            <% if (log.processStatus === 'success') { %>
+            <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Basarili</span>
+            <% } else if (log.processStatus === 'failed') { %>
+            <span class="badge badge-error"><span class="badge-dot bg-rose-500"></span>Basarisiz</span>
+            <% } else if (log.processStatus === 'retrying') { %>
+            <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Yeniden</span>
+            <% } else { %>
+            <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span>Bekliyor</span>
+            <% } %>
+          </td>
+          <td class="text-sm text-[var(--text-secondary)]">
+            <%= log.retryCount || 0 %> / 3
+          </td>
+          <td class="text-sm text-[var(--text-secondary)]">
+            <% const d = new Date(log.receivedAt || log.createdAt); %>
+            <p><%= d.toLocaleDateString('tr-TR') %></p>
+            <p class="text-xs text-[var(--text-tertiary)]"><%= d.toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'}) %></p>
+          </td>
+          <td>
+            <% if (log.processStatus === 'failed' || log.processStatus === 'pending') { %>
+            <form method="post" action="/admin/webhook-logs/<%= log.id %>/retry" onsubmit="return confirm('Bu webhook yeniden deneniyor. Emin misiniz?')">
+              <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+              <button type="submit" class="btn btn-sm btn-secondary text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                Tekrar Dene
+              </button>
+            </form>
+            <% } %>
+          </td>
+        </tr>
+        <% }) %>
+        <% } else { %>
+        <tr>
+          <td colspan="7" class="text-center py-12 text-sm text-[var(--text-tertiary)]">
+            <i data-lucide="webhook" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+            <p>Webhook log bulunamadi</p>
+          </td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Pagination -->
+<% if (totalPages > 1) { %>
+<div class="flex items-center justify-between mt-6">
+  <p class="text-sm text-[var(--text-secondary)]">
+    Sayfa <%= page %> / <%= totalPages %> &bull; Toplam <%= total %> kayit
+  </p>
+  <div class="flex gap-2">
+    <% if (page > 1) { %>
+    <a href="/admin/webhook-logs?status=<%= filter %>&page=<%= page - 1 %>" class="btn btn-secondary btn-sm">
+      <i data-lucide="chevron-left" class="w-4 h-4"></i>
+      Onceki
+    </a>
+    <% } %>
+    <% if (page < totalPages) { %>
+    <a href="/admin/webhook-logs?status=<%= filter %>&page=<%= page + 1 %>" class="btn btn-secondary btn-sm">
+      Sonraki
+      <i data-lucide="chevron-right" class="w-4 h-4"></i>
+    </a>
+    <% } %>
+  </div>
+</div>
+<% } %>
+
+<%- include('../partials/footer') %>

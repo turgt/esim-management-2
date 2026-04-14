@@ -6,7 +6,9 @@ import {
   showAllEsims, showEsimDetail,
   listPayments, retryEsimPurchase, resolvePayment,
   listEmails, showEmailDetail, downloadAttachment,
-  showZenditPurchase, zenditPurchase
+  showZenditPurchase, zenditPurchase,
+  listAgencies, showAgencyDetail, createAgency, createContract,
+  listWebhookLogs, retryWebhook
 } from '../controllers/adminController.js';
 import {
   listVendors, showCreateVendor, createVendor,
@@ -70,5 +72,15 @@ router.post('/pricing/global-markup', ensureAuth, ensureAdmin, updateGlobalMarku
 router.post('/pricing/preview', ensureAuth, ensureAdmin, express.json(), previewChanges);
 router.post('/pricing/override', ensureAuth, ensureAdmin, express.json(), saveOverrides);
 router.post('/pricing/reset/:packageId', ensureAuth, ensureAdmin, express.json(), resetOverride);
+
+// Agency Management
+router.get('/agencies', ensureAuth, ensureAdmin, listAgencies);
+router.post('/agencies', ensureAuth, ensureAdmin, createAgency);
+router.get('/agencies/:id', ensureAuth, ensureAdmin, showAgencyDetail);
+router.post('/agencies/:id/contracts', ensureAuth, ensureAdmin, createContract);
+
+// Webhook Logs
+router.get('/webhook-logs', ensureAuth, ensureAdmin, listWebhookLogs);
+router.post('/webhook-logs/:id/retry', ensureAuth, ensureAdmin, retryWebhook);
 
 export default router;
