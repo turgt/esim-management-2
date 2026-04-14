@@ -1,5 +1,79 @@
 <%- include('partials/header', {title: 'Payment', user: locals.user, backUrl: '/offers'}) %>
 
+<% const isTurInvoiceQr = (typeof paymentMode !== 'undefined' && paymentMode === 'turinvoice-qr'); %>
+<% const showMethodSelector = !isTurInvoiceQr && (typeof turInvoiceEnabled !== 'undefined' && turInvoiceEnabled); %>
+
+<% if (isTurInvoiceQr) { %>
+  <div class="max-w-lg mx-auto px-4 py-8">
+    <div class="mb-4">
+      <a href="javascript:history.back()" class="text-sm text-[var(--brand-primary)] hover:underline">&larr; Yontemi Degistir</a>
+    </div>
+
+    <div class="flex items-center justify-between mb-4 pb-3 border-b border-[var(--border-primary)]">
+      <span class="text-sm text-[var(--text-secondary)]"><%= payment.metadata?.planName || 'eSIM' %></span>
+      <span class="text-lg font-bold"><%= currency %> <%= Number(amount).toFixed(2) %></span>
+    </div>
+
+    <div class="card p-6 text-center mb-4">
+      <div style="width:200px;height:200px;margin:0 auto 16px;position:relative;">
+        <img id="qrImage" src="/payment/turinvoice/qr/<%= turInvoiceIdOrder %>"
+             alt="QR Code" style="width:100%;height:100%;object-fit:contain;border-radius:8px;"
+             onerror="document.getElementById('qrError').style.display='block';this.style.display='none';">
+        <div id="qrError" style="display:none;" class="text-sm text-red-500 mt-4">
+          QR kodu yuklenemedi.
+          <a href="<%= turInvoicePaymentUrl %>" class="text-[var(--brand-primary)] underline block mt-2">Kart ile ode &rarr;</a>
+        </div>
+      </div>
+      <p class="font-semibold text-[var(--text-primary)]">Banka Uygulamani Ac</p>
+      <p class="text-sm text-[var(--text-secondary)]">QR kodu tarayarak odemeyi tamamla</p>
+    </div>
+
+    <div id="turPaymentStatus" class="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center gap-3 mb-4">
+      <div style="width:8px;height:8px;border-radius:50%;background:#f97316;" class="animate-pulse"></div>
+      <span class="text-sm text-amber-800" id="turStatusText">Odeme bekleniyor... Otomatik onaylanacak.</span>
+    </div>
+
+    <div class="flex items-center gap-3 my-4">
+      <div class="flex-1 h-px bg-[var(--border-primary)]"></div>
+      <span class="text-xs text-[var(--text-secondary)]">veya</span>
+      <div class="flex-1 h-px bg-[var(--border-primary)]"></div>
+    </div>
+
+    <div class="text-center">
+      <a href="<%= turInvoicePaymentUrl %>" class="text-sm text-[var(--brand-primary)] hover:underline">Kart bilgileri ile ode &rarr;</a>
+      <p class="text-xs text-[var(--text-secondary)] mt-1">TurInvoice guvenli odeme sayfasina yonlendirileceksin</p>
+    </div>
+
+    <script>
+      (function() {
+        var merchantOid = '<%= payment.merchantOid %>';
+        var statusEl = document.getElementById('turStatusText');
+        var containerEl = document.getElementById('turPaymentStatus');
+        var pollInterval = setInterval(function() {
+          fetch('/payment/status/' + merchantOid)
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+              if (d.status === 'completed') {
+                clearInterval(pollInterval);
+                window.location.href = '/payment/result/' + merchantOid;
+              } else if (d.status === 'failed') {
+                clearInterval(pollInterval);
+                statusEl.textContent = 'Odeme basarisiz oldu.';
+                containerEl.className = 'bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-3 mb-4';
+              }
+            })
+            .catch(function() {});
+        }, 2000);
+
+        setTimeout(function() {
+          clearInterval(pollInterval);
+          statusEl.textContent = 'Odeme henuz onaylanmadi. Sayfayi yenileyerek tekrar kontrol edebilirsin.';
+        }, 5 * 60 * 1000);
+      })();
+    </script>
+  </div>
+<% } else { %>
+
 <%
   var planName = (typeof payment !== 'undefined' && payment && payment.metadata && payment.metadata.planName)
     ? payment.metadata.planName
@@ -11,6 +85,84 @@
 %>
 
 <div class="max-w-lg mx-auto space-y-5">
+
+    <% if (showMethodSelector) { %>
+    <form id="paymentMethodForm" method="post" action="/payment/create" class="mb-6">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+      <input type="hidden" name="packageId" value="<%= offerId %>">
+      <input type="hidden" name="amount" value="<%= amount %>">
+      <input type="hidden" name="currency" value="<%= currency %>">
+      <input type="hidden" name="planName" value="<%= payment.metadata?.planName || '' %>">
+      <input type="hidden" name="provider" id="selectedProvider" value="paddle">
+      <input type="hidden" name="paymentType" id="selectedPaymentType" value="qr">
+
+      <p class="text-sm font-semibold text-[var(--text-primary)] mb-3">Odeme Yontemi</p>
+
+      <label class="block border-2 rounded-xl p-4 mb-2 cursor-pointer border-[var(--brand-primary)] bg-indigo-50"
+             id="optPaddle" onclick="selectProvider('paddle')">
+        <div class="flex items-center gap-3">
+          <div class="w-5 h-5 rounded-full border-2 border-[var(--brand-primary)] flex items-center justify-center" id="rdPaddle">
+            <div class="w-2.5 h-2.5 rounded-full bg-[var(--brand-primary)]"></div>
+          </div>
+          <div class="flex-1">
+            <span class="font-semibold text-sm">💳 Uluslararasi Kart</span>
+            <span class="text-xs text-[var(--text-secondary)] block">Visa, Mastercard, Apple Pay</span>
+          </div>
+        </div>
+      </label>
+
+      <label class="block border-2 rounded-xl p-4 cursor-pointer border-[var(--border-primary)]"
+             id="optTur" onclick="selectProvider('turinvoice')">
+        <div class="flex items-center gap-3">
+          <div class="w-5 h-5 rounded-full border-2 border-[var(--border-primary)]" id="rdTur"></div>
+          <div class="flex-1">
+            <span class="font-semibold text-sm">🇷🇺 Rus Karti / MIR</span>
+            <span class="text-xs text-[var(--text-secondary)] block">MIR, SBP, Banka karti</span>
+          </div>
+        </div>
+      </label>
+
+      <button type="submit" id="turSubmitBtn" style="display:none;"
+              class="w-full btn btn-primary py-3 text-base font-bold mt-4">
+        <%= currency %> <%= Number(amount).toFixed(2) %> Ode &rarr;
+      </button>
+    </form>
+
+    <script>
+      function selectProvider(method) {
+        document.getElementById('selectedProvider').value = method;
+        var optP = document.getElementById('optPaddle');
+        var optT = document.getElementById('optTur');
+        var rdP = document.getElementById('rdPaddle');
+        var rdT = document.getElementById('rdTur');
+        var turBtn = document.getElementById('turSubmitBtn');
+
+        if (method === 'paddle') {
+          optP.className = 'block border-2 rounded-xl p-4 mb-2 cursor-pointer border-[var(--brand-primary)] bg-indigo-50';
+          optT.className = 'block border-2 rounded-xl p-4 cursor-pointer border-[var(--border-primary)]';
+          rdP.className = 'w-5 h-5 rounded-full border-2 border-[var(--brand-primary)] flex items-center justify-center';
+          rdP.textContent = '';
+          var dot = document.createElement('div');
+          dot.className = 'w-2.5 h-2.5 rounded-full bg-[var(--brand-primary)]';
+          rdP.appendChild(dot);
+          rdT.className = 'w-5 h-5 rounded-full border-2 border-[var(--border-primary)]';
+          rdT.textContent = '';
+          turBtn.style.display = 'none';
+        } else {
+          optT.className = 'block border-2 rounded-xl p-4 cursor-pointer border-[var(--brand-primary)] bg-indigo-50';
+          optP.className = 'block border-2 rounded-xl p-4 mb-2 cursor-pointer border-[var(--border-primary)]';
+          rdT.className = 'w-5 h-5 rounded-full border-2 border-[var(--brand-primary)] flex items-center justify-center';
+          rdT.textContent = '';
+          var dot2 = document.createElement('div');
+          dot2.className = 'w-2.5 h-2.5 rounded-full bg-[var(--brand-primary)]';
+          rdT.appendChild(dot2);
+          rdP.className = 'w-5 h-5 rounded-full border-2 border-[var(--border-primary)]';
+          rdP.textContent = '';
+          turBtn.style.display = 'block';
+        }
+      }
+    </script>
+    <% } %>
 
   <!-- Order Summary -->
   <div class="card fade-up stagger-1">
@@ -151,5 +303,7 @@
   }
 })();
 </script>
+
+<% } /* end of isTurInvoiceQr else */ %>
 
 <%- include('partials/footer') %>
