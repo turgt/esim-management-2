@@ -217,8 +217,46 @@ export async function sendEsimActivationFailedEmail(user, payment) {
   }
 }
 
+export async function sendReplyEmail(to, subject, html, { inReplyTo, userId } = {}) {
+  const client = getResendClient();
+  const from = process.env.SMTP_FROM || 'DataPatch <noreply@datapatch.net>';
+
+  if (!client) {
+    log.info({ to, subject }, 'Reply email logged (no Resend API key)');
+    try {
+      await db.EmailLog.create({ to, subject, type: 'reply', userId, status: 'logged' });
+    } catch (e) { /* ignore */ }
+    return { logged: true };
+  }
+
+  try {
+    const payload = { from, to, subject, html };
+    if (inReplyTo) {
+      payload.headers = { 'In-Reply-To': inReplyTo, 'References': inReplyTo };
+    }
+    const { data, error } = await client.emails.send(payload);
+
+    if (error) {
+      log.error({ err: error, to, subject }, 'Reply email send error');
+      try {
+        await db.EmailLog.create({ to, subject, type: 'reply', userId, status: 'failed', metadata: { error: error.message, inReplyTo } });
+      } catch (e) { /* ignore */ }
+      return { error: error.message };
+    }
+
+    log.info({ to, messageId: data.id }, 'Reply email sent');
+    try {
+      await db.EmailLog.create({ to, subject, type: 'reply', userId, resendId: data.id, status: 'sent', metadata: { inReplyTo } });
+    } catch (e) { /* ignore */ }
+    return data;
+  } catch (err) {
+    log.error({ err, to }, 'Reply email exception');
+    throw err;
+  }
+}
+
 export default {
   sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail,
   sendEsimAssignedEmail, sendPaymentSuccessEmail, sendPaymentFailedEmail,
-  sendEsimActivationFailedEmail
+  sendEsimActivationFailedEmail, sendReplyEmail
 };

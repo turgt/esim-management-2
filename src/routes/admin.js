@@ -5,7 +5,7 @@ import {
   showAssignEsim, assignEsim, showTopup, topupEsim,
   showAllEsims, showEsimDetail,
   listPayments, retryEsimPurchase, resolvePayment,
-  listEmails, showEmailDetail, downloadAttachment,
+  listEmails, showEmailDetail, downloadAttachment, replyToEmail,
   showZenditPurchase, zenditPurchase,
   listAgencies, showAgencyDetail, createAgency, createContract,
   listWebhookLogs, retryWebhook
@@ -61,6 +61,7 @@ router.get('/vendors/:id/qr', ensureAuth, ensureAdmin, downloadQrCode);
 router.get('/emails', ensureAuth, ensureAdmin, listEmails);
 router.get('/emails/:id', ensureAuth, ensureAdmin, showEmailDetail);
 router.get('/emails/:id/attachment/:attachmentIndex', ensureAuth, ensureAdmin, downloadAttachment);
+router.post('/emails/:id/reply', ensureAuth, ensureAdmin, replyToEmail);
 
 // Zendit Purchase (admin-only)
 router.get('/zendit/purchase', ensureAuth, ensureAdmin, showZenditPurchase);

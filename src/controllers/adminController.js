@@ -734,7 +734,12 @@ export async function showEmailDetail(req, res) {
       }
     }
 
-    res.render('admin/email-detail', { title: 'Email Detail', email });
+    res.render('admin/email-detail', {
+      title: 'Email Detail',
+      email,
+      replied: req.query.replied === 'true',
+      error: req.query.error || null
+    });
   } catch (err) {
     log.error({ err }, 'showEmailDetail error');
     res.render('error', { message: 'Failed to load email detail' });
@@ -754,9 +759,12 @@ export async function downloadAttachment(req, res) {
       return res.render('error', { message: 'Invalid attachment' });
     }
 
-    const rawUrl = email.metadata?.rawDownloadUrl;
-    if (!rawUrl) {
-      // Try to fetch from API
+    let rawUrl = email.metadata?.rawDownloadUrl;
+    const rawExpiresAt = email.metadata?.rawExpiresAt;
+    const isExpired = !rawUrl || (rawExpiresAt && new Date(rawExpiresAt) < new Date());
+
+    if (isExpired) {
+      // URL missing or expired — fetch fresh from Resend API
       const apiKey = process.env.RESEND_API_KEY;
       if (!apiKey || !email.resendId) {
         return res.render('error', { message: 'Raw email not available' });
@@ -803,7 +811,51 @@ async function parseAndServeAttachment(res, rawUrl, attachmentIndex) {
   res.send(att.content);
 }
 
-// Admin-only: Zendit purchase page (for consuming remaining balance)
+/// Reply to inbound email
+export async function replyToEmail(req, res) {
+  try {
+    const email = await db.EmailLog.findByPk(req.params.id);
+    if (!email || email.type !== 'inbound') {
+      return res.render('error', { title: 'Error', user: req.session.user, message: 'Email not found' });
+    }
+
+    const { replyBody } = req.body;
+    if (!replyBody || !replyBody.trim()) {
+      return res.redirect(`/admin/emails/${email.id}?error=empty`);
+    }
+
+    const replyTo = email.metadata?.from || email.to;
+    const subject = email.subject?.startsWith('Re: ') ? email.subject : `Re: ${email.subject}`;
+
+    const { sendReplyEmail } = await import('../services/emailService.js');
+    await sendReplyEmail(replyTo, subject,
+      `<div style="font-family:system-ui,sans-serif;font-size:14px;line-height:1.6;">
+        ${replyBody.replace(/\n/g, '<br>')}
+        <br><br>
+        <div style="border-left:3px solid #e2e8f0;padding-left:12px;color:#64748b;margin-top:16px;">
+          <p style="margin:0 0 4px;font-size:12px;"><strong>${email.metadata?.from || 'Unknown'}</strong> wrote:</p>
+          <div style="font-size:13px;">${email.metadata?.textBody || email.metadata?.htmlBody || '(no content)'}</div>
+        </div>
+      </div>`,
+      { inReplyTo: email.resendId, userId: req.session.user.id }
+    );
+
+    await logAudit(ACTIONS.ADMIN_EMAIL_REPLY || 'admin.email_reply', {
+      userId: req.session.user.id,
+      entity: 'EmailLog',
+      entityId: email.id,
+      details: { replyTo, subject },
+      ipAddress: getIp(req)
+    });
+
+    res.redirect(`/admin/emails/${email.id}?replied=true`);
+  } catch (err) {
+    log.error({ err }, 'replyToEmail error');
+    res.render('error', { title: 'Error', user: req.session.user, message: 'Failed to send reply' });
+  }
+}
+
+/ Admin-only: Zendit purchase page (for consuming remaining balance)
 export async function showZenditPurchase(req, res) {
   try {
     const users = await db.User.findAll({
