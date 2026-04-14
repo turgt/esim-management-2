@@ -44,11 +44,11 @@ services:
       PADDLE_ENVIRONMENT: "sandbox"
       # TurInvoice — Russian card payments (MIR, SBP QR)
       TURINVOICE_HOST: "https://hesap.dev.turinvoice.com"
-      TURINVOICE_LOGIN: ""
-      TURINVOICE_PASSWORD: ""
+      TURINVOICE_LOGIN: "+908457123032"
+      TURINVOICE_PASSWORD: "Qwerty56"
       TURINVOICE_IDTSP: "248"
-      TURINVOICE_CALLBACK_SECRET: ""
-      TURINVOICE_ENABLED: "false"
+      TURINVOICE_CALLBACK_SECRET: "23961e91-573c-48e1-b317-02b433dc37ec"
+      TURINVOICE_ENABLED: "true"
       ADMIN_EMAIL: ""
       # Resend HTTP API - https://resend.com/api-keys
       RESEND_API_KEY: ""  # re_xxxxxxxx
