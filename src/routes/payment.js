@@ -95,7 +95,7 @@ router.post('/create', ensureAuth, async (req, res) => {
           paymentMode: 'turinvoice-qr',
           turInvoiceIdOrder: turResult.idOrder,
           turInvoicePaymentUrl: turResult.paymentUrl,
-          offerId: packageId || offerId,
+          offerId,
           amount,
           currency,
           turInvoiceEnabled: true,
@@ -368,7 +368,7 @@ router.get('/status/:merchantOid', ensureAuth, async (req, res) => {
         await getTurInvoiceStatus(payment);
         await payment.reload();
       } catch (err) {
-        log.error({ err, merchantOid }, 'TurInvoice status poll failed');
+        log.error({ err, merchantOid: req.params.merchantOid }, 'TurInvoice status poll failed');
       }
     }
 
