@@ -13,6 +13,7 @@ import logger from './lib/logger.js';
 import httpLogger from './lib/httpLogger.js';
 import { validateEnv } from './lib/validateEnv.js';
 import { bootstrap } from './lib/startup.js';
+import { startJobs } from './jobs/index.js';
 
 // Validate environment variables early
 validateEnv();
@@ -338,3 +339,5 @@ const server = app.listen(PORT, () => {
 });
 
 server.timeout = 30000;
+
+startJobs();
