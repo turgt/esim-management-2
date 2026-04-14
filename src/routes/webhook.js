@@ -1,13 +1,37 @@
 import express from 'express';
+import { Webhook } from 'svix';
 import db from '../db/models/index.js';
 import logger from '../lib/logger.js';
 
 const router = express.Router();
 const log = logger.child({ module: 'webhook' });
 
+// JSON parser that preserves raw body for signature verification
+const jsonWithRawBody = express.json({
+  verify: (req, _res, buf) => { req.rawBody = buf.toString(); }
+});
+
 // Resend webhook - handles both outbound events and inbound emails
-router.post('/resend', express.json(), async (req, res) => {
+router.post('/resend', jsonWithRawBody, async (req, res) => {
   try {
+    // Verify webhook signature (Resend uses svix)
+    const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      const wh = new Webhook(webhookSecret);
+      try {
+        wh.verify(req.rawBody, {
+          'svix-id': req.headers['svix-id'],
+          'svix-timestamp': req.headers['svix-timestamp'],
+          'svix-signature': req.headers['svix-signature']
+        });
+      } catch (verifyErr) {
+        log.warn({ err: verifyErr.message }, 'Resend webhook signature verification failed');
+        return res.status(401).json({ error: 'Invalid webhook signature' });
+      }
+    } else {
+      log.warn('RESEND_WEBHOOK_SECRET not set — webhook signature not verified');
+    }
+
     const { type, data } = req.body;
 
     if (!type || !data) {

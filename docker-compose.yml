@@ -53,6 +53,7 @@ services:
       ADMIN_EMAIL: ""
       # Resend HTTP API - https://resend.com/api-keys
       RESEND_API_KEY: ""  # re_xxxxxxxx
+      RESEND_WEBHOOK_SECRET: ""  # whsec_xxxxxxxx
       SMTP_FROM: "DataPatch <noreply@datapatch.net>"
     depends_on:
       db:
