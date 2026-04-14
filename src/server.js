@@ -33,6 +33,8 @@ import { startSync as startAiraloSync } from './services/airaloSync.js';
 import { cookieParser, doubleCsrfProtection, csrfTokenMiddleware, csrfErrorHandler } from './middleware/csrf.js';
 import { verifyPaddleWebhook, processPaddleWebhook } from './services/paymentService.js';
 import { handleAiraloWebhook } from './controllers/webhookController.js';
+import { handleCallback as handleTurInvoiceCallback } from './controllers/turInvoiceController.js';
+import { initialize as initTurInvoice, isEnabled as turInvoiceEnabled } from './services/turInvoiceClient.js';
 
 import {
   performanceMonitor,
@@ -184,6 +186,9 @@ app.post('/payment/webhook', async (req, res) => {
 
 // Airalo webhook route — MUST be before CSRF middleware (server-to-server, no CSRF)
 app.post('/api/webhooks/airalo', handleAiraloWebhook);
+
+// TurInvoice callback — MUST be before CSRF middleware (server-to-server)
+app.post('/payment/turinvoice/callback', handleTurInvoiceCallback);
 
 // Webhook routes (before CSRF - external calls don't have CSRF tokens)
 app.use('/webhooks', webhookRoutes);
@@ -341,3 +346,8 @@ const server = app.listen(PORT, () => {
 server.timeout = 30000;
 
 startJobs();
+
+// Initialize TurInvoice client if enabled
+if (turInvoiceEnabled()) {
+  initTurInvoice().catch(err => logger.error({ err }, 'TurInvoice init failed'));
+}

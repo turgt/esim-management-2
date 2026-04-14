@@ -4,7 +4,9 @@ import {
   createPayment,
   createPaddleCheckout,
   findByMerchantOid,
-  checkProviderBalance
+  checkProviderBalance,
+  createTurInvoiceCheckout,
+  getTurInvoiceStatus
 } from '../services/paymentService.js';
 import { getPaginationParams, buildPagination } from '../utils/pagination.js';
 import { listOffers } from '../services/zenditClient.js';
@@ -12,9 +14,14 @@ import { getTopupPackages as getAiraloTopupPackages } from '../services/airaloCl
 import cacheService from '../services/cacheService.js';
 import { getEsimPlans } from '../services/zenditClient.js';
 import logger from '../lib/logger.js';
+import { serveQrCode } from '../controllers/turInvoiceController.js';
+import { isEnabled as turInvoiceEnabled, isInitialized as turInvoiceReady } from '../services/turInvoiceClient.js';
 
 const router = Router();
 const log = logger.child({ module: 'payment-routes' });
+
+// TurInvoice QR code proxy
+router.get('/turinvoice/qr/:idOrder', ensureAuth, serveQrCode);
 
 // POST /payment/create — Start payment flow (authenticated + CSRF)
 router.post('/create', ensureAuth, async (req, res) => {
@@ -64,23 +71,61 @@ router.post('/create', ensureAuth, async (req, res) => {
       return res.render('error', { message: 'You have reached your eSIM limit.', title: 'Limit Reached' });
     }
 
+    const provider = req.body.provider || 'paddle';
+    const paymentType = req.body.paymentType || 'qr';
+
     const payment = await createPayment(userId, offerId, parsedAmount, currency || 'USD', {
       planName: req.body.planName || offerId,
-      vendor
+      vendor,
+      provider
     });
+
+    if (provider === 'turinvoice') {
+      try {
+        const turResult = await createTurInvoiceCheckout({ payment, paymentType });
+
+        if (paymentType === 'card') {
+          return res.redirect(turResult.paymentUrl);
+        }
+
+        return res.render('payment', {
+          title: 'Payment',
+          user: req.session.user,
+          payment,
+          paymentMode: 'turinvoice-qr',
+          turInvoiceIdOrder: turResult.idOrder,
+          turInvoicePaymentUrl: turResult.paymentUrl,
+          offerId: packageId || offerId,
+          amount,
+          currency,
+          turInvoiceEnabled: true,
+          turInvoiceReady: true
+        });
+      } catch (err) {
+        log.error({ err }, 'TurInvoice checkout failed');
+        return res.render('error', {
+          title: 'Payment Error',
+          user: req.session.user,
+          message: 'Odeme baslatilamadi. Lutfen tekrar deneyin.'
+        });
+      }
+    }
 
     try {
       const { paddleTransactionId } = await createPaddleCheckout({ payment, user });
       await payment.update({ providerTransactionId: paddleTransactionId });
       res.render('payment', {
         title: 'Payment',
+        user: req.session.user,
         payment,
         paddleTransactionId,
         paddleClientToken: process.env.PADDLE_CLIENT_TOKEN || '',
         paddleEnvironment: process.env.PADDLE_ENVIRONMENT === 'production' ? 'production' : 'sandbox',
         offerId,
         amount: parsedAmount,
-        currency: currency || 'USD'
+        currency: currency || 'USD',
+        turInvoiceEnabled: turInvoiceEnabled() && turInvoiceReady(),
+        turInvoiceReady: turInvoiceReady()
       });
     } catch (checkoutErr) {
       log.error({ err: checkoutErr, merchantOid: payment.merchantOid }, 'Paddle checkout creation failed');
@@ -315,6 +360,16 @@ router.get('/status/:merchantOid', ensureAuth, async (req, res) => {
 
     if (!payment || payment.userId !== req.session.user.id) {
       return res.status(404).json({ error: 'Payment not found' });
+    }
+
+    // TurInvoice status polling
+    if (payment.provider === 'turinvoice' && payment.status === 'pending') {
+      try {
+        await getTurInvoiceStatus(payment);
+        await payment.reload();
+      } catch (err) {
+        log.error({ err, merchantOid }, 'TurInvoice status poll failed');
+      }
     }
 
     res.json({
