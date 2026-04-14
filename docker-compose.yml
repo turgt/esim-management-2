@@ -48,6 +48,7 @@ services:
       TURINVOICE_PASSWORD: "Qwerty56"
       TURINVOICE_IDTSP: "248"
       TURINVOICE_CALLBACK_SECRET: "23961e91-573c-48e1-b317-02b433dc37ec"
+      TURINVOICE_CURRENCY: ""
       TURINVOICE_ENABLED: "true"
       ADMIN_EMAIL: ""
       # Resend HTTP API - https://resend.com/api-keys

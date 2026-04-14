@@ -76,11 +76,12 @@ async function withAutoRelogin(fn) {
 
 export async function createOrder({ amount, currency, name, callbackUrl, redirectUrl }) {
   const idTSP = Number(process.env.TURINVOICE_IDTSP);
+  const orderCurrency = process.env.TURINVOICE_CURRENCY || currency || 'USD';
   return withAutoRelogin(async () => {
     const res = await api().put('/api/v1/tsp/order', {
       idTSP,
       amount,
-      currency: currency || 'USD',
+      currency: orderCurrency,
       name: name || 'eSIM purchase',
       quantity: 1,
       ...(callbackUrl ? { callbackUrl } : {}),
