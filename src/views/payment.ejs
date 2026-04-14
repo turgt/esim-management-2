@@ -1,7 +1,9 @@
 <%- include('partials/header', {title: 'Payment', user: locals.user, backUrl: '/offers'}) %>
 
 <% const isTurInvoiceQr = (typeof paymentMode !== 'undefined' && paymentMode === 'turinvoice-qr'); %>
-<% const showMethodSelector = !isTurInvoiceQr && (typeof turInvoiceEnabled !== 'undefined' && turInvoiceEnabled); %>
+<% const isMethodSelection = (typeof paymentMode !== 'undefined' && paymentMode === 'method-selection'); %>
+<% const showMethodSelector = (isMethodSelection || !isTurInvoiceQr) && (typeof turInvoiceEnabled !== 'undefined' && turInvoiceEnabled); %>
+<% const skipPaddleJs = isTurInvoiceQr || isMethodSelection; %>
 
 <% if (isTurInvoiceQr) { %>
   <div class="max-w-lg mx-auto px-4 py-8">
@@ -87,6 +89,20 @@
 <div class="max-w-lg mx-auto space-y-5">
 
     <% if (showMethodSelector) { %>
+    <!-- Order Summary (compact) -->
+    <div class="card p-4 mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-[var(--brand-light)] flex items-center justify-center">
+          <i data-lucide="globe" class="w-5 h-5 text-[var(--brand-primary)]"></i>
+        </div>
+        <div class="flex-1">
+          <p class="font-semibold text-sm"><%= payment.metadata?.planName || 'eSIM Plan' %></p>
+          <p class="text-xs text-[var(--text-secondary)]">Order #<%= payment.merchantOid %></p>
+        </div>
+        <p class="font-bold text-lg"><%= currency || 'USD' %> <%= Number(amount).toFixed(2) %></p>
+      </div>
+    </div>
+
     <form id="paymentMethodForm" method="post" action="/payment/create" class="mb-6">
       <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
       <input type="hidden" name="packageId" value="<%= offerId %>">
@@ -164,6 +180,7 @@
     </script>
     <% } %>
 
+  <% if (!isMethodSelection) { %>
   <!-- Order Summary -->
   <div class="card fade-up stagger-1">
     <div class="p-5">
@@ -236,7 +253,9 @@
     Secure payment -- processed by Paddle
   </p>
 </div>
+  <% } /* end of !isMethodSelection */ %>
 
+<% if (!skipPaddleJs) { %>
 <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 <script>
 (function () {
@@ -303,6 +322,7 @@
   }
 })();
 </script>
+<% } /* end of skipPaddleJs */ %>
 
 <% } /* end of isTurInvoiceQr else */ %>
 

@@ -71,14 +71,34 @@ router.post('/create', ensureAuth, async (req, res) => {
       return res.render('error', { message: 'You have reached your eSIM limit.', title: 'Limit Reached' });
     }
 
-    const provider = req.body.provider || 'paddle';
+    const providerExplicit = req.body.provider; // undefined if not explicitly chosen
+    const provider = providerExplicit || 'paddle';
     const paymentType = req.body.paymentType || 'qr';
+    const showMethodSelection = !providerExplicit && turInvoiceEnabled() && turInvoiceReady();
 
     const payment = await createPayment(userId, offerId, parsedAmount, currency || 'USD', {
       planName: req.body.planName || offerId,
       vendor,
-      provider
+      provider: showMethodSelection ? 'pending' : provider
     });
+
+    // If TurInvoice is enabled and user hasn't chosen a method yet, show selection page
+    if (showMethodSelection) {
+      return res.render('payment', {
+        title: 'Payment',
+        user: req.session.user,
+        payment,
+        paymentMode: 'method-selection',
+        paddleTransactionId: null,
+        paddleClientToken: process.env.PADDLE_CLIENT_TOKEN || '',
+        paddleEnvironment: process.env.PADDLE_ENVIRONMENT === 'production' ? 'production' : 'sandbox',
+        offerId,
+        amount: parsedAmount,
+        currency: currency || 'USD',
+        turInvoiceEnabled: true,
+        turInvoiceReady: true
+      });
+    }
 
     if (provider === 'turinvoice') {
       try {
