@@ -256,6 +256,9 @@ app.get('/', (req, res) => {
   return showLandingPage(req, res);
 });
 
+// CSRF error handler (must be before 404 and global error handler)
+app.use(csrfErrorHandler);
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).render('error', {
@@ -263,9 +266,6 @@ app.use((req, res) => {
     title: '404 Not Found'
   });
 });
-
-// CSRF error handler
-app.use(csrfErrorHandler);
 
 // Global error handler
 app.use((err, req, res, next) => {

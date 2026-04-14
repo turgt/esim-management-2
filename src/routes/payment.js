@@ -16,6 +16,7 @@ import { getEsimPlans } from '../services/zenditClient.js';
 import logger from '../lib/logger.js';
 import { serveQrCode } from '../controllers/turInvoiceController.js';
 import { isEnabled as turInvoiceEnabled, isInitialized as turInvoiceReady } from '../services/turInvoiceClient.js';
+import { calcFinalPrice, getGlobalMarkup } from '../services/pricingService.js';
 
 const router = Router();
 const log = logger.child({ module: 'payment-routes' });
@@ -46,8 +47,27 @@ router.post('/create', ensureAuth, async (req, res) => {
       return res.render('error', { message: 'Invalid amount', title: 'Error' });
     }
 
+    // Server-side price verification — prevent amount manipulation
+    const db = (await import('../db/models/index.js')).default;
+    const pkg = await db.AiraloPackage.findOne({ where: { packageId: offerId } });
+    if (!pkg) {
+      log.warn({ offerId, userId: req.session?.user?.id }, 'Package not found during price verification');
+      return res.render('error', { message: 'Package not found', title: 'Error' });
+    }
+    const globalMarkup = await getGlobalMarkup();
+    const correctPrice = calcFinalPrice(pkg, globalMarkup);
+    if (Math.abs(parsedAmount - correctPrice) > 0.01) {
+      log.warn({
+        offerId,
+        submittedAmount: parsedAmount,
+        correctPrice,
+        userId: req.session?.user?.id
+      }, 'PRICE MISMATCH — possible amount manipulation');
+      return res.render('error', { message: 'Price mismatch. Please refresh and try again.', title: 'Error' });
+    }
+
     // Check provider balance BEFORE accepting payment
-    const balanceCheck = await checkProviderBalance(parsedAmount);
+    const balanceCheck = await checkProviderBalance(correctPrice);
     if (!balanceCheck.sufficient) {
       log.warn({ offerId, amount: parsedAmount, ...balanceCheck }, 'Provider balance insufficient, blocking payment');
       return res.render('error', {
@@ -57,7 +77,6 @@ router.post('/create', ensureAuth, async (req, res) => {
     }
 
     const userId = req.session.user.id;
-    const db = (await import('../db/models/index.js')).default;
     const user = await db.User.findByPk(userId, {
       include: [{ model: db.Esim, foreignKey: 'userId' }]
     });
@@ -76,7 +95,7 @@ router.post('/create', ensureAuth, async (req, res) => {
     const paymentType = req.body.paymentType || 'qr';
     const showMethodSelection = !providerExplicit && turInvoiceEnabled() && turInvoiceReady();
 
-    const payment = await createPayment(userId, offerId, parsedAmount, currency || 'USD', {
+    const payment = await createPayment(userId, offerId, correctPrice, currency || 'USD', {
       planName: req.body.planName || offerId,
       vendor,
       provider: showMethodSelection ? 'pending' : provider
@@ -93,7 +112,7 @@ router.post('/create', ensureAuth, async (req, res) => {
         paddleClientToken: process.env.PADDLE_CLIENT_TOKEN || '',
         paddleEnvironment: process.env.PADDLE_ENVIRONMENT === 'production' ? 'production' : 'sandbox',
         offerId,
-        amount: parsedAmount,
+        amount: correctPrice,
         currency: currency || 'USD',
         turInvoiceEnabled: true,
         turInvoiceReady: true
@@ -142,7 +161,7 @@ router.post('/create', ensureAuth, async (req, res) => {
         paddleClientToken: process.env.PADDLE_CLIENT_TOKEN || '',
         paddleEnvironment: process.env.PADDLE_ENVIRONMENT === 'production' ? 'production' : 'sandbox',
         offerId,
-        amount: parsedAmount,
+        amount: correctPrice,
         currency: currency || 'USD',
         turInvoiceEnabled: turInvoiceEnabled() && turInvoiceReady(),
         turInvoiceReady: turInvoiceReady()
@@ -166,23 +185,15 @@ router.post('/topup/create', ensureAuth, async (req, res) => {
   try {
     // Support both packageId (Airalo) and offerId (Zendit legacy)
     const offerId = req.body.packageId || req.body.offerId;
-    const { amount, currency, esimId, iccid } = req.body;
+    const { amount, currency, esimId } = req.body;
 
-    if (!offerId || !amount || !esimId || !iccid) {
+    if (!offerId || !amount || !esimId) {
       return res.render('error', { message: 'Missing required fields', title: 'Error' });
     }
 
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       return res.render('error', { message: 'Invalid amount', title: 'Error' });
-    }
-
-    const balanceCheck = await checkProviderBalance(parsedAmount);
-    if (!balanceCheck.sufficient) {
-      return res.render('error', {
-        message: 'Top-up is temporarily unavailable. Please try again later.',
-        title: 'Unavailable'
-      });
     }
 
     const userId = req.session.user.id;
@@ -193,6 +204,37 @@ router.post('/topup/create', ensureAuth, async (req, res) => {
       return res.render('error', { message: 'eSIM not found', title: 'Error' });
     }
 
+    // Server-side price verification for topup packages
+    let verifiedPrice = parsedAmount;
+    if (esim.vendor === 'airalo' && esim.iccid) {
+      try {
+        const topupData = await getAiraloTopupPackages(esim.iccid);
+        const topupPkgs = topupData?.data || [];
+        const matchedPkg = topupPkgs.find(p => String(p.id) === String(offerId));
+        if (!matchedPkg) {
+          log.warn({ offerId, iccid: esim.iccid, userId }, 'Topup package not found during price verification');
+          return res.render('error', { message: 'Package not found', title: 'Error' });
+        }
+        const apiPrice = parseFloat(matchedPkg.price);
+        if (Math.abs(parsedAmount - apiPrice) > 0.01) {
+          log.warn({ offerId, submittedAmount: parsedAmount, correctPrice: apiPrice, userId }, 'TOPUP PRICE MISMATCH — possible amount manipulation');
+          return res.render('error', { message: 'Price mismatch. Please refresh and try again.', title: 'Error' });
+        }
+        verifiedPrice = apiPrice;
+      } catch (priceErr) {
+        log.error({ err: priceErr, offerId }, 'Failed to verify topup price');
+        return res.render('error', { message: 'Unable to verify price. Please try again.', title: 'Error' });
+      }
+    }
+
+    const balanceCheck = await checkProviderBalance(verifiedPrice);
+    if (!balanceCheck.sufficient) {
+      return res.render('error', {
+        message: 'Top-up is temporarily unavailable. Please try again later.',
+        title: 'Unavailable'
+      });
+    }
+
     const user = await db.User.findByPk(userId);
     if (!user) {
       return res.render('error', { message: 'User not found', title: 'Error' });
@@ -200,12 +242,13 @@ router.post('/topup/create', ensureAuth, async (req, res) => {
 
     const vendor = esim.vendor || 'airalo';
 
-    const payment = await createPayment(userId, offerId, parsedAmount, currency || 'USD', {
+    const targetIccid = esim.iccid;
+    const payment = await createPayment(userId, offerId, verifiedPrice, currency || 'USD', {
       planName: req.body.planName || offerId,
       targetEsimId: esim.id,
-      targetIccid: iccid,
+      targetIccid,
       vendor
-    }, { type: 'topup', targetIccid: iccid });
+    }, { type: 'topup', targetIccid });
 
     try {
       const { paddleTransactionId } = await createPaddleCheckout({ payment, user });
@@ -217,7 +260,7 @@ router.post('/topup/create', ensureAuth, async (req, res) => {
         paddleClientToken: process.env.PADDLE_CLIENT_TOKEN || '',
         paddleEnvironment: process.env.PADDLE_ENVIRONMENT === 'production' ? 'production' : 'sandbox',
         offerId,
-        amount: parsedAmount,
+        amount: verifiedPrice,
         currency: currency || 'USD'
       });
     } catch (checkoutErr) {

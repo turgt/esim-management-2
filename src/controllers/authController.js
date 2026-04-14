@@ -41,7 +41,7 @@ export async function login(req, res) {
 
     const isDefaultPassword = await bcrypt.compare('admin123', user.passwordHash);
 
-    req.session.user = {
+    const userData = {
       id: user.id,
       username: user.username,
       isAdmin: user.isAdmin,
@@ -55,13 +55,21 @@ export async function login(req, res) {
       agencyRole: user.agencyRole || null
     };
 
-    await logAudit(ACTIONS.LOGIN, { userId: user.id, entity: 'User', entityId: user.id, ipAddress: getIp(req) });
+    // Regenerate session to prevent session fixation
+    req.session.regenerate((err) => {
+      if (err) {
+        log.error({ err }, 'Session regeneration failed');
+        return res.render('login', { title: 'Login', error: 'An error occurred during login', errors: [], formData: {} });
+      }
+      req.session.user = userData;
 
-    if (isDefaultPassword) {
-      return res.redirect('/profile?changePassword=1');
-    }
+      logAudit(ACTIONS.LOGIN, { userId: user.id, entity: 'User', entityId: user.id, ipAddress: getIp(req) });
 
-    res.redirect('/offers');
+      if (isDefaultPassword) {
+        return res.redirect('/profile?changePassword=1');
+      }
+      res.redirect('/offers');
+    });
   } catch (err) {
     log.error({ err }, 'Login error');
     res.render('login', { title: 'Login', error: 'An error occurred during login', errors: [], formData: {} });

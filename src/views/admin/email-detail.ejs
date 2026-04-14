@@ -107,8 +107,8 @@
     </div>
     <div class="card-body">
       <% if (email.metadata.htmlBody) { %>
-      <div id="bodyHtml" class="bg-white dark:bg-slate-900 rounded-lg p-4 border border-[var(--border-subtle)] text-sm overflow-auto max-h-[500px]">
-        <%- email.metadata.htmlBody %>
+      <div id="bodyHtml" class="bg-white dark:bg-slate-900 rounded-lg border border-[var(--border-subtle)] text-sm overflow-hidden max-h-[500px]">
+        <iframe sandbox="" srcdoc="<%= email.metadata.htmlBody %>" style="width:100%;min-height:300px;border:none;"></iframe>
       </div>
       <% } %>
       <% if (email.metadata.textBody) { %>
@@ -118,8 +118,8 @@
       <% } %>
       <%/* Legacy: old body field */ %>
       <% if (!email.metadata.htmlBody && !email.metadata.textBody && email.metadata.body) { %>
-      <div class="bg-white dark:bg-slate-900 rounded-lg p-4 border border-[var(--border-subtle)] text-sm overflow-auto max-h-[500px]">
-        <%- email.metadata.body %>
+      <div class="bg-white dark:bg-slate-900 rounded-lg border border-[var(--border-subtle)] text-sm overflow-hidden max-h-[500px]">
+        <iframe sandbox="" srcdoc="<%= email.metadata.body %>" style="width:100%;min-height:300px;border:none;"></iframe>
       </div>
       <% } %>
     </div>

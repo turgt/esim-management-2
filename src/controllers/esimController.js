@@ -268,6 +268,11 @@ export async function showStatus(req, res) {
       return res.render('error', { message: 'eSIM record not found in database' });
     }
 
+    // Ownership check — only owner or admin can view eSIM status
+    if (esimRecord.userId !== req.session.user.id && !req.session.user.isAdmin) {
+      return res.status(403).render('error', { message: 'Access denied', title: 'Forbidden' });
+    }
+
     if (esimRecord.vendor === 'airalo') {
       let usageData = null;
       if (esimRecord.iccid) {

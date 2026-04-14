@@ -833,7 +833,7 @@ export async function replyToEmail(req, res) {
     const { sendReplyEmail } = await import('../services/emailService.js');
     await sendReplyEmail(replyTo, subject,
       `<div style="font-family:system-ui,sans-serif;font-size:14px;line-height:1.6;">
-        ${replyBody.replace(/\n/g, '<br>')}
+        ${replyBody.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/\n/g, '<br>')}
         <br><br>
         <div style="border-left:3px solid #e2e8f0;padding-left:12px;color:#64748b;margin-top:16px;">
           <p style="margin:0 0 4px;font-size:12px;"><strong>${email.metadata?.from || 'Unknown'}</strong> wrote:</p>
