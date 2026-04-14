@@ -50,7 +50,9 @@ export async function login(req, res) {
       email: user.email,
       emailVerified: user.emailVerified,
       theme: user.theme || 'light',
-      mustChangePassword: isDefaultPassword
+      mustChangePassword: isDefaultPassword,
+      agencyId: user.agencyId || null,
+      agencyRole: user.agencyRole || null
     };
 
     await logAudit(ACTIONS.LOGIN, { userId: user.id, entity: 'User', entityId: user.id, ipAddress: getIp(req) });
@@ -143,7 +145,9 @@ export async function register(req, res) {
       displayName: user.displayName,
       email: user.email,
       emailVerified: false,
-      theme: 'light'
+      theme: 'light',
+      agencyId: user.agencyId || null,
+      agencyRole: user.agencyRole || null
     };
 
     res.redirect('/offers');
