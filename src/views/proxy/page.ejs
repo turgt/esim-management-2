@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title><%= title %></title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand: #4f46e5;
+      --brand-light: #eef2ff;
+      --brand-dark: #3730a3;
+      --surface: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --radius: 16px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--surface);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== HEADER / BRANDING ===== */
+    .page-header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .agency-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      object-fit: contain;
+      background: var(--brand-light);
+    }
+    .agency-logo-placeholder {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .agency-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .agency-powered {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main {
+      flex: 1;
+      padding: 24px 20px;
+      max-width: 480px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* ===== CARD ===== */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    /* ===== STATUS BADGE ===== */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+    }
+    .status-badge.preparing { background: var(--warning-light); color: var(--warning); }
+    .status-badge.ready     { background: var(--success-light); color: var(--success); }
+    .status-badge.done      { background: #dbeafe; color: #1d4ed8; }
+    .status-badge.error     { background: var(--danger-light); color: var(--danger); }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ===== HEADINGS ===== */
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .card-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ===== COUNTDOWN ===== */
+    .countdown-wrap {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin: 24px 0 8px;
+    }
+    .countdown-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: var(--brand-light);
+      border-radius: 12px;
+      padding: 14px 18px;
+      min-width: 64px;
+    }
+    .countdown-number {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--brand);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .countdown-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+    .countdown-note {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    /* ===== INSTALL BUTTON ===== */
+    .btn-primary {
+      display: block;
+      width: 100%;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-top: 20px;
+    }
+    .btn-primary:active { background: var(--brand-dark); }
+
+    /* ===== QR CODE ===== */
+    .qr-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      background: var(--surface);
+      border-radius: 12px;
+      margin: 20px 0;
+    }
+    .qr-wrap img {
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .qr-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* ===== DETAIL ROWS ===== */
+    .detail-list {
+      list-style: none;
+      margin-top: 16px;
+    }
+    .detail-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .detail-list li:last-child { border-bottom: none; }
+    .detail-label { color: var(--text-muted); flex-shrink: 0; }
+    .detail-value {
+      font-weight: 600;
+      text-align: right;
+      word-break: break-all;
+      max-width: 260px;
+    }
+    .copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 11px;
+      color: var(--brand);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.1s;
+    }
+    .copy-btn:active { background: var(--brand-light); }
+
+    /* ===== ACCORDION ===== */
+    details {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+    summary {
+      padding: 14px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    summary::after { content: '›'; font-size: 18px; color: var(--text-muted); }
+    details[open] summary::after { content: '∨'; }
+    .accordion-body {
+      padding: 0 16px 16px;
+    }
+    .accordion-body p, .accordion-body li {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .accordion-body ol, .accordion-body ul { padding-left: 18px; margin-top: 8px; }
+    .accordion-body li { margin-bottom: 6px; }
+
+    /* ===== CONTACT CARD ===== */
+    .contact-card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+    .contact-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: var(--brand-light);
+      color: var(--brand);
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .contact-item a { color: var(--brand); text-decoration: none; }
+
+    /* ===== SUCCESS / INSTALLED ===== */
+    .success-icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: var(--success-light);
+      color: var(--success);
+      font-size: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+
+    /* ===== ERROR STATE ===== */
+    .error-icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: var(--danger-light);
+      color: var(--danger);
+      font-size: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+
+    /* ===== FOOTER ===== */
+    .page-footer {
+      text-align: center;
+      padding: 16px 20px 32px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ===== POLLING INDICATOR ===== */
+    .poll-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .poll-spinner {
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--brand);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (min-width: 480px) {
+      .main { padding: 32px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER / BRANDING ===== -->
+  <header class="page-header">
+    <% if (agency && agency.logoUrl) { %>
+    <img class="agency-logo" src="<%= agency.logoUrl %>" alt="<%= agency.name %>" onerror="this.style.display='none'">
+    <% } else if (agency) { %>
+    <div class="agency-logo-placeholder"><%= agency.name.charAt(0).toUpperCase() %></div>
+    <% } else { %>
+    <div class="agency-logo-placeholder">✦</div>
+    <% } %>
+    <div>
+      <div class="agency-name"><%= agency ? agency.name : 'DataPatch' %></div>
+      <div class="agency-powered">eSIM Servisi</div>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <% if (state === 'not_found') { %>
+    <!-- ===== NOT FOUND ===== -->
+    <div class="card" style="text-align:center;">
+      <div class="error-icon">✕</div>
+      <div class="card-title">Geçersiz Link</div>
+      <p class="card-subtitle" style="margin-top:8px;">
+        Bu bağlantı geçerli değil ya da süresi dolmuş. Acentenizle iletişime geçin.
+      </p>
+    </div>
+
+    <% } else if (state === 'pending_provisioning') { %>
+    <!-- ===== PENDING PROVISIONING ===== -->
+    <div class="card">
+      <div class="status-badge preparing"><span class="status-dot"></span>Hazırlanıyor</div>
+      <div class="card-title">eSIM'iniz hazırlanıyor</div>
+      <p class="card-subtitle">
+        eSIM'iniz sistemimizde hazırlanıyor. Biraz bekleyin, kurulum linki otomatik olarak güncellenecek.
+      </p>
+
+      <% if (booking && booking.dueDate) { %>
+      <div class="countdown-wrap" id="countdown-wrap">
+        <div class="countdown-unit"><span class="countdown-number" id="cd-h">--</span><span class="countdown-label">Saat</span></div>
+        <div class="countdown-unit"><span class="countdown-number" id="cd-m">--</span><span class="countdown-label">Dk</span></div>
+        <div class="countdown-unit"><span class="countdown-number" id="cd-s">--</span><span class="countdown-label">Sn</span></div>
+      </div>
+      <p class="countdown-note" id="countdown-note">Tahmini hazır olma zamanına kalan süre</p>
+      <% } %>
+
+      <div class="poll-indicator" id="poll-indicator">
+        <div class="poll-spinner"></div>
+        <span>Durum kontrol ediliyor...</span>
+      </div>
+    </div>
+
+    <% if (booking && booking.travelerName) { %>
+    <div class="card">
+      <p style="font-size:14px;color:var(--text-muted);">
+        Merhaba <strong><%= booking.travelerName %></strong>, eSIM'iniz hazır olduğunda bu sayfa otomatik güncellenecek.
+      </p>
+    </div>
+    <% } %>
+
+    <script>
+    (function() {
+      <% if (booking && booking.dueDate) { %>
+      var dueDate = new Date('<%= new Date(booking.dueDate).toISOString() %>');
+      function tick() {
+        var now = new Date();
+        var diff = Math.max(0, dueDate - now);
+        var h = Math.floor(diff / 3600000);
+        var m = Math.floor((diff % 3600000) / 60000);
+        var s = Math.floor((diff % 60000) / 1000);
+        document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
+        document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
+        document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+        if (diff === 0) {
+          document.getElementById('countdown-note').textContent = 'Beklenen süre geçti, henüz hazır değil.';
+        }
+      }
+      tick();
+      setInterval(tick, 1000);
+      <% } %>
+
+      // Poll status every 30 seconds
+      function pollStatus() {
+        fetch('/api/booking-status/<%= booking ? booking.token : "" %>')
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.status && data.status !== 'pending_provisioning') {
+              window.location.reload();
+            }
+          })
+          .catch(function() {});
+      }
+      setInterval(pollStatus, 30000);
+    })();
+    </script>
+
+    <% } else if (state === 'provisioned') { %>
+    <!-- ===== PROVISIONED: INSTALL ===== -->
+    <div class="card">
+      <div class="status-badge ready">✓ Hazır</div>
+      <div class="card-title">eSIM'iniz kurulmaya hazır!</div>
+      <p class="card-subtitle">
+        Aşağıdaki butona tıklayarak eSIM'inizi telefonunuza ekleyin ya da QR kodu taratın.
+      </p>
+
+      <% if (esim && esim.smdpAddress && esim.activationCode) { %>
+      <%
+        var lpa = 'LPA:1$' + esim.smdpAddress + '$' + esim.activationCode;
+      %>
+      <a href="<%= lpa %>" class="btn-primary">📲 eSIM'i Kur</a>
+
+      <div class="qr-wrap">
+        <%
+          var qrToken = (booking && booking.token) ? booking.token : '';
+        %>
+        <img
+          src="/e/<%= qrToken %>/qr"
+          alt="QR Kod"
+          onerror="this.parentElement.style.display='none'"
+        >
+        <span class="qr-label">QR kodu kamera uygulamanızla tarayın</span>
+      </div>
+
+      <ul class="detail-list">
+        <li>
+          <span class="detail-label">ICCID</span>
+          <span class="detail-value" id="val-iccid"><%= esim.iccid || '—' %></span>
+          <button class="copy-btn" onclick="copyText('<%= esim.iccid %>', this)">Kopyala</button>
+        </li>
+        <li>
+          <span class="detail-label">SM-DP+ Adresi</span>
+          <span class="detail-value" id="val-smdp"><%= esim.smdpAddress || '—' %></span>
+          <button class="copy-btn" onclick="copyText('<%= esim.smdpAddress %>', this)">Kopyala</button>
+        </li>
+        <li>
+          <span class="detail-label">Aktivasyon Kodu</span>
+          <span class="detail-value" id="val-ac"><%= esim.activationCode || '—' %></span>
+          <button class="copy-btn" onclick="copyText('<%= esim.activationCode %>', this)">Kopyala</button>
+        </li>
+      </ul>
+      <% } else { %>
+      <p class="card-subtitle" style="margin-top:16px;color:var(--danger);">eSIM bilgileri henüz hazır değil. Lütfen kısa süre sonra tekrar deneyin.</p>
+      <% } %>
+    </div>
+
+    <% if (package) { %>
+    <div class="card">
+      <p style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:12px;">PAKET BİLGİLERİ</p>
+      <ul class="detail-list">
+        <li><span class="detail-label">Paket</span><span class="detail-value"><%= package.title || '—' %></span></li>
+        <li><span class="detail-label">Veri</span><span class="detail-value"><%= package.isUnlimited ? 'Sınırsız' : (package.data ? package.data + ' MB' : '—') %></span></li>
+        <li><span class="detail-label">Süre</span><span class="detail-value"><%= package.day ? package.day + ' Gün' : '—' %></span></li>
+        <li><span class="detail-label">Operatör</span><span class="detail-value"><%= package.operatorTitle || '—' %></span></li>
+        <% if (package.voice) { %><li><span class="detail-label">Ses</span><span class="detail-value"><%= package.voice %></span></li><% } %>
+        <% if (package.text) { %><li><span class="detail-label">SMS</span><span class="detail-value"><%= package.text %></span></li><% } %>
+      </ul>
+    </div>
+    <% } %>
+
+    <details>
+      <summary>Manuel kurulum adımları</summary>
+      <div class="accordion-body">
+        <p><strong>iPhone (iOS 12.1+):</strong></p>
+        <ol>
+          <li>Ayarlar → Hücresel → eSIM Ekle'ye gidin</li>
+          <li>"QR Kodu Kullan" seçeneğine dokunun</li>
+          <li>Yukarıdaki QR kodu kameranızla okutun</li>
+          <li>Aktivasyonu onaylayın</li>
+        </ol>
+        <p style="margin-top:12px;"><strong>Android:</strong></p>
+        <ol>
+          <li>Ayarlar → Bağlantılar → SIM Kart Yöneticisi'ne gidin</li>
+          <li>eSIM Ekle → QR Kod ile Ekle'yi seçin</li>
+          <li>Yukarıdaki QR kodu okutun</li>
+          <li>Aktivasyon talimatlarını izleyin</li>
+        </ol>
+      </div>
+    </details>
+
+    <% } else if (state === 'installed') { %>
+    <!-- ===== INSTALLED / CONFIRMED ===== -->
+    <div class="card" style="text-align:center;">
+      <div class="success-icon">✓</div>
+      <div class="card-title">eSIM Kuruldu!</div>
+      <p class="card-subtitle" style="margin-top:8px;">
+        eSIM'iniz başarıyla kuruldu. Seyahatinizde iyi bağlantılar dileriz.
+      </p>
+    </div>
+
+    <details>
+      <summary>Sorun mu yaşıyorsunuz?</summary>
+      <div class="accordion-body">
+        <p><strong>Bağlantı sorunu yaşıyorsanız:</strong></p>
+        <ul>
+          <li>Uçak modunu açıp kapatın</li>
+          <li>Ayarlar'dan veri dolaşımının (roaming) açık olduğunu kontrol edin</li>
+          <li>eSIM'in aktif SIM olarak seçili olduğunu doğrulayın</li>
+          <li>Telefonu yeniden başlatın</li>
+        </ul>
+        <p style="margin-top:12px;">Sorun devam ederse acentenizle iletişime geçin.</p>
+      </div>
+    </details>
+
+    <% if (agency && (agency.contactEmail || agency.phone)) { %>
+    <div class="card">
+      <p style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:12px;">DESTEK</p>
+      <div class="contact-card">
+        <% if (agency.contactName) { %>
+        <div class="contact-item">
+          <div class="contact-icon">👤</div>
+          <span><%= agency.contactName %></span>
+        </div>
+        <% } %>
+        <% if (agency.contactEmail) { %>
+        <div class="contact-item">
+          <div class="contact-icon">✉</div>
+          <a href="mailto:<%= agency.contactEmail %>"><%= agency.contactEmail %></a>
+        </div>
+        <% } %>
+        <% if (agency.phone) { %>
+        <div class="contact-item">
+          <div class="contact-icon">📞</div>
+          <a href="tel:<%= agency.phone %>"><%= agency.phone %></a>
+        </div>
+        <% } %>
+      </div>
+    </div>
+    <% } %>
+
+    <% } else if (state === 'cancelled' || state === 'failed' || state === 'expired' || state === 'error') { %>
+    <!-- ===== ERROR / CANCELLED / EXPIRED ===== -->
+    <div class="card" style="text-align:center;">
+      <div class="error-icon">!</div>
+      <div class="card-title">
+        <% if (state === 'cancelled') { %>eSIM İptal Edildi
+        <% } else if (state === 'expired') { %>eSIM Süresi Doldu
+        <% } else { %>Bir Sorun Oluştu<% } %>
+      </div>
+      <p class="card-subtitle" style="margin-top:8px;">
+        <% if (state === 'cancelled') { %>
+          Bu eSIM rezervasyonu iptal edildi. Daha fazla bilgi için acentenizle iletişime geçin.
+        <% } else if (state === 'expired') { %>
+          Bu eSIM'in 30 günlük kurulum süresi doldu. Yeni bir eSIM için acentenizle iletişime geçin.
+        <% } else { %>
+          eSIM işleminizde bir hata oluştu. Lütfen acentenizle iletişime geçin.
+        <% } %>
+      </p>
+    </div>
+
+    <% if (agency && (agency.contactEmail || agency.phone || agency.contactName)) { %>
+    <div class="card">
+      <p style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:12px;">İLETİŞİM</p>
+      <div class="contact-card">
+        <% if (agency.contactName) { %>
+        <div class="contact-item">
+          <div class="contact-icon">👤</div>
+          <span><%= agency.contactName %></span>
+        </div>
+        <% } %>
+        <% if (agency.contactEmail) { %>
+        <div class="contact-item">
+          <div class="contact-icon">✉</div>
+          <a href="mailto:<%= agency.contactEmail %>"><%= agency.contactEmail %></a>
+        </div>
+        <% } %>
+        <% if (agency.phone) { %>
+        <div class="contact-item">
+          <div class="contact-icon">📞</div>
+          <a href="tel:<%= agency.phone %>"><%= agency.phone %></a>
+        </div>
+        <% } %>
+      </div>
+    </div>
+    <% } %>
+
+    <% } %>
+
+  </main>
+
+  <footer class="page-footer">
+    DataPatch eSIM Servisi tarafından desteklenmektedir
+  </footer>
+
+  <script>
+  function copyText(text, btn) {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(function() {
+      var orig = btn.textContent;
+      btn.textContent = 'Kopyalandı!';
+      btn.style.color = 'var(--success)';
+      setTimeout(function() {
+        btn.textContent = orig;
+        btn.style.color = '';
+      }, 1500);
+    }).catch(function() {
+      // Fallback for older browsers
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent = 'Kopyalandı!';
+      btn.style.color = 'var(--success)';
+      setTimeout(function() { btn.textContent = 'Kopyala'; btn.style.color = ''; }, 1500);
+    });
+  }
+  </script>
+
+</body>
+</html>
