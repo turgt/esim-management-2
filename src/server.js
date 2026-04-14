@@ -29,6 +29,7 @@ import demoRoutes from './routes/demo.js';
 import { startSync as startAiraloSync } from './services/airaloSync.js';
 import { cookieParser, doubleCsrfProtection, csrfTokenMiddleware, csrfErrorHandler } from './middleware/csrf.js';
 import { verifyPaddleWebhook, processPaddleWebhook } from './services/paymentService.js';
+import { handleAiraloWebhook } from './controllers/webhookController.js';
 
 import {
   performanceMonitor,
@@ -177,6 +178,9 @@ app.post('/payment/webhook', async (req, res) => {
     res.status(500).json({ error: 'Internal error' });
   }
 });
+
+// Airalo webhook route — MUST be before CSRF middleware (server-to-server, no CSRF)
+app.post('/api/webhooks/airalo', handleAiraloWebhook);
 
 // Webhook routes (before CSRF - external calls don't have CSRF tokens)
 app.use('/webhooks', webhookRoutes);
