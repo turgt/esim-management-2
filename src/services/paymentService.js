@@ -6,6 +6,7 @@ import { createOrder as airaloCreateOrder, checkBalance as checkAiraloBalance, c
 import { logAudit, ACTIONS } from './auditService.js';
 import { sendPaymentSuccessEmail, sendPaymentFailedEmail, sendEsimActivationFailedEmail } from './emailService.js';
 import logger from '../lib/logger.js';
+import * as turInvoice from './turInvoiceClient.js';
 
 const log = logger.child({ module: 'payment' });
 
@@ -120,6 +121,132 @@ export async function createPaddleCheckout({ payment, user }) {
     checkoutUrl: data.data.checkout.url,
     paddleTransactionId: data.data.id
   };
+}
+
+export async function createTurInvoiceCheckout({ payment, paymentType }) {
+  const appUrl = process.env.APP_URL || 'http://localhost:3000';
+  const callbackUrl = `${appUrl}/payment/turinvoice/callback`;
+  const redirectUrl = `${appUrl}/payment/result/${payment.merchantOid}`;
+
+  const orderResult = await turInvoice.createOrder({
+    amount: Number(payment.amount),
+    currency: payment.currency || 'USD',
+    name: `eSIM ${payment.merchantOid}`,
+    callbackUrl,
+    redirectUrl
+  });
+
+  const idOrder = orderResult.idOrder;
+  if (!idOrder) {
+    throw new Error('TurInvoice createOrder returned no idOrder');
+  }
+
+  const orderDetails = await turInvoice.getOrder(idOrder);
+
+  await payment.update({
+    providerTransactionId: String(idOrder),
+    metadata: {
+      ...payment.metadata,
+      turInvoiceIdOrder: idOrder,
+      paymentUrl: orderDetails.paymentUrl,
+      paymentType,
+      turInvoiceState: orderDetails.state
+    }
+  });
+
+  return {
+    idOrder,
+    paymentUrl: orderDetails.paymentUrl,
+    merchantOid: payment.merchantOid
+  };
+}
+
+export async function handleTurInvoiceCallback(payload) {
+  const cbLog = logger.child({ module: 'turInvoice-callback' });
+
+  const idOrder = payload.id;
+  if (!idOrder) {
+    cbLog.warn({ payload }, 'TurInvoice callback missing id');
+    return;
+  }
+
+  const payment = await db.Payment.findOne({
+    where: { provider: 'turinvoice', providerTransactionId: String(idOrder) }
+  });
+
+  if (!payment) {
+    cbLog.warn({ idOrder }, 'TurInvoice callback: no matching payment');
+    return;
+  }
+
+  if (payment.status === 'completed') {
+    cbLog.info({ idOrder, merchantOid: payment.merchantOid }, 'TurInvoice callback: already completed, skipping');
+    return;
+  }
+
+  if (payload.state === 'paid') {
+    cbLog.info({ idOrder, merchantOid: payment.merchantOid }, 'TurInvoice payment confirmed');
+
+    await payment.update({
+      status: 'completed',
+      metadata: {
+        ...payment.metadata,
+        turInvoiceState: 'paid',
+        datePay: payload.datePay,
+        linkReceipt: payload.linkReceipt
+      }
+    });
+
+    try {
+      await purchaseEsimAfterPayment(payment);
+      await sendPaymentSuccessEmail(payment);
+    } catch (err) {
+      cbLog.error({ err, merchantOid: payment.merchantOid }, 'eSIM purchase after TurInvoice payment failed');
+      await payment.update({
+        metadata: { ...payment.metadata, esimPurchaseFailed: true, esimError: err.message }
+      });
+      await sendEsimActivationFailedEmail(payment);
+    }
+  } else if (payload.state === 'failed' || payload.state === 'cancelled') {
+    cbLog.warn({ idOrder, state: payload.state }, 'TurInvoice payment failed/cancelled');
+    await payment.update({
+      status: 'failed',
+      metadata: { ...payment.metadata, turInvoiceState: payload.state }
+    });
+    await sendPaymentFailedEmail(payment);
+  }
+}
+
+export async function getTurInvoiceStatus(payment) {
+  if (!payment.providerTransactionId) return null;
+
+  const idOrder = Number(payment.providerTransactionId);
+  const orderDetails = await turInvoice.getOrder(idOrder);
+
+  const createdAt = new Date(payment.createdAt);
+  const now = new Date();
+  const minutesElapsed = (now - createdAt) / 60000;
+
+  if (orderDetails.state === 'new' && minutesElapsed > 30) {
+    await payment.update({
+      status: 'failed',
+      metadata: { ...payment.metadata, turInvoiceState: 'timeout', reason: 'timeout' }
+    });
+    return 'failed';
+  }
+
+  if (orderDetails.state === 'paid' && payment.status !== 'completed') {
+    await handleTurInvoiceCallback({ ...orderDetails, id: idOrder, state: 'paid' });
+    return 'completed';
+  }
+
+  if (orderDetails.state !== payment.metadata?.turInvoiceState) {
+    await payment.update({
+      metadata: { ...payment.metadata, turInvoiceState: orderDetails.state }
+    });
+  }
+
+  return orderDetails.state === 'paid' ? 'completed' : 'pending';
 }
 
 export function verifyPaddleWebhook(rawBody, signatureHeader) {
