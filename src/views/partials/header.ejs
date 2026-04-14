@@ -86,7 +86,10 @@
       <%= title %>
     </a>
     <% } else { %>
-    <a href="/offers" class="topbar-logo">DataPatch</a>
+    <a href="/offers" class="topbar-logo" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+      <img src="/public/logo-icon.svg" alt="DataPatch" style="width:28px;height:28px;">
+      <span>DataPatch</span>
+    </a>
     <% } %>
 
     <% if (_isAdminPage && user.isAdmin) { %>
@@ -230,8 +233,8 @@
   <div class="auth-wrapper">
     <div class="auth-card">
       <div class="auth-brand">
-        <div class="auth-brand-icon">
-          <i data-lucide="signal" class="w-6 h-6"></i>
+        <div class="auth-brand-icon" style="background:transparent;">
+          <img src="/public/logo-icon.svg" alt="DataPatch" style="width:36px;height:36px;">
         </div>
         <span class="auth-brand-title">DataPatch</span>
       </div>
