@@ -23,7 +23,18 @@ export const ACTIONS = {
   PAYMENT_RESOLVED: 'admin.payment_resolved',
   VENDOR_CREATE: 'admin.vendor_create',
   VENDOR_EDIT: 'admin.vendor_edit',
-  VENDOR_DELETE: 'admin.vendor_delete'
+  VENDOR_DELETE: 'admin.vendor_delete',
+  AGENCY_CREATE: 'admin.agency_create',
+  AGENCY_EDIT: 'admin.agency_edit',
+  CONTRACT_CREATE: 'admin.contract_create',
+  CONTRACT_EDIT: 'admin.contract_edit',
+  BOOKING_CREATE: 'agency.booking_create',
+  BOOKING_CANCEL: 'agency.booking_cancel',
+  BOOKING_DATE_CHANGE: 'agency.booking_date_change',
+  WEBHOOK_RECEIVED: 'webhook.received',
+  WEBHOOK_PROCESSED: 'webhook.processed',
+  WEBHOOK_FAILED: 'webhook.failed',
+  WEBHOOK_RETRIED: 'admin.webhook_retry',
 };
 
 export async function logAudit(action, { userId = null, entity = null, entityId = null, details = null, ipAddress = null } = {}) {
