@@ -827,6 +827,9 @@ export async function replyToEmail(req, res) {
     const replyTo = email.metadata?.from || email.to;
     const subject = email.subject?.startsWith('Re: ') ? email.subject : `Re: ${email.subject}`;
 
+    // Reply from the address the original mail was sent to
+    const originalTo = email.to?.split(',')[0]?.trim();
+
     const { sendReplyEmail } = await import('../services/emailService.js');
     await sendReplyEmail(replyTo, subject,
       `<div style="font-family:system-ui,sans-serif;font-size:14px;line-height:1.6;">
@@ -837,7 +840,7 @@ export async function replyToEmail(req, res) {
           <div style="font-size:13px;">${email.metadata?.textBody || email.metadata?.htmlBody || '(no content)'}</div>
         </div>
       </div>`,
-      { inReplyTo: email.resendId, userId: req.session.user.id }
+      { inReplyTo: email.resendId, userId: req.session.user.id, fromAddress: originalTo }
     );
 
     await logAudit(ACTIONS.ADMIN_EMAIL_REPLY || 'admin.email_reply', {

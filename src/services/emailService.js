@@ -217,9 +217,10 @@ export async function sendEsimActivationFailedEmail(user, payment) {
   }
 }
 
-export async function sendReplyEmail(to, subject, html, { inReplyTo, userId } = {}) {
+export async function sendReplyEmail(to, subject, html, { inReplyTo, userId, fromAddress } = {}) {
   const client = getResendClient();
-  const from = process.env.SMTP_FROM || 'DataPatch <noreply@datapatch.net>';
+  const defaultFrom = process.env.SMTP_FROM || 'DataPatch <noreply@datapatch.net>';
+  const from = fromAddress ? `DataPatch <${fromAddress}>` : defaultFrom;
 
   if (!client) {
     log.info({ to, subject }, 'Reply email logged (no Resend API key)');
