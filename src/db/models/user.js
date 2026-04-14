@@ -6,6 +6,7 @@ export default (sequelize, DataTypes) => {
       User.hasMany(models.Esim, { foreignKey: 'userId' });
       User.hasMany(models.Payment, { foreignKey: 'userId' });
       User.belongsTo(models.Vendor, { foreignKey: 'vendorId', as: 'vendor' });
+      User.belongsTo(models.Agency, { foreignKey: 'agencyId', as: 'agency' });
     }
   }
   User.init({
@@ -25,7 +26,9 @@ export default (sequelize, DataTypes) => {
     esimLimit: { type: DataTypes.INTEGER, allowNull: true },
     lastLoginAt: { type: DataTypes.DATE, allowNull: true },
     theme: { type: DataTypes.STRING, defaultValue: 'light' },
-    vendorId: { type: DataTypes.INTEGER, allowNull: true }
+    vendorId: { type: DataTypes.INTEGER, allowNull: true },
+    agencyId: { type: DataTypes.INTEGER, allowNull: true },
+    agencyRole: { type: DataTypes.ENUM('owner', 'staff'), allowNull: true }
   }, { sequelize, modelName: 'User' });
   return User;
 };

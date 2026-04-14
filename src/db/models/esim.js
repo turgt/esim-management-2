@@ -8,6 +8,7 @@ export default (sequelize, DataTypes) => {
       Esim.belongsTo(models.Esim, { foreignKey: 'parentEsimId', as: 'parentEsim' });
       Esim.hasMany(models.Esim, { foreignKey: 'parentEsimId', as: 'topups' });
       Esim.hasMany(models.Payment, { foreignKey: 'esimId' });
+      Esim.belongsTo(models.TravelerBooking, { foreignKey: 'travelerBookingId', as: 'booking' });
     }
   }
   Esim.init({
@@ -27,7 +28,8 @@ export default (sequelize, DataTypes) => {
     priceCurrency: { type: DataTypes.STRING, allowNull: true },
     vendor: { type: DataTypes.STRING, allowNull: false, defaultValue: 'airalo' },
     vendorOrderId: { type: DataTypes.STRING, allowNull: true },
-    vendorData: { type: DataTypes.JSONB, allowNull: true }
+    vendorData: { type: DataTypes.JSONB, allowNull: true },
+    travelerBookingId: { type: DataTypes.INTEGER, allowNull: true }
   }, { sequelize, modelName: 'Esim' });
   return Esim;
 };
