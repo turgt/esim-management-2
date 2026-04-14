@@ -103,7 +103,7 @@
       </div>
     </div>
 
-    <form id="paymentMethodForm" method="post" action="/payment/create" class="mb-6">
+    <form id="paymentMethodForm" method="post" action="/payment/create">
       <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
       <input type="hidden" name="packageId" value="<%= offerId %>">
       <input type="hidden" name="amount" value="<%= amount %>">
@@ -112,36 +112,44 @@
       <input type="hidden" name="provider" id="selectedProvider" value="paddle">
       <input type="hidden" name="paymentType" id="selectedPaymentType" value="qr">
 
-      <p class="text-sm font-semibold text-[var(--text-primary)] mb-3">Odeme Yontemi</p>
+      <p class="text-sm font-semibold mb-3" style="color:var(--text-primary);">Odeme Yontemi</p>
 
-      <label class="block border-2 rounded-xl p-4 mb-2 cursor-pointer border-[var(--brand-primary)] bg-indigo-50"
-             id="optPaddle" onclick="selectProvider('paddle')">
-        <div class="flex items-center gap-3">
-          <div class="w-5 h-5 rounded-full border-2 border-[var(--brand-primary)] flex items-center justify-center" id="rdPaddle">
-            <div class="w-2.5 h-2.5 rounded-full bg-[var(--brand-primary)]"></div>
+      <!-- Paddle option (default selected) -->
+      <div id="optPaddle" onclick="selectProvider('paddle')"
+           style="border:2px solid var(--brand-primary, #4f46e5);border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;background:rgba(79,70,229,0.05);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div id="rdPaddle" style="width:20px;height:20px;border-radius:50%;border:2px solid var(--brand-primary, #4f46e5);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <div id="rdPaddleDot" style="width:10px;height:10px;border-radius:50%;background:var(--brand-primary, #4f46e5);"></div>
           </div>
-          <div class="flex-1">
-            <span class="font-semibold text-sm">💳 Uluslararasi Kart</span>
-            <span class="text-xs text-[var(--text-secondary)] block">Visa, Mastercard, Apple Pay</span>
-          </div>
-        </div>
-      </label>
-
-      <label class="block border-2 rounded-xl p-4 cursor-pointer border-[var(--border-primary)]"
-             id="optTur" onclick="selectProvider('turinvoice')">
-        <div class="flex items-center gap-3">
-          <div class="w-5 h-5 rounded-full border-2 border-[var(--border-primary)]" id="rdTur"></div>
-          <div class="flex-1">
-            <span class="font-semibold text-sm">🇷🇺 Rus Karti / MIR</span>
-            <span class="text-xs text-[var(--text-secondary)] block">MIR, SBP, Banka karti</span>
+          <div style="flex:1;">
+            <span style="font-weight:600;font-size:14px;">Visa, Mastercard, Apple Pay</span>
           </div>
         </div>
-      </label>
+      </div>
 
-      <button type="submit" id="turSubmitBtn" style="display:none;"
-              class="w-full btn btn-primary py-3 text-base font-bold mt-4">
+      <!-- TurInvoice option -->
+      <div id="optTur" onclick="selectProvider('turinvoice')"
+           style="border:2px solid var(--border-primary, #e2e8f0);border-radius:12px;padding:14px;cursor:pointer;background:transparent;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div id="rdTur" style="width:20px;height:20px;border-radius:50%;border:2px solid var(--border-primary, #cbd5e1);flex-shrink:0;">
+            <div id="rdTurDot" style="width:10px;height:10px;border-radius:50%;background:var(--brand-primary, #4f46e5);display:none;margin:3px auto;"></div>
+          </div>
+          <div style="flex:1;">
+            <span style="font-weight:600;font-size:14px;">СБП / MIR</span>
+            <span style="display:block;font-size:12px;color:var(--text-secondary, #94a3b8);">Российские банковские карты</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit button (always visible) -->
+      <button type="submit" id="paySubmitBtn"
+              style="width:100%;margin-top:16px;padding:14px;border:none;border-radius:10px;background:var(--brand-primary, #4f46e5);color:white;font-size:15px;font-weight:700;cursor:pointer;">
         <%= currency %> <%= Number(amount).toFixed(2) %> Ode &rarr;
       </button>
+
+      <p style="text-align:center;margin-top:10px;font-size:12px;color:var(--text-secondary, #94a3b8);display:flex;align-items:center;justify-content:center;gap:4px;">
+        <span style="color:#10b981;">&#128274;</span> Guvenli odeme
+      </p>
     </form>
 
     <script>
@@ -149,32 +157,29 @@
         document.getElementById('selectedProvider').value = method;
         var optP = document.getElementById('optPaddle');
         var optT = document.getElementById('optTur');
-        var rdP = document.getElementById('rdPaddle');
-        var rdT = document.getElementById('rdTur');
-        var turBtn = document.getElementById('turSubmitBtn');
+        var rdPaddle = document.getElementById('rdPaddle');
+        var rdTur = document.getElementById('rdTur');
+        var dotP = document.getElementById('rdPaddleDot');
+        var dotT = document.getElementById('rdTurDot');
 
         if (method === 'paddle') {
-          optP.className = 'block border-2 rounded-xl p-4 mb-2 cursor-pointer border-[var(--brand-primary)] bg-indigo-50';
-          optT.className = 'block border-2 rounded-xl p-4 cursor-pointer border-[var(--border-primary)]';
-          rdP.className = 'w-5 h-5 rounded-full border-2 border-[var(--brand-primary)] flex items-center justify-center';
-          rdP.textContent = '';
-          var dot = document.createElement('div');
-          dot.className = 'w-2.5 h-2.5 rounded-full bg-[var(--brand-primary)]';
-          rdP.appendChild(dot);
-          rdT.className = 'w-5 h-5 rounded-full border-2 border-[var(--border-primary)]';
-          rdT.textContent = '';
-          turBtn.style.display = 'none';
+          optP.style.borderColor = 'var(--brand-primary, #4f46e5)';
+          optP.style.background = 'rgba(79,70,229,0.05)';
+          optT.style.borderColor = 'var(--border-primary, #e2e8f0)';
+          optT.style.background = 'transparent';
+          rdPaddle.style.borderColor = 'var(--brand-primary, #4f46e5)';
+          dotP.style.display = 'block';
+          rdTur.style.borderColor = 'var(--border-primary, #cbd5e1)';
+          dotT.style.display = 'none';
         } else {
-          optT.className = 'block border-2 rounded-xl p-4 cursor-pointer border-[var(--brand-primary)] bg-indigo-50';
-          optP.className = 'block border-2 rounded-xl p-4 mb-2 cursor-pointer border-[var(--border-primary)]';
-          rdT.className = 'w-5 h-5 rounded-full border-2 border-[var(--brand-primary)] flex items-center justify-center';
-          rdT.textContent = '';
-          var dot2 = document.createElement('div');
-          dot2.className = 'w-2.5 h-2.5 rounded-full bg-[var(--brand-primary)]';
-          rdT.appendChild(dot2);
-          rdP.className = 'w-5 h-5 rounded-full border-2 border-[var(--border-primary)]';
-          rdP.textContent = '';
-          turBtn.style.display = 'block';
+          optT.style.borderColor = 'var(--brand-primary, #4f46e5)';
+          optT.style.background = 'rgba(79,70,229,0.05)';
+          optP.style.borderColor = 'var(--border-primary, #e2e8f0)';
+          optP.style.background = 'transparent';
+          rdTur.style.borderColor = 'var(--brand-primary, #4f46e5)';
+          dotT.style.display = 'block';
+          rdPaddle.style.borderColor = 'var(--border-primary, #cbd5e1)';
+          dotP.style.display = 'none';
         }
       }
     </script>
