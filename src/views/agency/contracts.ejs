@@ -86,7 +86,7 @@
           <%= new Date(contract.contractEndAt).toLocaleDateString('en-GB') %>
         </p>
         <% if (isExpiring && contract.status === 'active') { %>
-        <p class="text-xs text-amber-600 dark:text-amber-400">7 days icinde bitiyor</p>
+        <p class="text-xs text-amber-600 dark:text-amber-400">Expires within 7 days</p>
         <% } %>
       </div>
     </div>

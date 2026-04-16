@@ -61,7 +61,7 @@
         </div>
         <% if (booking.agencyBookingRef) { %>
         <div>
-          <dt class="text-[var(--text-tertiary)] mb-0.5">Referans No</dt>
+          <dt class="text-[var(--text-tertiary)] mb-0.5">Reference No</dt>
           <dd class="font-mono text-[var(--text-primary)]"><%= booking.agencyBookingRef %></dd>
         </div>
         <% } %>
@@ -171,7 +171,7 @@
       <% } else if (booking.status === 'pending_provisioning') { %>
       <div class="flex items-center gap-2 text-xs text-[var(--text-tertiary)] p-2 bg-[var(--bg-secondary)] rounded-lg">
         <i data-lucide="clock" class="w-3.5 h-3.5 flex-shrink-0"></i>
-        <span>Aktivasyona 72 saatten az kaldi, tarih degistirilemiyor.</span>
+        <span>Less than 72 hours until activation, date cannot be changed.</span>
       </div>
       <% } %>
 
@@ -185,7 +185,7 @@
       <% } %>
 
       <% if ((typeof canChangeDate === 'undefined' || !canChangeDate) && (typeof canCancel === 'undefined' || !canCancel) && booking.status !== 'pending_provisioning') { %>
-      <p class="text-xs text-[var(--text-tertiary)] text-center py-2">Bu rezervasyon icin islem yapilabilecek eylem bulunmuyor.</p>
+      <p class="text-xs text-[var(--text-tertiary)] text-center py-2">No actions available for this booking.</p>
       <% } %>
     </div>
 
@@ -227,7 +227,7 @@
       <h2 class="text-lg font-semibold text-[var(--text-primary)]">Cancel Booking</h2>
     </div>
     <p class="text-sm text-[var(--text-secondary)] mb-4">
-      Bu rezervasyon iptal edilecek ve eSIM saglama islemi gerceklestirilmeyecektir. Bu islem geri alinamaz.
+      This booking will be cancelled and the eSIM will not be provisioned. This action cannot be undone.
     </p>
     <form method="post" action="/agency/bookings/<%= booking.id %>/cancel" class="space-y-4">
       <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">

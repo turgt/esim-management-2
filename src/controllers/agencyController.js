@@ -242,7 +242,7 @@ export async function handleChangeDueDate(req, res) {
 
   try {
     await changeDueDate(bookingId, newDueDate, agencyId, req);
-    res.redirect(`/agency/bookings/${bookingId}?success=Tarih+guncellendi`);
+    res.redirect(`/agency/bookings/${bookingId}?success=Date+updated`);
   } catch (err) {
     if (err instanceof BookingError) {
       log.warn({ err, agencyId, bookingId }, 'changeDueDate validation error');

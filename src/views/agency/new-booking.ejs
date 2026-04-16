@@ -41,7 +41,7 @@
         <% } %>
       </select>
       <p id="remaining-hint" class="text-xs text-[var(--text-tertiary)] mt-1 hidden">
-        Bu kontratta <span id="remaining-count" class="font-semibold text-[var(--brand-primary)]"></span> adet kalmistir.
+        This contract has <span id="remaining-count" class="font-semibold text-[var(--brand-primary)]"></span> remaining.
       </p>
       <% if (typeof contracts === 'undefined' || contracts.length === 0) { %>
       <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">
@@ -61,7 +61,7 @@
     <div class="grid grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">E-posta</label>
-        <input type="email" name="travelerEmail" class="input" placeholder="yolcu@ornek.com">
+        <input type="email" name="travelerEmail" class="input" placeholder="traveler@example.com">
       </div>
       <div>
         <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Phone</label>
@@ -70,7 +70,7 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Referans No</label>
+      <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Reference No</label>
       <input type="text" name="agencyBookingRef" class="input" placeholder="Booking reference number">
       <p class="text-xs text-[var(--text-tertiary)] mt-1">Optional. Use to match with your own system.</p>
     </div>
@@ -81,7 +81,7 @@
       </label>
       <input type="datetime-local" name="dueDate" required class="input">
       <p class="text-xs text-[var(--text-tertiary)] mt-1">
-        eSIM bu tarihte aktiflestirilecektir. En az 1 saat ilerisi olmalidir.
+        eSIM will be activated on this date. Must be at least 1 hour in the future.
       </p>
     </div>
 
