@@ -2,8 +2,8 @@
 
 <div class="mb-8 flex items-center justify-between">
   <div>
-    <p class="text-sm text-[var(--text-secondary)] mb-1">Acente Portali</p>
-    <h1 class="text-page-title">Kontratlar</h1>
+    <p class="text-sm text-[var(--text-secondary)] mb-1">Agency Portal</p>
+    <h1 class="text-page-title">Contracts</h1>
   </div>
 </div>
 
@@ -29,7 +29,7 @@
       <% } %>
       <div class="flex-1 min-w-0">
         <p class="font-semibold text-[var(--text-primary)] leading-snug">
-          <%= contract.package ? contract.package.title : 'Kontrat #' + contract.id %>
+          <%= contract.package ? contract.package.title : 'Contract #' + contract.id %>
         </p>
         <% if (contract.package) { %>
         <p class="text-xs text-[var(--text-tertiary)] mt-0.5">
@@ -40,7 +40,7 @@
       </div>
       <!-- Status Badge -->
       <% if (contract.status === 'active') { %>
-      <span class="badge badge-success flex-shrink-0"><span class="badge-dot bg-emerald-500"></span>Aktif</span>
+      <span class="badge badge-success flex-shrink-0"><span class="badge-dot bg-emerald-500"></span>Active</span>
       <% } else if (contract.status === 'expired') { %>
       <span class="badge badge-neutral flex-shrink-0"><span class="badge-dot bg-gray-400"></span>Bitti</span>
       <% } else { %>
@@ -66,7 +66,7 @@
         <% if (remaining > 0) { %>
           <span class="text-[var(--text-primary)] font-medium"><%= remaining %></span> adet kaldi
         <% } else { %>
-          <span class="text-rose-500 font-medium">Kontrat dolu</span>
+          <span class="text-rose-500 font-medium">Contract exhausted</span>
         <% } %>
       </p>
     </div>
@@ -74,19 +74,19 @@
     <!-- Details -->
     <div class="grid grid-cols-2 gap-3 text-sm pt-1 border-t border-[var(--border-subtle)]">
       <div>
-        <p class="text-[var(--text-tertiary)] text-xs mb-0.5">Birim Fiyat</p>
+        <p class="text-[var(--text-tertiary)] text-xs mb-0.5">Unit Price</p>
         <p class="font-semibold text-[var(--text-primary)]">
           <%= Number(contract.unitPriceAmount).toFixed(2) %>
           <span class="text-xs text-[var(--text-tertiary)] font-normal"><%= contract.unitPriceCurrency %></span>
         </p>
       </div>
       <div>
-        <p class="text-[var(--text-tertiary)] text-xs mb-0.5">Bitis Tarihi</p>
+        <p class="text-[var(--text-tertiary)] text-xs mb-0.5">End Date</p>
         <p class="font-medium <%= isExpiring ? 'text-amber-600 dark:text-amber-400' : 'text-[var(--text-primary)]' %>">
-          <%= new Date(contract.contractEndAt).toLocaleDateString('tr-TR') %>
+          <%= new Date(contract.contractEndAt).toLocaleDateString('en-GB') %>
         </p>
         <% if (isExpiring && contract.status === 'active') { %>
-        <p class="text-xs text-amber-600 dark:text-amber-400">7 gun icinde bitiyor</p>
+        <p class="text-xs text-amber-600 dark:text-amber-400">7 days icinde bitiyor</p>
         <% } %>
       </div>
     </div>
@@ -95,7 +95,7 @@
     <% if (contract.status === 'active' && remaining > 0) { %>
     <a href="/agency/bookings/new" class="btn btn-secondary w-full justify-center text-sm">
       <i data-lucide="plus" class="w-4 h-4"></i>
-      Bu Kontrat ile Rezervasyon
+      Bu Contract ile Rezervasyon
     </a>
     <% } %>
   </div>
@@ -109,8 +109,8 @@
 <% } else { %>
 <div class="card p-12 text-center">
   <i data-lucide="file-text" class="w-10 h-10 mx-auto mb-3 opacity-40 text-[var(--text-tertiary)]"></i>
-  <p class="font-medium text-[var(--text-primary)] mb-1">Kontrat bulunamadi</p>
-  <p class="text-sm text-[var(--text-tertiary)]">Aktif kontratlariniz burada gorunecek. Lutfen yonetici ile iletisime gecin.</p>
+  <p class="font-medium text-[var(--text-primary)] mb-1">No contracts found</p>
+  <p class="text-sm text-[var(--text-tertiary)]">Active contractsiniz burada gorunecek. Please contact your administrator.</p>
 </div>
 <% } %>
 

@@ -3,10 +3,10 @@
 <div class="mb-8">
   <a href="/agency/bookings" class="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] inline-flex items-center gap-1 mb-3">
     <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
-    Rezervasyonlara Don
+    Back to Bookings
   </a>
-  <h1 class="text-page-title">Yeni Rezervasyon</h1>
-  <p class="text-sm text-[var(--text-secondary)] mt-1">Yolcu icin eSIM aktivasyon rezervasyonu olusturun</p>
+  <h1 class="text-page-title">New Booking</h1>
+  <p class="text-sm text-[var(--text-secondary)] mt-1">Create an eSIM activation booking for a traveler</p>
 </div>
 
 <% if (typeof error !== 'undefined' && error) { %>
@@ -23,19 +23,19 @@
     <!-- Contract Selection -->
     <div>
       <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
-        Kontrat <span class="text-rose-500">*</span>
+        Contract <span class="text-rose-500">*</span>
       </label>
       <select name="contractId" required class="input" onchange="updateRemaining(this)">
-        <option value="">Kontrat secin...</option>
+        <option value="">Select contract...</option>
         <% if (typeof contracts !== 'undefined' && contracts.length > 0) { %>
         <% contracts.forEach(function(contract) { %>
         <% const remaining = contract.quantity - contract.usedQuantity; %>
         <option value="<%= contract.id %>"
           data-remaining="<%= remaining %>"
           <%= remaining <= 0 ? 'disabled' : '' %>>
-          <%= contract.package ? contract.package.title : 'Kontrat #' + contract.id %>
+          <%= contract.package ? contract.package.title : 'Contract #' + contract.id %>
           — <%= contract.package ? contract.package.data + ' / ' + contract.package.day + ' gun' : '' %>
-          (Kalan: <%= remaining %>)
+          (Remaining: <%= remaining %>)
         </option>
         <% }) %>
         <% } %>
@@ -45,7 +45,7 @@
       </p>
       <% if (typeof contracts === 'undefined' || contracts.length === 0) { %>
       <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">
-        Aktif kontrat bulunamadi. Lutfen yonetici ile iletisime gecin.
+        No active contracts found. Please contact your administrator.
       </p>
       <% } %>
     </div>
@@ -53,7 +53,7 @@
     <!-- Traveler Info -->
     <div>
       <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
-        Yolcu Adi <span class="text-rose-500">*</span>
+        Traveler Name <span class="text-rose-500">*</span>
       </label>
       <input type="text" name="travelerName" required class="input" placeholder="Ad Soyad">
     </div>
@@ -64,20 +64,20 @@
         <input type="email" name="travelerEmail" class="input" placeholder="yolcu@ornek.com">
       </div>
       <div>
-        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Telefon</label>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Phone</label>
         <input type="tel" name="travelerPhone" class="input" placeholder="+90 555 000 0000">
       </div>
     </div>
 
     <div>
       <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Referans No</label>
-      <input type="text" name="agencyBookingRef" class="input" placeholder="Rezervasyon referans numarasi">
+      <input type="text" name="agencyBookingRef" class="input" placeholder="Booking reference number">
       <p class="text-xs text-[var(--text-tertiary)] mt-1">Isteğe baglidir. Kendi sisteminizle eslestirmek icin kullanabilirsiniz.</p>
     </div>
 
     <div>
       <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
-        Aktivasyon Tarihi <span class="text-rose-500">*</span>
+        Activation Date <span class="text-rose-500">*</span>
       </label>
       <input type="datetime-local" name="dueDate" required class="input">
       <p class="text-xs text-[var(--text-tertiary)] mt-1">
@@ -86,10 +86,10 @@
     </div>
 
     <div class="flex items-center justify-between pt-2 border-t border-[var(--border-subtle)]">
-      <a href="/agency/bookings" class="btn btn-secondary">Iptal</a>
+      <a href="/agency/bookings" class="btn btn-secondary">Cancelled</a>
       <button type="submit" class="btn btn-primary">
         <i data-lucide="check" class="w-4 h-4"></i>
-        Rezervasyon Olustur
+        Create Booking
       </button>
     </div>
   </form>

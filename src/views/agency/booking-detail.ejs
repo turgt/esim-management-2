@@ -3,18 +3,18 @@
 <div class="mb-8">
   <a href="/agency/bookings" class="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] inline-flex items-center gap-1 mb-3">
     <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
-    Rezervasyonlara Don
+    Back to Bookings
   </a>
   <h1 class="text-page-title flex items-center gap-3">
-    Rezervasyon #<%= booking.id %>
+    Booking #<%= booking.id %>
     <% if (booking.status === 'pending_provisioning') { %>
-    <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Bekliyor</span>
+    <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Pending</span>
     <% } else if (booking.status === 'provisioned') { %>
     <span class="badge badge-info"><span class="badge-dot bg-sky-500"></span>Saglanmis</span>
     <% } else if (booking.status === 'installed') { %>
-    <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Aktif</span>
+    <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
     <% } else if (booking.status === 'cancelled') { %>
-    <span class="badge badge-error"><span class="badge-dot bg-rose-500"></span>Iptal</span>
+    <span class="badge badge-error"><span class="badge-dot bg-rose-500"></span>Cancelled</span>
     <% } else { %>
     <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span><%= booking.status %></span>
     <% } %>
@@ -26,8 +26,8 @@
 <div class="alert alert-success mb-6">
   <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
   <div>
-    <p class="font-medium">Rezervasyon olusturuldu!</p>
-    <p class="text-sm mt-0.5">Token URL asagida gorunmektedir. Yolcuya gonderin.</p>
+    <p class="font-medium">Booking created!</p>
+    <p class="text-sm mt-0.5">The token URL is shown below. Send it to the traveler.</p>
   </div>
 </div>
 <% } %>
@@ -53,10 +53,10 @@
 
     <!-- Traveler & Package Info -->
     <div class="card p-5">
-      <h2 class="text-sm font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-4">Rezervasyon Bilgileri</h2>
+      <h2 class="text-sm font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-4">Booking Details</h2>
       <dl class="grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
         <div>
-          <dt class="text-[var(--text-tertiary)] mb-0.5">Yolcu</dt>
+          <dt class="text-[var(--text-tertiary)] mb-0.5">Traveler</dt>
           <dd class="font-medium text-[var(--text-primary)]"><%= booking.travelerName %></dd>
         </div>
         <% if (booking.agencyBookingRef) { %>
@@ -73,20 +73,20 @@
         <% } %>
         <% if (booking.travelerPhone) { %>
         <div>
-          <dt class="text-[var(--text-tertiary)] mb-0.5">Telefon</dt>
+          <dt class="text-[var(--text-tertiary)] mb-0.5">Phone</dt>
           <dd class="text-[var(--text-primary)]"><%= booking.travelerPhone %></dd>
         </div>
         <% } %>
         <div>
-          <dt class="text-[var(--text-tertiary)] mb-0.5">Aktivasyon Tarihi</dt>
+          <dt class="text-[var(--text-tertiary)] mb-0.5">Activation Date</dt>
           <dd class="font-medium text-[var(--text-primary)]">
             <%= new Date(booking.dueDate).toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'}) %>
             — <%= new Date(booking.dueDate).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}) %>
           </dd>
         </div>
         <div>
-          <dt class="text-[var(--text-tertiary)] mb-0.5">Olusturulma</dt>
-          <dd class="text-[var(--text-secondary)]"><%= new Date(booking.createdAt).toLocaleDateString('tr-TR') %></dd>
+          <dt class="text-[var(--text-tertiary)] mb-0.5">Created</dt>
+          <dd class="text-[var(--text-secondary)]"><%= new Date(booking.createdAt).toLocaleDateString('en-GB') %></dd>
         </div>
       </dl>
     </div>
@@ -94,7 +94,7 @@
     <!-- Package Info -->
     <% if (booking.contract && booking.contract.package) { %>
     <div class="card p-5">
-      <h2 class="text-sm font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-4">Paket Bilgileri</h2>
+      <h2 class="text-sm font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-4">Package Info</h2>
       <div class="flex items-center gap-4">
         <% if (booking.contract.package.imageUrl) { %>
         <img src="<%= booking.contract.package.imageUrl %>" alt="<%= booking.contract.package.operatorTitle %>" class="w-12 h-12 object-contain rounded-lg bg-[var(--bg-secondary)] p-1">
@@ -119,9 +119,9 @@
 
     <!-- Token URL Card -->
     <div class="card p-5">
-      <h2 class="text-sm font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-3">Yolcu Baglantisi</h2>
+      <h2 class="text-sm font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-3">Traveler Link</h2>
       <p class="text-xs text-[var(--text-secondary)] mb-3">
-        Asagidaki URL'i yolcunuza gonderin. Yolcunuz bu link araciligiyla eSIM kurulum talimatlarini ve QR kodunu gorebilir.
+        Send this URL to your traveler. They can use it to view eSIM setup instructions and QR code.
       </p>
       <div class="flex items-center gap-2 p-3 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)]">
         <i data-lucide="link" class="w-4 h-4 text-[var(--brand-primary)] flex-shrink-0"></i>
@@ -150,7 +150,7 @@
         </div>
         <% } %>
         <div>
-          <dt class="text-[var(--text-tertiary)] text-xs">Durum</dt>
+          <dt class="text-[var(--text-tertiary)] text-xs">Status</dt>
           <dd class="mt-0.5"><%= booking.esim.status %></dd>
         </div>
       </dl>
@@ -166,7 +166,7 @@
       <button onclick="document.getElementById('change-date-dialog').classList.remove('hidden')"
         class="btn btn-secondary w-full justify-start">
         <i data-lucide="calendar" class="w-4 h-4"></i>
-        Tarih Degistir
+        Change Date
       </button>
       <% } else if (booking.status === 'pending_provisioning') { %>
       <div class="flex items-center gap-2 text-xs text-[var(--text-tertiary)] p-2 bg-[var(--bg-secondary)] rounded-lg">
@@ -180,7 +180,7 @@
       <button onclick="document.getElementById('cancel-dialog').classList.remove('hidden')"
         class="btn btn-secondary w-full justify-start text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10">
         <i data-lucide="x-circle" class="w-4 h-4"></i>
-        Rezervasyonu Iptal Et
+        Cancel Booking
       </button>
       <% } %>
 
@@ -197,17 +197,17 @@
 <div id="change-date-dialog" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="document.getElementById('change-date-dialog').classList.add('hidden')"></div>
   <div class="relative bg-[var(--bg-primary)] rounded-2xl shadow-xl w-full max-w-sm p-6">
-    <h2 class="text-lg font-semibold text-[var(--text-primary)] mb-1">Tarih Degistir</h2>
-    <p class="text-sm text-[var(--text-secondary)] mb-4">Yeni aktivasyon tarihini secin.</p>
+    <h2 class="text-lg font-semibold text-[var(--text-primary)] mb-1">Change Date</h2>
+    <p class="text-sm text-[var(--text-secondary)] mb-4">Select a new activation date.</p>
     <form method="post" action="/agency/bookings/<%= booking.id %>/change-date" class="space-y-4">
       <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
       <div>
-        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Yeni Tarih <span class="text-rose-500">*</span></label>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">New Date <span class="text-rose-500">*</span></label>
         <input type="datetime-local" name="newDueDate" required class="input"
           value="<%= new Date(booking.dueDate).toISOString().slice(0,16) %>">
       </div>
       <div class="flex gap-3">
-        <button type="button" onclick="document.getElementById('change-date-dialog').classList.add('hidden')" class="btn btn-secondary flex-1">Iptal</button>
+        <button type="button" onclick="document.getElementById('change-date-dialog').classList.add('hidden')" class="btn btn-secondary flex-1">Cancelled</button>
         <button type="submit" class="btn btn-primary flex-1">Guncelle</button>
       </div>
     </form>
@@ -224,7 +224,7 @@
       <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center flex-shrink-0">
         <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-600 dark:text-rose-400"></i>
       </div>
-      <h2 class="text-lg font-semibold text-[var(--text-primary)]">Rezervasyonu Iptal Et</h2>
+      <h2 class="text-lg font-semibold text-[var(--text-primary)]">Cancel Booking</h2>
     </div>
     <p class="text-sm text-[var(--text-secondary)] mb-4">
       Bu rezervasyon iptal edilecek ve eSIM saglama islemi gerceklestirilmeyecektir. Bu islem geri alinamaz.
@@ -232,12 +232,12 @@
     <form method="post" action="/agency/bookings/<%= booking.id %>/cancel" class="space-y-4">
       <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
       <div>
-        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Iptal Nedeni</label>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Cancellation Reason</label>
         <input type="text" name="reason" class="input" placeholder="Istege baglidir">
       </div>
       <div class="flex gap-3">
         <button type="button" onclick="document.getElementById('cancel-dialog').classList.add('hidden')" class="btn btn-secondary flex-1">Vazgec</button>
-        <button type="submit" class="btn flex-1 bg-rose-600 hover:bg-rose-700 text-white border-rose-600">Iptal Et</button>
+        <button type="submit" class="btn flex-1 bg-rose-600 hover:bg-rose-700 text-white border-rose-600">Confirm Cancel</button>
       </div>
     </form>
   </div>

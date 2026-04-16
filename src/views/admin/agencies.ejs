@@ -1,13 +1,13 @@
-<%- include('../partials/header', {title: 'Acenteler', user: locals.user}) %>
+<%- include('../partials/header', {title: 'Agencies', user: locals.user}) %>
 
 <div class="mb-8 flex items-center justify-between">
   <div>
-    <p class="text-sm text-[var(--text-secondary)] mb-1">Acente Yonetimi</p>
-    <h1 class="text-page-title">Acenteler</h1>
+    <p class="text-sm text-[var(--text-secondary)] mb-1">Agency Management</p>
+    <h1 class="text-page-title">Agencies</h1>
   </div>
   <button onclick="document.getElementById('new-agency-modal').classList.remove('hidden')" class="btn btn-primary">
     <i data-lucide="plus" class="w-4 h-4"></i>
-    Yeni Acente
+    New Agency
   </button>
 </div>
 
@@ -18,7 +18,7 @@
       <i data-lucide="building-2" class="w-5 h-5 text-[var(--brand-primary)]"></i>
     </div>
     <div class="stat-content">
-      <p class="stat-label">Toplam Acente</p>
+      <p class="stat-label">Total Agencies</p>
       <p class="stat-value"><%= agencies.length %></p>
     </div>
   </div>
@@ -27,7 +27,7 @@
       <i data-lucide="check-circle" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
     </div>
     <div class="stat-content">
-      <p class="stat-label">Aktif</p>
+      <p class="stat-label">Active</p>
       <p class="stat-value text-emerald-600 dark:text-emerald-400"><%= agencies.filter(a => a.status === 'active').length %></p>
     </div>
   </div>
@@ -36,7 +36,7 @@
       <i data-lucide="file-text" class="w-5 h-5 text-sky-600 dark:text-sky-400"></i>
     </div>
     <div class="stat-content">
-      <p class="stat-label">Toplam Kontrat</p>
+      <p class="stat-label">Total Contracts</p>
       <p class="stat-value"><%= agencies.reduce((sum, a) => sum + (a.AgencyContracts ? a.AgencyContracts.length : 0), 0) %></p>
     </div>
   </div>
@@ -45,7 +45,7 @@
       <i data-lucide="file-check" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
     </div>
     <div class="stat-content">
-      <p class="stat-label">Aktif Kontrat</p>
+      <p class="stat-label">Active Contracts</p>
       <p class="stat-value text-amber-600 dark:text-amber-400"><%= agencies.reduce((sum, a) => sum + (a.AgencyContracts ? a.AgencyContracts.filter(c => c.status === 'active').length : 0), 0) %></p>
     </div>
   </div>
@@ -57,11 +57,11 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Acente Adi</th>
+          <th>Agency Name</th>
           <th>Slug</th>
-          <th>Iletisim</th>
-          <th>Kontrat</th>
-          <th>Durum</th>
+          <th>Contact</th>
+          <th>Contracts</th>
+          <th>Status</th>
           <th></th>
         </tr>
       </thead>
@@ -93,20 +93,20 @@
             <% const activeContracts = agency.AgencyContracts ? agency.AgencyContracts.filter(c => c.status === 'active').length : 0; %>
             <p class="font-semibold text-[var(--text-primary)]"><%= totalContracts %></p>
             <% if (activeContracts > 0) { %>
-            <p class="text-xs text-emerald-600 dark:text-emerald-400"><%= activeContracts %> aktif</p>
+            <p class="text-xs text-emerald-600 dark:text-emerald-400"><%= activeContracts %> active</p>
             <% } %>
           </td>
           <td>
             <% if (agency.status === 'active') { %>
-            <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Aktif</span>
+            <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
             <% } else { %>
-            <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span>Pasif</span>
+            <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span>Suspended</span>
             <% } %>
           </td>
           <td>
             <a href="/admin/agencies/<%= agency.id %>" class="btn btn-secondary btn-sm">
               <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-              Detay
+              Detail
             </a>
           </td>
         </tr>
@@ -115,9 +115,9 @@
         <tr>
           <td colspan="6" class="text-center py-12 text-sm text-[var(--text-tertiary)]">
             <i data-lucide="building-2" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
-            <p>Henuz acente yok</p>
+            <p>No agencies yet</p>
             <button onclick="document.getElementById('new-agency-modal').classList.remove('hidden')" class="text-[var(--brand-primary)] hover:underline mt-1 inline-block">
-              Ilk acenteyi olustur
+              Create your first agency
             </button>
           </td>
         </tr>
@@ -131,7 +131,7 @@
 <div id="new-agency-modal" class="modal-backdrop hidden" onclick="document.getElementById('new-agency-modal').classList.add('hidden')">
   <div class="confirm-modal" style="max-width:480px" onclick="event.stopPropagation()">
     <div class="flex items-center justify-between mb-5">
-      <h2 class="text-lg font-semibold text-[var(--text-primary)]">Yeni Acente</h2>
+      <h2 class="text-lg font-semibold text-[var(--text-primary)]">New Agency</h2>
       <button onclick="document.getElementById('new-agency-modal').classList.add('hidden')" class="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
@@ -139,33 +139,33 @@
     <form method="post" action="/admin/agencies" class="space-y-4">
       <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
       <div>
-        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Acente Adi <span class="text-rose-500">*</span></label>
-        <input type="text" name="name" required class="input" placeholder="Ornek Turizm A.S.">
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Agency Name <span class="text-rose-500">*</span></label>
+        <input type="text" name="name" required class="input" placeholder="Example Travel Inc.">
       </div>
       <div>
         <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Slug <span class="text-rose-500">*</span></label>
-        <input type="text" name="slug" required class="input" placeholder="ornek-turizm" pattern="[a-z0-9-]+" title="Sadece kucuk harf, rakam ve tire">
-        <p class="text-xs text-[var(--text-tertiary)] mt-1">Sadece kucuk harf, rakam ve tire kullanin</p>
+        <input type="text" name="slug" required class="input" placeholder="example-travel" pattern="[a-z0-9-]+" title="Lowercase letters, numbers, and hyphens only">
+        <p class="text-xs text-[var(--text-tertiary)] mt-1">Lowercase letters, numbers, and hyphens only</p>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Yetkili Adi</label>
-          <input type="text" name="contactName" class="input" placeholder="Ali Veli">
+          <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Contact Name</label>
+          <input type="text" name="contactName" class="input" placeholder="John Doe">
         </div>
         <div>
-          <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Telefon</label>
-          <input type="tel" name="phone" class="input" placeholder="+90 555 000 0000">
+          <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Phone</label>
+          <input type="tel" name="phone" class="input" placeholder="+1 555 000 0000">
         </div>
       </div>
       <div>
-        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">E-posta <span class="text-rose-500">*</span></label>
-        <input type="email" name="contactEmail" required class="input" placeholder="info@ornek.com">
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Email <span class="text-rose-500">*</span></label>
+        <input type="email" name="contactEmail" required class="input" placeholder="info@example.com">
       </div>
       <div class="flex justify-end gap-3 pt-2">
-        <button type="button" onclick="document.getElementById('new-agency-modal').classList.add('hidden')" class="btn btn-secondary">Iptal</button>
+        <button type="button" onclick="document.getElementById('new-agency-modal').classList.add('hidden')" class="btn btn-secondary">Cancel</button>
         <button type="submit" class="btn btn-primary">
           <i data-lucide="plus" class="w-4 h-4"></i>
-          Olustur
+          Create
         </button>
       </div>
     </form>

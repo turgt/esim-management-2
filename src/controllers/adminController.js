@@ -1065,10 +1065,10 @@ export async function listAgencies(req, res) {
       order: [['createdAt', 'DESC']],
       include: [{ model: db.AgencyContract, attributes: ['id', 'quantity', 'usedQuantity', 'status'] }]
     });
-    res.render('admin/agencies', { title: 'Acenteler', user: req.session.user, agencies });
+    res.render('admin/agencies', { title: 'Agencies', user: req.session.user, agencies });
   } catch (err) {
     log.error({ err }, 'listAgencies failed');
-    res.status(500).render('error', { title: 'Hata', user: req.session.user, message: 'Acenteler yuklenemedi.' });
+    res.status(500).render('error', { title: 'Error', user: req.session.user, message: 'Failed to load agencies.' });
   }
 }
 
@@ -1080,7 +1080,7 @@ export async function showAgencyDetail(req, res) {
         { model: db.User, as: 'users', attributes: ['id', 'username', 'email', 'agencyRole', 'isActive'] }
       ]
     });
-    if (!agency) return res.status(404).render('error', { title: 'Hata', user: req.session.user, message: 'Acente bulunamadi.' });
+    if (!agency) return res.status(404).render('error', { title: 'Error', user: req.session.user, message: 'Agency not found.' });
 
     const bookingStats = await db.TravelerBooking.count({ where: { agencyId: agency.id }, group: ['status'] });
     const packages = await db.AiraloPackage.findAll({ where: { type: 'sim' }, order: [['title', 'ASC']] });
@@ -1092,7 +1092,7 @@ export async function showAgencyDetail(req, res) {
     res.render('admin/agency-detail', { title: agency.name, user: req.session.user, agency, bookingStats, packages, availableUsers });
   } catch (err) {
     log.error({ err }, 'showAgencyDetail failed');
-    res.status(500).render('error', { title: 'Hata', user: req.session.user, message: 'Acente detayi yuklenemedi.' });
+    res.status(500).render('error', { title: 'Error', user: req.session.user, message: 'Failed to load agency details.' });
   }
 }
 
@@ -1106,9 +1106,9 @@ export async function createAgency(req, res) {
     await logAudit(ACTIONS.AGENCY_CREATE, { userId: req.session.user.id, entity: 'Agency', entityId: agency.id, details: { name, slug }, ipAddress: getIp(req) });
     res.redirect(`/admin/agencies/${agency.id}`);
   } catch (err) {
-    if (err.name === 'SequelizeUniqueConstraintError') return res.render('error', { title: 'Hata', user: req.session.user, message: 'Bu slug zaten kullanilmakta.' });
+    if (err.name === 'SequelizeUniqueConstraintError') return res.render('error', { title: 'Error', user: req.session.user, message: 'This slug is already in use.' });
     log.error({ err }, 'createAgency failed');
-    res.render('error', { title: 'Hata', user: req.session.user, message: 'Acente olusturulamadi.' });
+    res.render('error', { title: 'Error', user: req.session.user, message: 'Failed to create agency.' });
   }
 }
 
@@ -1117,10 +1117,10 @@ export async function assignAgencyUser(req, res) {
   const { userId, agencyRole } = req.body;
   try {
     const agency = await db.Agency.findByPk(agencyId);
-    if (!agency) return res.status(404).render('error', { title: 'Hata', user: req.session.user, message: 'Acente bulunamadi.' });
+    if (!agency) return res.status(404).render('error', { title: 'Error', user: req.session.user, message: 'Agency not found.' });
 
     const targetUser = await db.User.findByPk(userId);
-    if (!targetUser) return res.status(400).render('error', { title: 'Hata', user: req.session.user, message: 'Kullanici bulunamadi.' });
+    if (!targetUser) return res.status(400).render('error', { title: 'Error', user: req.session.user, message: 'User not found.' });
 
     await targetUser.update({ agencyId, agencyRole: agencyRole || 'staff' });
     await logAudit(ACTIONS.USER_UPDATE, {
@@ -1131,7 +1131,7 @@ export async function assignAgencyUser(req, res) {
     res.redirect(`/admin/agencies/${agencyId}`);
   } catch (err) {
     log.error({ err }, 'assignAgencyUser failed');
-    res.status(500).render('error', { title: 'Hata', user: req.session.user, message: 'Kullanici atanamadi.' });
+    res.status(500).render('error', { title: 'Error', user: req.session.user, message: 'Failed to assign user.' });
   }
 }
 
@@ -1140,7 +1140,7 @@ export async function removeAgencyUser(req, res) {
   const userId = Number(req.params.userId);
   try {
     const targetUser = await db.User.findOne({ where: { id: userId, agencyId } });
-    if (!targetUser) return res.status(404).render('error', { title: 'Hata', user: req.session.user, message: 'Kullanici bulunamadi.' });
+    if (!targetUser) return res.status(404).render('error', { title: 'Error', user: req.session.user, message: 'User not found.' });
 
     await targetUser.update({ agencyId: null, agencyRole: null });
     await logAudit(ACTIONS.USER_UPDATE, {
@@ -1151,7 +1151,7 @@ export async function removeAgencyUser(req, res) {
     res.redirect(`/admin/agencies/${agencyId}`);
   } catch (err) {
     log.error({ err }, 'removeAgencyUser failed');
-    res.status(500).render('error', { title: 'Hata', user: req.session.user, message: 'Kullanici kaldirilamadi.' });
+    res.status(500).render('error', { title: 'Error', user: req.session.user, message: 'Failed to remove user.' });
   }
 }
 
@@ -1160,9 +1160,9 @@ export async function createContract(req, res) {
   const { airaloPackageId, quantity, unitPriceAmount, unitPriceCurrency, contractEndAt } = req.body;
   try {
     const agency = await db.Agency.findByPk(agencyId);
-    if (!agency) return res.status(404).render('error', { title: 'Hata', user: req.session.user, message: 'Acente bulunamadi.' });
+    if (!agency) return res.status(404).render('error', { title: 'Error', user: req.session.user, message: 'Agency not found.' });
     const pkg = await db.AiraloPackage.findByPk(airaloPackageId);
-    if (!pkg) return res.status(400).render('error', { title: 'Hata', user: req.session.user, message: 'Paket bulunamadi.' });
+    if (!pkg) return res.status(400).render('error', { title: 'Error', user: req.session.user, message: 'Package not found.' });
 
     const contract = await db.AgencyContract.create({
       agencyId, airaloPackageId: Number(airaloPackageId), quantity: Number(quantity), usedQuantity: 0,
@@ -1173,7 +1173,7 @@ export async function createContract(req, res) {
     res.redirect(`/admin/agencies/${agencyId}`);
   } catch (err) {
     log.error({ err }, 'createContract failed');
-    res.status(500).render('error', { title: 'Hata', user: req.session.user, message: 'Kontrat olusturulamadi.' });
+    res.status(500).render('error', { title: 'Error', user: req.session.user, message: 'Failed to create contract.' });
   }
 }
 
@@ -1181,7 +1181,7 @@ export async function toggleAgencyStatus(req, res) {
   const agencyId = Number(req.params.id);
   try {
     const agency = await db.Agency.findByPk(agencyId);
-    if (!agency) return res.status(404).render('error', { title: 'Hata', user: req.session.user, message: 'Acente bulunamadi.' });
+    if (!agency) return res.status(404).render('error', { title: 'Error', user: req.session.user, message: 'Agency not found.' });
 
     const newStatus = agency.status === 'active' ? 'suspended' : 'active';
     await agency.update({ status: newStatus });
@@ -1193,7 +1193,7 @@ export async function toggleAgencyStatus(req, res) {
     res.redirect(`/admin/agencies/${agencyId}`);
   } catch (err) {
     log.error({ err }, 'toggleAgencyStatus failed');
-    res.status(500).render('error', { title: 'Hata', user: req.session.user, message: 'Durum degistirilemedi.' });
+    res.status(500).render('error', { title: 'Error', user: req.session.user, message: 'Failed to change status.' });
   }
 }
 
@@ -1202,7 +1202,7 @@ export async function updateAgency(req, res) {
   const { name, contactEmail, contactName, phone } = req.body;
   try {
     const agency = await db.Agency.findByPk(agencyId);
-    if (!agency) return res.status(404).render('error', { title: 'Hata', user: req.session.user, message: 'Acente bulunamadi.' });
+    if (!agency) return res.status(404).render('error', { title: 'Error', user: req.session.user, message: 'Agency not found.' });
 
     await agency.update({
       name: name || agency.name,
@@ -1217,7 +1217,7 @@ export async function updateAgency(req, res) {
     res.redirect(`/admin/agencies/${agencyId}`);
   } catch (err) {
     log.error({ err }, 'updateAgency failed');
-    res.status(500).render('error', { title: 'Hata', user: req.session.user, message: 'Acente guncellenemedi.' });
+    res.status(500).render('error', { title: 'Error', user: req.session.user, message: 'Failed to update agency.' });
   }
 }
 
@@ -1225,7 +1225,7 @@ export async function deleteAgency(req, res) {
   const agencyId = Number(req.params.id);
   try {
     const agency = await db.Agency.findByPk(agencyId);
-    if (!agency) return res.status(404).render('error', { title: 'Hata', user: req.session.user, message: 'Acente bulunamadi.' });
+    if (!agency) return res.status(404).render('error', { title: 'Error', user: req.session.user, message: 'Agency not found.' });
 
     // Unlink all users
     await db.User.update({ agencyId: null, agencyRole: null }, { where: { agencyId } });
@@ -1241,7 +1241,7 @@ export async function deleteAgency(req, res) {
     res.redirect('/admin/agencies');
   } catch (err) {
     log.error({ err }, 'deleteAgency failed');
-    res.status(500).render('error', { title: 'Hata', user: req.session.user, message: 'Acente silinemedi.' });
+    res.status(500).render('error', { title: 'Error', user: req.session.user, message: 'Failed to delete agency.' });
   }
 }
 
@@ -1250,7 +1250,7 @@ export async function terminateContract(req, res) {
   const contractId = Number(req.params.contractId);
   try {
     const contract = await db.AgencyContract.findOne({ where: { id: contractId, agencyId } });
-    if (!contract) return res.status(404).render('error', { title: 'Hata', user: req.session.user, message: 'Kontrat bulunamadi.' });
+    if (!contract) return res.status(404).render('error', { title: 'Error', user: req.session.user, message: 'Contract not found.' });
 
     await contract.update({ status: 'terminated' });
     await logAudit(ACTIONS.CONTRACT_EDIT, {
@@ -1260,7 +1260,7 @@ export async function terminateContract(req, res) {
     res.redirect(`/admin/agencies/${agencyId}`);
   } catch (err) {
     log.error({ err }, 'terminateContract failed');
-    res.status(500).render('error', { title: 'Hata', user: req.session.user, message: 'Kontrat sonlandirilamadi.' });
+    res.status(500).render('error', { title: 'Error', user: req.session.user, message: 'Failed to terminate contract.' });
   }
 }
 
@@ -1270,7 +1270,7 @@ export async function updateAgencyUserRole(req, res) {
   const { agencyRole } = req.body;
   try {
     const targetUser = await db.User.findOne({ where: { id: userId, agencyId } });
-    if (!targetUser) return res.status(404).render('error', { title: 'Hata', user: req.session.user, message: 'Kullanici bulunamadi.' });
+    if (!targetUser) return res.status(404).render('error', { title: 'Error', user: req.session.user, message: 'User not found.' });
 
     const newRole = agencyRole === 'owner' ? 'owner' : 'staff';
     await targetUser.update({ agencyRole: newRole });
@@ -1281,7 +1281,7 @@ export async function updateAgencyUserRole(req, res) {
     res.redirect(`/admin/agencies/${agencyId}`);
   } catch (err) {
     log.error({ err }, 'updateAgencyUserRole failed');
-    res.status(500).render('error', { title: 'Hata', user: req.session.user, message: 'Rol degistirilemedi.' });
+    res.status(500).render('error', { title: 'Error', user: req.session.user, message: 'Failed to change role.' });
   }
 }
 
@@ -1299,7 +1299,7 @@ export async function listWebhookLogs(req, res) {
     res.render('admin/webhook-logs', { title: 'Webhook Logs', user: req.session.user, logs, total: count, page: Number(page), totalPages: Math.ceil(count / limit), filter: status || 'all' });
   } catch (err) {
     log.error({ err }, 'listWebhookLogs failed');
-    res.status(500).render('error', { title: 'Hata', user: req.session.user, message: 'Webhook logs yuklenemedi.' });
+    res.status(500).render('error', { title: 'Error', user: req.session.user, message: 'Failed to load webhook logs.' });
   }
 }
 

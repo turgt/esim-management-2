@@ -64,7 +64,7 @@ export async function showDashboard(req, res) {
     });
   } catch (err) {
     log.error({ err }, 'showDashboard failed');
-    res.status(500).render('error', { title: 'Error', message: 'Dashboard yuklenemedi.', user: req.session.user });
+    res.status(500).render('error', { title: 'Error', message: 'Failed to load dashboard.', user: req.session.user });
   }
 }
 
@@ -113,7 +113,7 @@ export async function listBookings(req, res) {
     });
   } catch (err) {
     log.error({ err }, 'listBookings failed');
-    res.status(500).render('error', { title: 'Error', message: 'Rezervasyonlar yuklenemedi.', user: req.session.user });
+    res.status(500).render('error', { title: 'Error', message: 'Failed to load bookings.', user: req.session.user });
   }
 }
 
@@ -141,7 +141,7 @@ export async function showNewBookingForm(req, res) {
     });
   } catch (err) {
     log.error({ err }, 'showNewBookingForm failed');
-    res.status(500).render('error', { title: 'Error', message: 'Form yuklenemedi.', user: req.session.user });
+    res.status(500).render('error', { title: 'Error', message: 'Failed to load form.', user: req.session.user });
   }
 }
 
@@ -162,7 +162,7 @@ export async function handleCreateBooking(req, res) {
       return res.redirect(`/agency/bookings/new?error=${encodeURIComponent(err.message)}`);
     }
     log.error({ err }, 'handleCreateBooking unexpected error');
-    res.status(500).render('error', { title: 'Error', message: 'Rezervasyon olusturulamadi.', user: req.session.user });
+    res.status(500).render('error', { title: 'Error', message: 'Failed to create booking.', user: req.session.user });
   }
 }
 
@@ -188,7 +188,7 @@ export async function showBookingDetail(req, res) {
     });
 
     if (!booking) {
-      return res.status(404).render('error', { title: 'Not Found', message: 'Rezervasyon bulunamadi.', user: req.session.user });
+      return res.status(404).render('error', { title: 'Not Found', message: 'Booking not found.', user: req.session.user });
     }
 
     const now = new Date();
@@ -211,7 +211,7 @@ export async function showBookingDetail(req, res) {
     });
   } catch (err) {
     log.error({ err }, 'showBookingDetail failed');
-    res.status(500).render('error', { title: 'Error', message: 'Rezervasyon detayi yuklenemedi.', user: req.session.user });
+    res.status(500).render('error', { title: 'Error', message: 'Failed to load booking details.', user: req.session.user });
   }
 }
 
@@ -223,14 +223,14 @@ export async function handleCancelBooking(req, res) {
 
   try {
     await cancelBooking(bookingId, agencyId, { reason, req });
-    res.redirect(`/agency/bookings/${bookingId}?success=Rezervasyon+iptal+edildi`);
+    res.redirect(`/agency/bookings/${bookingId}?success=Booking+cancelled`);
   } catch (err) {
     if (err instanceof BookingError) {
       log.warn({ err, agencyId, bookingId }, 'cancelBooking validation error');
       return res.redirect(`/agency/bookings/${bookingId}?error=${encodeURIComponent(err.message)}`);
     }
     log.error({ err }, 'handleCancelBooking unexpected error');
-    res.status(500).render('error', { title: 'Error', message: 'Iptal islemi basarisiz.', user: req.session.user });
+    res.status(500).render('error', { title: 'Error', message: 'Cancellation failed.', user: req.session.user });
   }
 }
 
@@ -249,7 +249,7 @@ export async function handleChangeDueDate(req, res) {
       return res.redirect(`/agency/bookings/${bookingId}?error=${encodeURIComponent(err.message)}`);
     }
     log.error({ err }, 'handleChangeDueDate unexpected error');
-    res.status(500).render('error', { title: 'Error', message: 'Tarih degisikligi basarisiz.', user: req.session.user });
+    res.status(500).render('error', { title: 'Error', message: 'Date change failed.', user: req.session.user });
   }
 }
 
@@ -279,6 +279,6 @@ export async function listContracts(req, res) {
     });
   } catch (err) {
     log.error({ err }, 'listContracts failed');
-    res.status(500).render('error', { title: 'Error', message: 'Kontratlar yuklenemedi.', user: req.session.user });
+    res.status(500).render('error', { title: 'Error', message: 'Failed to load contracts.', user: req.session.user });
   }
 }
