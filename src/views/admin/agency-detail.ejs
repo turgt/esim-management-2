@@ -19,10 +19,33 @@
       <% if (agency.contactEmail) { %> &bull; <%= agency.contactEmail %><% } %>
     </p>
   </div>
-  <button onclick="document.getElementById('new-contract-modal').classList.remove('hidden')" class="btn btn-primary self-start sm:self-auto">
-    <i data-lucide="plus" class="w-4 h-4"></i>
-    Yeni Kontrat
-  </button>
+  <div class="flex gap-2 flex-wrap">
+    <button onclick="document.getElementById('new-contract-modal').classList.remove('hidden')" class="btn btn-primary">
+      <i data-lucide="plus" class="w-4 h-4"></i>
+      Yeni Kontrat
+    </button>
+    <button onclick="document.getElementById('edit-agency-modal').classList.remove('hidden')" class="btn btn-secondary">
+      <i data-lucide="edit" class="w-4 h-4"></i>
+      Duzenle
+    </button>
+    <form method="post" action="/admin/agencies/<%= agency.id %>/toggle-status" class="inline">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+      <button type="submit" class="btn btn-secondary">
+        <% if (agency.status === 'active') { %>
+        <i data-lucide="pause" class="w-4 h-4"></i> Askiya Al
+        <% } else { %>
+        <i data-lucide="play" class="w-4 h-4"></i> Aktif Et
+        <% } %>
+      </button>
+    </form>
+    <form method="post" action="/admin/agencies/<%= agency.id %>/delete" onsubmit="return confirm('Bu acenteyi silmek istediginize emin misiniz? Tum kullanicilar ayrilacak ve aktif kontratlar sonlandirilacaktir.')" class="inline">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+      <button type="submit" class="btn btn-secondary text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10">
+        <i data-lucide="trash-2" class="w-4 h-4"></i>
+        Sil
+      </button>
+    </form>
+  </div>
 </div>
 
 <!-- Info Cards -->
@@ -55,6 +78,16 @@
     </div>
   </div>
   <div class="stat-card">
+    <div class="stat-icon bg-violet-50 dark:bg-violet-500/10">
+      <i data-lucide="plane" class="w-5 h-5 text-violet-600 dark:text-violet-400"></i>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Toplam Booking</p>
+      <% const totalBookings = bookingStats ? bookingStats.reduce((s, b) => s + parseInt(b.count), 0) : 0; %>
+      <p class="stat-value"><%= totalBookings %></p>
+    </div>
+  </div>
+  <div class="stat-card">
     <div class="stat-icon bg-amber-50 dark:bg-amber-500/10">
       <i data-lucide="calendar" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
     </div>
@@ -64,6 +97,26 @@
     </div>
   </div>
 </div>
+
+<% if (bookingStats && bookingStats.length > 0) { %>
+<div class="flex flex-wrap gap-3 mb-8">
+  <% bookingStats.forEach(function(bs) { %>
+  <div class="flex items-center gap-2 bg-[var(--surface-2)] rounded-lg px-3 py-2">
+    <% if (bs.status === 'completed') { %>
+    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+    <% } else if (bs.status === 'pending') { %>
+    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+    <% } else if (bs.status === 'cancelled') { %>
+    <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+    <% } else { %>
+    <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+    <% } %>
+    <span class="text-xs font-medium text-[var(--text-secondary)] capitalize"><%= bs.status %></span>
+    <span class="text-xs font-bold text-[var(--text-primary)]"><%= bs.count %></span>
+  </div>
+  <% }) %>
+</div>
+<% } %>
 
 <!-- Contracts Section -->
 <div class="mb-8">
@@ -82,6 +135,7 @@
             <th>Birim Fiyat</th>
             <th>Bitis Tarihi</th>
             <th>Durum</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -124,11 +178,22 @@
               <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span><%= contract.status %></span>
               <% } %>
             </td>
+            <td class="text-right">
+              <% if (contract.status === 'active') { %>
+              <form method="post" action="/admin/agencies/<%= agency.id %>/contracts/<%= contract.id %>/terminate" onsubmit="return confirm('Bu kontrati sonlandirmak istediginize emin misiniz?')" class="inline">
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                <button type="submit" class="btn btn-secondary btn-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10">
+                  <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+                  Sonlandir
+                </button>
+              </form>
+              <% } %>
+            </td>
           </tr>
           <% }) %>
           <% } else { %>
           <tr>
-            <td colspan="6" class="text-center py-10 text-sm text-[var(--text-tertiary)]">
+            <td colspan="7" class="text-center py-10 text-sm text-[var(--text-tertiary)]">
               <i data-lucide="file-text" class="w-7 h-7 mx-auto mb-2 opacity-40"></i>
               <p>Henuz kontrat yok</p>
             </td>
@@ -142,10 +207,16 @@
 
 <!-- Users Section -->
 <div class="mb-8">
-  <h2 class="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-    <i data-lucide="users" class="w-4 h-4 text-[var(--text-tertiary)]"></i>
-    Kullanicilar
-  </h2>
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-base font-semibold text-[var(--text-primary)] flex items-center gap-2">
+      <i data-lucide="users" class="w-4 h-4 text-[var(--text-tertiary)]"></i>
+      Kullanicilar
+    </h2>
+    <button onclick="document.getElementById('assign-user-modal').classList.remove('hidden')" class="btn btn-secondary btn-sm">
+      <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+      Kullanici Ata
+    </button>
+  </div>
   <div class="table-container">
     <div class="overflow-x-auto">
       <table class="table">
@@ -154,6 +225,7 @@
             <th>Kullanici</th>
             <th>Rol</th>
             <th>Durum</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -161,15 +233,28 @@
           <% agency.users.forEach(function(u) { %>
           <tr>
             <td>
-              <div>
-                <p class="font-medium text-[var(--text-primary)]"><%= u.username %></p>
-                <% if (u.email) { %>
-                <p class="text-xs text-[var(--text-tertiary)]"><%= u.email %></p>
-                <% } %>
+              <div class="flex items-center gap-2.5">
+                <div class="avatar avatar-sm" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);"><%= u.username.charAt(0).toUpperCase() %></div>
+                <div>
+                  <p class="font-medium text-[var(--text-primary)]"><%= u.username %></p>
+                  <% if (u.email) { %>
+                  <p class="text-xs text-[var(--text-tertiary)]"><%= u.email %></p>
+                  <% } %>
+                </div>
               </div>
             </td>
             <td>
-              <span class="text-sm text-[var(--text-secondary)]"><%= u.agencyRole || 'user' %></span>
+              <form method="post" action="/admin/agencies/<%= agency.id %>/users/<%= u.id %>/role" class="inline">
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                <input type="hidden" name="agencyRole" value="<%= u.agencyRole === 'owner' ? 'staff' : 'owner' %>">
+                <button type="submit" class="group" title="Rol degistirmek icin tiklayin">
+                  <% if (u.agencyRole === 'owner') { %>
+                  <span class="badge badge-success cursor-pointer group-hover:opacity-70"><span class="badge-dot bg-emerald-500"></span>Owner</span>
+                  <% } else { %>
+                  <span class="badge badge-neutral cursor-pointer group-hover:opacity-70"><span class="badge-dot bg-sky-400"></span>Staff</span>
+                  <% } %>
+                </button>
+              </form>
             </td>
             <td>
               <% if (u.isActive !== false) { %>
@@ -178,13 +263,22 @@
               <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span>Pasif</span>
               <% } %>
             </td>
+            <td class="text-right">
+              <form method="post" action="/admin/agencies/<%= agency.id %>/users/<%= u.id %>/remove" onsubmit="return confirm('Bu kullaniciyi acenteden kaldirmak istediginize emin misiniz?')" class="inline">
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                <button type="submit" class="btn btn-secondary btn-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10">
+                  <i data-lucide="user-minus" class="w-3.5 h-3.5"></i>
+                </button>
+              </form>
+            </td>
           </tr>
           <% }) %>
           <% } else { %>
           <tr>
-            <td colspan="3" class="text-center py-10 text-sm text-[var(--text-tertiary)]">
+            <td colspan="4" class="text-center py-10 text-sm text-[var(--text-tertiary)]">
               <i data-lucide="users" class="w-7 h-7 mx-auto mb-2 opacity-40"></i>
               <p>Henuz kullanici atanmamis</p>
+              <button onclick="document.getElementById('assign-user-modal').classList.remove('hidden')" class="text-[var(--brand-primary)] hover:underline mt-1 inline-block">Kullanici ata</button>
             </td>
           </tr>
           <% } %>
@@ -194,10 +288,93 @@
   </div>
 </div>
 
+<!-- Edit Agency Modal -->
+<div id="edit-agency-modal" class="modal-backdrop hidden" onclick="document.getElementById('edit-agency-modal').classList.add('hidden')">
+  <div class="confirm-modal" style="max-width:480px" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-lg font-semibold text-[var(--text-primary)]">Acente Duzenle</h2>
+      <button onclick="document.getElementById('edit-agency-modal').classList.add('hidden')" class="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <form method="post" action="/admin/agencies/<%= agency.id %>/edit" class="space-y-4">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Acente Adi <span class="text-rose-500">*</span></label>
+        <input type="text" name="name" required class="input" value="<%= agency.name %>">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Yetkili Adi</label>
+          <input type="text" name="contactName" class="input" value="<%= agency.contactName || '' %>">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Telefon</label>
+          <input type="tel" name="phone" class="input" value="<%= agency.phone || '' %>">
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">E-posta <span class="text-rose-500">*</span></label>
+        <input type="email" name="contactEmail" required class="input" value="<%= agency.contactEmail %>">
+      </div>
+      <div class="bg-[var(--surface-2)] rounded-lg p-3">
+        <p class="text-xs text-[var(--text-tertiary)]">Slug: <span class="font-mono text-[var(--brand-primary)]"><%= agency.slug %></span> (degistirilemez)</p>
+      </div>
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" onclick="document.getElementById('edit-agency-modal').classList.add('hidden')" class="btn btn-secondary">Iptal</button>
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          Kaydet
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Assign User Modal -->
+<div id="assign-user-modal" class="modal-backdrop hidden" onclick="document.getElementById('assign-user-modal').classList.add('hidden')">
+  <div class="confirm-modal" style="max-width:420px" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-lg font-semibold text-[var(--text-primary)]">Kullanici Ata</h2>
+      <button onclick="document.getElementById('assign-user-modal').classList.add('hidden')" class="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <form method="post" action="/admin/agencies/<%= agency.id %>/users" class="space-y-4">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Kullanici <span class="text-rose-500">*</span></label>
+        <select name="userId" required class="input">
+          <option value="">Kullanici secin...</option>
+          <% if (availableUsers && availableUsers.length > 0) { %>
+          <% availableUsers.forEach(function(u) { %>
+          <option value="<%= u.id %>"><%= u.username %><% if (u.email) { %> (<%= u.email %>)<% } %></option>
+          <% }) %>
+          <% } %>
+        </select>
+        <p class="text-xs text-[var(--text-tertiary)] mt-1">Sadece baska acenteye atanmamis aktif kullanicilar listelenir</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Rol <span class="text-rose-500">*</span></label>
+        <select name="agencyRole" required class="input">
+          <option value="staff">Staff</option>
+          <option value="owner">Owner</option>
+        </select>
+      </div>
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" onclick="document.getElementById('assign-user-modal').classList.add('hidden')" class="btn btn-secondary">Iptal</button>
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="user-plus" class="w-4 h-4"></i>
+          Ata
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- New Contract Modal -->
-<div id="new-contract-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="document.getElementById('new-contract-modal').classList.add('hidden')"></div>
-  <div class="relative bg-[var(--bg-primary)] rounded-2xl shadow-xl w-full max-w-lg p-6">
+<div id="new-contract-modal" class="modal-backdrop hidden" onclick="document.getElementById('new-contract-modal').classList.add('hidden')">
+  <div class="confirm-modal" style="max-width:480px" onclick="event.stopPropagation()">
     <div class="flex items-center justify-between mb-5">
       <h2 class="text-lg font-semibold text-[var(--text-primary)]">Yeni Kontrat</h2>
       <button onclick="document.getElementById('new-contract-modal').classList.add('hidden')" class="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1">

@@ -8,6 +8,8 @@ import {
   listEmails, showEmailDetail, downloadAttachment, replyToEmail,
   showZenditPurchase, zenditPurchase,
   listAgencies, showAgencyDetail, createAgency, createContract,
+  assignAgencyUser, removeAgencyUser, updateAgencyUserRole,
+  toggleAgencyStatus, updateAgency, deleteAgency, terminateContract,
   listWebhookLogs, retryWebhook
 } from '../controllers/adminController.js';
 import {
@@ -81,6 +83,13 @@ router.get('/agencies', ensureAuth, ensureAdmin, listAgencies);
 router.post('/agencies', ensureAuth, ensureAdmin, createAgency);
 router.get('/agencies/:id', ensureAuth, ensureAdmin, showAgencyDetail);
 router.post('/agencies/:id/contracts', ensureAuth, ensureAdmin, createContract);
+router.post('/agencies/:id/contracts/:contractId/terminate', ensureAuth, ensureAdmin, terminateContract);
+router.post('/agencies/:id/users', ensureAuth, ensureAdmin, assignAgencyUser);
+router.post('/agencies/:id/users/:userId/remove', ensureAuth, ensureAdmin, removeAgencyUser);
+router.post('/agencies/:id/users/:userId/role', ensureAuth, ensureAdmin, updateAgencyUserRole);
+router.post('/agencies/:id/toggle-status', ensureAuth, ensureAdmin, toggleAgencyStatus);
+router.post('/agencies/:id/edit', ensureAuth, ensureAdmin, updateAgency);
+router.post('/agencies/:id/delete', ensureAuth, ensureAdmin, deleteAgency);
 
 // Webhook Logs
 router.get('/webhook-logs', ensureAuth, ensureAdmin, listWebhookLogs);
