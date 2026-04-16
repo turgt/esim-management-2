@@ -1,7 +1,7 @@
 <%- include('../partials/header', {title: 'Agency Dashboard', user: locals.user}) %>
 
 <div class="mb-8">
-  <p class="text-sm text-[var(--text-secondary)] mb-1">Hos Geldiniz</p>
+  <p class="text-sm text-[var(--text-secondary)] mb-1">Welcome</p>
   <h1 class="text-page-title"><%= locals.agency ? locals.agency.name : 'Agency Panel' %></h1>
 </div>
 
@@ -21,7 +21,7 @@
       <i data-lucide="calendar" class="w-5 h-5 text-sky-600 dark:text-sky-400"></i>
     </div>
     <div class="stat-content">
-      <p class="stat-label">Bu Hafta</p>
+      <p class="stat-label">This Week</p>
       <p class="stat-value text-sky-600 dark:text-sky-400"><%= typeof thisWeekBookings !== 'undefined' ? thisWeekBookings : 0 %></p>
     </div>
   </div>
@@ -30,7 +30,7 @@
       <i data-lucide="clock" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
     </div>
     <div class="stat-content">
-      <p class="stat-label">Yaklasan</p>
+      <p class="stat-label">Upcoming</p>
       <p class="stat-value text-amber-600 dark:text-amber-400"><%= typeof upcomingBookings !== 'undefined' ? (Array.isArray(upcomingBookings) ? upcomingBookings.length : upcomingBookings) : 0 %></p>
     </div>
   </div>
@@ -52,7 +52,7 @@
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-base font-semibold text-[var(--text-primary)] flex items-center gap-2">
         <i data-lucide="file-text" class="w-4 h-4 text-[var(--text-tertiary)]"></i>
-        Active Contractslar
+        Active Contracts
       </h2>
       <a href="/agency/contracts" class="text-sm text-[var(--brand-primary)] hover:underline">View all</a>
     </div>
@@ -78,7 +78,7 @@
           <% } %>
         </div>
         <div class="flex items-center justify-between text-xs text-[var(--text-tertiary)] mb-1.5">
-          <span><%= contract.usedQuantity %> / <%= contract.quantity %> kullanildi</span>
+          <span><%= contract.usedQuantity %> / <%= contract.quantity %> used</span>
           <% const pct = contract.quantity > 0 ? Math.round((contract.usedQuantity / contract.quantity) * 100) : 0; %>
           <span class="font-medium <%= pct >= 90 ? 'text-rose-500' : pct >= 70 ? 'text-amber-500' : 'text-emerald-600 dark:text-emerald-400' %>">%<%= pct %></span>
         </div>
@@ -104,7 +104,7 @@
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-base font-semibold text-[var(--text-primary)] flex items-center gap-2">
         <i data-lucide="clock" class="w-4 h-4 text-[var(--text-tertiary)]"></i>
-        Yaklasan Aktivasyonlar
+        Upcoming Activations
       </h2>
       <a href="/agency/bookings" class="text-sm text-[var(--brand-primary)] hover:underline">View all</a>
     </div>
@@ -126,7 +126,7 @@
             <%= new Date(booking.dueDate).toLocaleDateString('en-GB') %>
           </p>
           <p class="text-xs text-[var(--text-tertiary)]">
-            <%= new Date(booking.dueDate).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'}) %>
+            <%= new Date(booking.dueDate).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}) %>
           </p>
         </div>
       </a>
@@ -135,7 +135,7 @@
     <% } else { %>
     <div class="card p-8 text-center">
       <i data-lucide="clock" class="w-8 h-8 mx-auto mb-2 opacity-40 text-[var(--text-tertiary)]"></i>
-      <p class="text-sm text-[var(--text-tertiary)]">Yaklasan aktivasyon yok</p>
+      <p class="text-sm text-[var(--text-tertiary)]">No upcoming activations</p>
       <a href="/agency/bookings/new" class="text-sm text-[var(--brand-primary)] hover:underline mt-1 inline-block">Create a new booking</a>
     </div>
     <% } %>

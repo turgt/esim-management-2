@@ -2,7 +2,7 @@
 
 <div class="mb-8 flex items-center justify-between">
   <div>
-    <p class="text-sm text-[var(--text-secondary)] mb-1">Airalo Entegrasyonu</p>
+    <p class="text-sm text-[var(--text-secondary)] mb-1">Airalo Integration</p>
     <h1 class="text-page-title">Webhook Logs</h1>
   </div>
 </div>
@@ -16,10 +16,10 @@
     <%= filter === s
       ? 'bg-[var(--brand-primary)] text-white'
       : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]' %>">
-    <%= s === 'all' ? 'Tumu' : s === 'pending' ? 'Bekliyor' : s === 'success' ? 'Basarili' : s === 'failed' ? 'Basarisiz' : 'Yeniden Deneniyor' %>
+    <%= s === 'all' ? 'All' : s === 'pending' ? 'Pending' : s === 'success' ? 'Success' : s === 'failed' ? 'Failed' : 'Retrying' %>
   </a>
   <% }) %>
-  <span class="ml-auto text-sm text-[var(--text-tertiary)]">Toplam: <%= total %></span>
+  <span class="ml-auto text-sm text-[var(--text-tertiary)]">Total: <%= total %></span>
 </div>
 
 <!-- Logs Table -->
@@ -28,12 +28,12 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Tip</th>
+          <th>Type</th>
           <th>Request ID</th>
-          <th>Rezervasyon</th>
-          <th>Durum</th>
-          <th>Deneme</th>
-          <th>Alinma Zamani</th>
+          <th>Booking</th>
+          <th>Status</th>
+          <th>Attempts</th>
+          <th>Received At</th>
           <th></th>
         </tr>
       </thead>
@@ -65,13 +65,13 @@
           </td>
           <td>
             <% if (log.processStatus === 'success') { %>
-            <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Basarili</span>
+            <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Success</span>
             <% } else if (log.processStatus === 'failed') { %>
-            <span class="badge badge-error"><span class="badge-dot bg-rose-500"></span>Basarisiz</span>
+            <span class="badge badge-error"><span class="badge-dot bg-rose-500"></span>Failed</span>
             <% } else if (log.processStatus === 'retrying') { %>
-            <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Yeniden</span>
+            <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Retrying</span>
             <% } else { %>
-            <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span>Bekliyor</span>
+            <span class="badge badge-neutral"><span class="badge-dot bg-gray-400"></span>Pending</span>
             <% } %>
           </td>
           <td class="text-sm text-[var(--text-secondary)]">
@@ -79,16 +79,16 @@
           </td>
           <td class="text-sm text-[var(--text-secondary)]">
             <% const d = new Date(log.receivedAt || log.createdAt); %>
-            <p><%= d.toLocaleDateString('tr-TR') %></p>
-            <p class="text-xs text-[var(--text-tertiary)]"><%= d.toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'}) %></p>
+            <p><%= d.toLocaleDateString('en-GB') %></p>
+            <p class="text-xs text-[var(--text-tertiary)]"><%= d.toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}) %></p>
           </td>
           <td>
             <% if (log.processStatus === 'failed' || log.processStatus === 'pending') { %>
-            <form method="post" action="/admin/webhook-logs/<%= log.id %>/retry" onsubmit="return confirm('Bu webhook yeniden deneniyor. Emin misiniz?')">
+            <form method="post" action="/admin/webhook-logs/<%= log.id %>/retry" onsubmit="return confirm('Are you sure you want to retry this webhook?')">
               <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
               <button type="submit" class="btn btn-sm btn-secondary text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10">
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                Tekrar Dene
+                Retry
               </button>
             </form>
             <% } %>
@@ -99,7 +99,7 @@
         <tr>
           <td colspan="7" class="text-center py-12 text-sm text-[var(--text-tertiary)]">
             <i data-lucide="webhook" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
-            <p>Webhook log bulunamadi</p>
+            <p>No webhook logs found</p>
           </td>
         </tr>
         <% } %>
@@ -112,18 +112,18 @@
 <% if (totalPages > 1) { %>
 <div class="flex items-center justify-between mt-6">
   <p class="text-sm text-[var(--text-secondary)]">
-    Sayfa <%= page %> / <%= totalPages %> &bull; Toplam <%= total %> kayit
+    Page <%= page %> / <%= totalPages %> &bull; Total <%= total %> records
   </p>
   <div class="flex gap-2">
     <% if (page > 1) { %>
     <a href="/admin/webhook-logs?status=<%= filter %>&page=<%= page - 1 %>" class="btn btn-secondary btn-sm">
       <i data-lucide="chevron-left" class="w-4 h-4"></i>
-      Onceki
+      Previous
     </a>
     <% } %>
     <% if (page < totalPages) { %>
     <a href="/admin/webhook-logs?status=<%= filter %>&page=<%= page + 1 %>" class="btn btn-secondary btn-sm">
-      Sonraki
+      Next
       <i data-lucide="chevron-right" class="w-4 h-4"></i>
     </a>
     <% } %>

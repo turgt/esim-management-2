@@ -42,7 +42,7 @@
       <% if (contract.status === 'active') { %>
       <span class="badge badge-success flex-shrink-0"><span class="badge-dot bg-emerald-500"></span>Active</span>
       <% } else if (contract.status === 'expired') { %>
-      <span class="badge badge-neutral flex-shrink-0"><span class="badge-dot bg-gray-400"></span>Bitti</span>
+      <span class="badge badge-neutral flex-shrink-0"><span class="badge-dot bg-gray-400"></span>Expired</span>
       <% } else { %>
       <span class="badge badge-neutral flex-shrink-0"><span class="badge-dot bg-gray-400"></span><%= contract.status %></span>
       <% } %>
@@ -51,7 +51,7 @@
     <!-- Progress Bar -->
     <div>
       <div class="flex items-center justify-between text-xs mb-1.5">
-        <span class="text-[var(--text-tertiary)]">Kullanim</span>
+        <span class="text-[var(--text-tertiary)]">Usage</span>
         <span class="font-semibold text-[var(--text-secondary)]">
           <%= used %> / <%= total %>
           <span class="text-[var(--text-tertiary)] font-normal">(%<%= pct %>)</span>
@@ -64,7 +64,7 @@
       </div>
       <p class="text-xs text-[var(--text-tertiary)] mt-1.5">
         <% if (remaining > 0) { %>
-          <span class="text-[var(--text-primary)] font-medium"><%= remaining %></span> adet kaldi
+          <span class="text-[var(--text-primary)] font-medium"><%= remaining %></span> remaining
         <% } else { %>
           <span class="text-rose-500 font-medium">Contract exhausted</span>
         <% } %>
@@ -110,7 +110,7 @@
 <div class="card p-12 text-center">
   <i data-lucide="file-text" class="w-10 h-10 mx-auto mb-3 opacity-40 text-[var(--text-tertiary)]"></i>
   <p class="font-medium text-[var(--text-primary)] mb-1">No contracts found</p>
-  <p class="text-sm text-[var(--text-tertiary)]">Active contractsiniz burada gorunecek. Please contact your administrator.</p>
+  <p class="text-sm text-[var(--text-tertiary)]">Your contracts will appear here. Please contact your administrator.</p>
 </div>
 <% } %>
 

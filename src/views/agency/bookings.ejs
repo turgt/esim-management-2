@@ -7,7 +7,7 @@
   </div>
   <a href="/agency/bookings/new" class="btn btn-primary">
     <i data-lucide="plus" class="w-4 h-4"></i>
-    Yeni
+    New
   </a>
 </div>
 
@@ -17,9 +17,9 @@
   <div class="flex items-center gap-1 flex-wrap">
     <%
       const tabDefs = [
-        { value: '', label: 'Tumu' },
+        { value: '', label: 'All' },
         { value: 'pending_provisioning', label: 'Pending' },
-        { value: 'provisioned', label: 'Saglanmis' },
+        { value: 'provisioned', label: 'Provisioned' },
         { value: 'installed', label: 'Active' },
         { value: 'cancelled', label: 'Cancelled' }
       ];
@@ -48,9 +48,9 @@
         placeholder="Traveler, ref..."
         class="input !pl-9 !w-48">
     </div>
-    <button type="submit" class="btn btn-secondary">Ara</button>
+    <button type="submit" class="btn btn-secondary">Search</button>
     <% if (typeof filters !== 'undefined' && filters.search) { %>
-    <a href="/agency/bookings<%= typeof filters !== 'undefined' && filters.status ? '?status=' + filters.status : '' %>" class="btn btn-secondary">Temizle</a>
+    <a href="/agency/bookings<%= typeof filters !== 'undefined' && filters.status ? '?status=' + filters.status : '' %>" class="btn btn-secondary">Clear</a>
     <% } %>
   </form>
 </div>
@@ -95,7 +95,7 @@
           <td>
             <% if (booking.dueDate) { %>
             <p class="text-sm text-[var(--text-primary)]"><%= new Date(booking.dueDate).toLocaleDateString('en-GB') %></p>
-            <p class="text-xs text-[var(--text-tertiary)]"><%= new Date(booking.dueDate).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}) %></p>
+            <p class="text-xs text-[var(--text-tertiary)]"><%= new Date(booking.dueDate).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}) %></p>
             <% } else { %>
             <span class="text-sm text-[var(--text-tertiary)]">—</span>
             <% } %>
@@ -104,7 +104,7 @@
             <% if (booking.status === 'pending_provisioning') { %>
             <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Pending</span>
             <% } else if (booking.status === 'provisioned') { %>
-            <span class="badge badge-info"><span class="badge-dot bg-sky-500"></span>Saglanmis</span>
+            <span class="badge badge-info"><span class="badge-dot bg-sky-500"></span>Provisioned</span>
             <% } else if (booking.status === 'installed') { %>
             <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
             <% } else if (booking.status === 'cancelled') { %>

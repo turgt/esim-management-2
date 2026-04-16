@@ -10,7 +10,7 @@
     <% if (booking.status === 'pending_provisioning') { %>
     <span class="badge badge-warning"><span class="badge-dot bg-amber-500"></span>Pending</span>
     <% } else if (booking.status === 'provisioned') { %>
-    <span class="badge badge-info"><span class="badge-dot bg-sky-500"></span>Saglanmis</span>
+    <span class="badge badge-info"><span class="badge-dot bg-sky-500"></span>Provisioned</span>
     <% } else if (booking.status === 'installed') { %>
     <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Active</span>
     <% } else if (booking.status === 'cancelled') { %>
@@ -67,7 +67,7 @@
         <% } %>
         <% if (booking.travelerEmail) { %>
         <div>
-          <dt class="text-[var(--text-tertiary)] mb-0.5">E-posta</dt>
+          <dt class="text-[var(--text-tertiary)] mb-0.5">Email</dt>
           <dd class="text-[var(--text-primary)]"><%= booking.travelerEmail %></dd>
         </div>
         <% } %>
@@ -80,8 +80,8 @@
         <div>
           <dt class="text-[var(--text-tertiary)] mb-0.5">Activation Date</dt>
           <dd class="font-medium text-[var(--text-primary)]">
-            <%= new Date(booking.dueDate).toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'}) %>
-            — <%= new Date(booking.dueDate).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}) %>
+            <%= new Date(booking.dueDate).toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'}) %>
+            — <%= new Date(booking.dueDate).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}) %>
           </dd>
         </div>
         <div>
@@ -128,7 +128,7 @@
         <span id="token-url" class="text-sm font-mono text-[var(--brand-primary)] truncate flex-1"><%= typeof tokenUrl !== 'undefined' ? tokenUrl : '' %></span>
         <button onclick="copyTokenUrl()" class="btn btn-secondary btn-sm flex-shrink-0" id="copy-btn">
           <i data-lucide="copy" id="copy-icon" class="w-3.5 h-3.5"></i>
-          <span id="copy-label">Kopyala</span>
+          <span id="copy-label">Copy</span>
         </button>
       </div>
     </div>
@@ -159,7 +159,7 @@
 
     <!-- Action Buttons -->
     <div class="card p-4 space-y-3">
-      <h3 class="text-sm font-semibold text-[var(--text-tertiary)] uppercase tracking-wide">Islemler</h3>
+      <h3 class="text-sm font-semibold text-[var(--text-tertiary)] uppercase tracking-wide">Actions</h3>
 
       <!-- Change Date -->
       <% if (typeof canChangeDate !== 'undefined' && canChangeDate) { %>
@@ -207,8 +207,8 @@
           value="<%= new Date(booking.dueDate).toISOString().slice(0,16) %>">
       </div>
       <div class="flex gap-3">
-        <button type="button" onclick="document.getElementById('change-date-dialog').classList.add('hidden')" class="btn btn-secondary flex-1">Cancelled</button>
-        <button type="submit" class="btn btn-primary flex-1">Guncelle</button>
+        <button type="button" onclick="document.getElementById('change-date-dialog').classList.add('hidden')" class="btn btn-secondary flex-1">Cancel</button>
+        <button type="submit" class="btn btn-primary flex-1">Update</button>
       </div>
     </form>
   </div>
@@ -236,7 +236,7 @@
         <input type="text" name="reason" class="input" placeholder="Optional">
       </div>
       <div class="flex gap-3">
-        <button type="button" onclick="document.getElementById('cancel-dialog').classList.add('hidden')" class="btn btn-secondary flex-1">Vazgec</button>
+        <button type="button" onclick="document.getElementById('cancel-dialog').classList.add('hidden')" class="btn btn-secondary flex-1">Go Back</button>
         <button type="submit" class="btn flex-1 bg-rose-600 hover:bg-rose-700 text-white border-rose-600">Confirm Cancel</button>
       </div>
     </form>
@@ -249,8 +249,8 @@ function copyTokenUrl() {
   const url = document.getElementById('token-url').textContent.trim();
   const label = document.getElementById('copy-label');
   navigator.clipboard.writeText(url).then(function() {
-    label.textContent = 'Kopyalandi';
-    setTimeout(function() { label.textContent = 'Kopyala'; }, 2000);
+    label.textContent = 'Copied';
+    setTimeout(function() { label.textContent = 'Copy'; }, 2000);
   }).catch(function() {
     window.prompt('Copy this URL:', url);
   });

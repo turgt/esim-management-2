@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -374,7 +374,7 @@
     <% } %>
     <div>
       <div class="agency-name"><%= agency ? agency.name : 'DataPatch' %></div>
-      <div class="agency-powered">eSIM Servisi</div>
+      <div class="agency-powered">eSIM Service</div>
     </div>
   </header>
 
@@ -384,40 +384,40 @@
     <!-- ===== NOT FOUND ===== -->
     <div class="card" style="text-align:center;">
       <div class="error-icon">✕</div>
-      <div class="card-title">Geçersiz Link</div>
+      <div class="card-title">Invalid Link</div>
       <p class="card-subtitle" style="margin-top:8px;">
-        Bu bağlantı geçerli değil ya da süresi dolmuş. Acentenizle iletişime geçin.
+        This link is invalid or has expired. Please contact your agency.
       </p>
     </div>
 
     <% } else if (state === 'pending_provisioning') { %>
     <!-- ===== PENDING PROVISIONING ===== -->
     <div class="card">
-      <div class="status-badge preparing"><span class="status-dot"></span>Hazırlanıyor</div>
-      <div class="card-title">eSIM'iniz hazırlanıyor</div>
+      <div class="status-badge preparing"><span class="status-dot"></span>Preparing</div>
+      <div class="card-title">Your eSIM is being prepared</div>
       <p class="card-subtitle">
-        eSIM'iniz sistemimizde hazırlanıyor. Biraz bekleyin, kurulum linki otomatik olarak güncellenecek.
+        Your eSIM is being prepared in our system. Please wait, the installation link will be updated automatically.
       </p>
 
       <% if (booking && booking.dueDate) { %>
       <div class="countdown-wrap" id="countdown-wrap">
-        <div class="countdown-unit"><span class="countdown-number" id="cd-h">--</span><span class="countdown-label">Saat</span></div>
-        <div class="countdown-unit"><span class="countdown-number" id="cd-m">--</span><span class="countdown-label">Dk</span></div>
-        <div class="countdown-unit"><span class="countdown-number" id="cd-s">--</span><span class="countdown-label">Sn</span></div>
+        <div class="countdown-unit"><span class="countdown-number" id="cd-h">--</span><span class="countdown-label">Hours</span></div>
+        <div class="countdown-unit"><span class="countdown-number" id="cd-m">--</span><span class="countdown-label">Min</span></div>
+        <div class="countdown-unit"><span class="countdown-number" id="cd-s">--</span><span class="countdown-label">Sec</span></div>
       </div>
-      <p class="countdown-note" id="countdown-note">Tahmini hazır olma zamanına kalan süre</p>
+      <p class="countdown-note" id="countdown-note">Estimated time until ready</p>
       <% } %>
 
       <div class="poll-indicator" id="poll-indicator">
         <div class="poll-spinner"></div>
-        <span>Durum kontrol ediliyor...</span>
+        <span>Checking status...</span>
       </div>
     </div>
 
     <% if (booking && booking.travelerName) { %>
     <div class="card">
       <p style="font-size:14px;color:var(--text-muted);">
-        Merhaba <strong><%= booking.travelerName %></strong>, eSIM'iniz hazır olduğunda bu sayfa otomatik güncellenecek.
+        Hello <strong><%= booking.travelerName %></strong>, this page will automatically update when your eSIM is ready.
       </p>
     </div>
     <% } %>
@@ -436,7 +436,7 @@
         document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
         document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
         if (diff === 0) {
-          document.getElementById('countdown-note').textContent = 'Beklenen süre geçti, henüz hazır değil.';
+          document.getElementById('countdown-note').textContent = 'Expected time has passed, not ready yet.';
         }
       }
       tick();
@@ -461,17 +461,17 @@
     <% } else if (state === 'provisioned') { %>
     <!-- ===== PROVISIONED: INSTALL ===== -->
     <div class="card">
-      <div class="status-badge ready">✓ Hazır</div>
-      <div class="card-title">eSIM'iniz kurulmaya hazır!</div>
+      <div class="status-badge ready">✓ Ready</div>
+      <div class="card-title">Your eSIM is ready to install!</div>
       <p class="card-subtitle">
-        Aşağıdaki butona tıklayarak eSIM'inizi telefonunuza ekleyin ya da QR kodu taratın.
+        Tap the button below to add the eSIM to your phone, or scan the QR code.
       </p>
 
       <% if (esim && esim.smdpAddress && esim.activationCode) { %>
       <%
         var lpa = 'LPA:1$' + esim.smdpAddress + '$' + esim.activationCode;
       %>
-      <a href="<%= lpa %>" class="btn-primary">📲 eSIM'i Kur</a>
+      <a href="<%= lpa %>" class="btn-primary">📲 Install eSIM</a>
 
       <div class="qr-wrap">
         <%
@@ -479,64 +479,64 @@
         %>
         <img
           src="/e/<%= qrToken %>/qr"
-          alt="QR Kod"
+          alt="QR Code"
           onerror="this.parentElement.style.display='none'"
         >
-        <span class="qr-label">QR kodu kamera uygulamanızla tarayın</span>
+        <span class="qr-label">Scan the QR code with your camera app</span>
       </div>
 
       <ul class="detail-list">
         <li>
           <span class="detail-label">ICCID</span>
           <span class="detail-value" id="val-iccid"><%= esim.iccid || '—' %></span>
-          <button class="copy-btn" onclick="copyText('<%= esim.iccid %>', this)">Kopyala</button>
+          <button class="copy-btn" onclick="copyText('<%= esim.iccid %>', this)">Copy</button>
         </li>
         <li>
-          <span class="detail-label">SM-DP+ Adresi</span>
+          <span class="detail-label">SM-DP+ Address</span>
           <span class="detail-value" id="val-smdp"><%= esim.smdpAddress || '—' %></span>
-          <button class="copy-btn" onclick="copyText('<%= esim.smdpAddress %>', this)">Kopyala</button>
+          <button class="copy-btn" onclick="copyText('<%= esim.smdpAddress %>', this)">Copy</button>
         </li>
         <li>
-          <span class="detail-label">Aktivasyon Kodu</span>
+          <span class="detail-label">Activation Code</span>
           <span class="detail-value" id="val-ac"><%= esim.activationCode || '—' %></span>
-          <button class="copy-btn" onclick="copyText('<%= esim.activationCode %>', this)">Kopyala</button>
+          <button class="copy-btn" onclick="copyText('<%= esim.activationCode %>', this)">Copy</button>
         </li>
       </ul>
       <% } else { %>
-      <p class="card-subtitle" style="margin-top:16px;color:var(--danger);">eSIM bilgileri henüz hazır değil. Lütfen kısa süre sonra tekrar deneyin.</p>
+      <p class="card-subtitle" style="margin-top:16px;color:var(--danger);">eSIM details are not ready yet. Please try again shortly.</p>
       <% } %>
     </div>
 
     <% if (package) { %>
     <div class="card">
-      <p style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:12px;">PAKET BİLGİLERİ</p>
+      <p style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:12px;">PACKAGE DETAILS</p>
       <ul class="detail-list">
-        <li><span class="detail-label">Paket</span><span class="detail-value"><%= package.title || '—' %></span></li>
-        <li><span class="detail-label">Veri</span><span class="detail-value"><%= package.isUnlimited ? 'Sınırsız' : (package.data ? package.data + ' MB' : '—') %></span></li>
-        <li><span class="detail-label">Süre</span><span class="detail-value"><%= package.day ? package.day + ' Gün' : '—' %></span></li>
-        <li><span class="detail-label">Operatör</span><span class="detail-value"><%= package.operatorTitle || '—' %></span></li>
-        <% if (package.voice) { %><li><span class="detail-label">Ses</span><span class="detail-value"><%= package.voice %></span></li><% } %>
+        <li><span class="detail-label">Package</span><span class="detail-value"><%= package.title || '—' %></span></li>
+        <li><span class="detail-label">Data</span><span class="detail-value"><%= package.isUnlimited ? 'Unlimited' : (package.data ? package.data + ' MB' : '—') %></span></li>
+        <li><span class="detail-label">Duration</span><span class="detail-value"><%= package.day ? package.day + ' Days' : '—' %></span></li>
+        <li><span class="detail-label">Operator</span><span class="detail-value"><%= package.operatorTitle || '—' %></span></li>
+        <% if (package.voice) { %><li><span class="detail-label">Voice</span><span class="detail-value"><%= package.voice %></span></li><% } %>
         <% if (package.text) { %><li><span class="detail-label">SMS</span><span class="detail-value"><%= package.text %></span></li><% } %>
       </ul>
     </div>
     <% } %>
 
     <details>
-      <summary>Manuel kurulum adımları</summary>
+      <summary>Manual installation steps</summary>
       <div class="accordion-body">
         <p><strong>iPhone (iOS 12.1+):</strong></p>
         <ol>
-          <li>Ayarlar → Hücresel → eSIM Ekle'ye gidin</li>
-          <li>"QR Kodu Kullan" seçeneğine dokunun</li>
-          <li>Yukarıdaki QR kodu kameranızla okutun</li>
-          <li>Aktivasyonu onaylayın</li>
+          <li>Go to Settings → Cellular → Add eSIM</li>
+          <li>Tap "Use QR Code"</li>
+          <li>Scan the QR code above with your camera</li>
+          <li>Confirm the activation</li>
         </ol>
         <p style="margin-top:12px;"><strong>Android:</strong></p>
         <ol>
-          <li>Ayarlar → Bağlantılar → SIM Kart Yöneticisi'ne gidin</li>
-          <li>eSIM Ekle → QR Kod ile Ekle'yi seçin</li>
-          <li>Yukarıdaki QR kodu okutun</li>
-          <li>Aktivasyon talimatlarını izleyin</li>
+          <li>Go to Settings → Connections → SIM Card Manager</li>
+          <li>Select Add eSIM → Add using QR Code</li>
+          <li>Scan the QR code above</li>
+          <li>Follow the activation instructions</li>
         </ol>
       </div>
     </details>
@@ -545,29 +545,29 @@
     <!-- ===== INSTALLED / CONFIRMED ===== -->
     <div class="card" style="text-align:center;">
       <div class="success-icon">✓</div>
-      <div class="card-title">eSIM Kuruldu!</div>
+      <div class="card-title">eSIM Installed!</div>
       <p class="card-subtitle" style="margin-top:8px;">
-        eSIM'iniz başarıyla kuruldu. Seyahatinizde iyi bağlantılar dileriz.
+        Your eSIM has been successfully installed. Enjoy your travels with great connectivity.
       </p>
     </div>
 
     <details>
-      <summary>Sorun mu yaşıyorsunuz?</summary>
+      <summary>Having issues?</summary>
       <div class="accordion-body">
-        <p><strong>Bağlantı sorunu yaşıyorsanız:</strong></p>
+        <p><strong>If you're experiencing connection issues:</strong></p>
         <ul>
-          <li>Uçak modunu açıp kapatın</li>
-          <li>Ayarlar'dan veri dolaşımının (roaming) açık olduğunu kontrol edin</li>
-          <li>eSIM'in aktif SIM olarak seçili olduğunu doğrulayın</li>
-          <li>Telefonu yeniden başlatın</li>
+          <li>Toggle airplane mode on and off</li>
+          <li>Check that data roaming is enabled in Settings</li>
+          <li>Make sure the eSIM is selected as the active SIM</li>
+          <li>Restart your phone</li>
         </ul>
-        <p style="margin-top:12px;">Sorun devam ederse acentenizle iletişime geçin.</p>
+        <p style="margin-top:12px;">If the issue persists, please contact your agency.</p>
       </div>
     </details>
 
     <% if (agency && (agency.contactEmail || agency.phone)) { %>
     <div class="card">
-      <p style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:12px;">DESTEK</p>
+      <p style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:12px;">SUPPORT</p>
       <div class="contact-card">
         <% if (agency.contactName) { %>
         <div class="contact-item">
@@ -596,24 +596,24 @@
     <div class="card" style="text-align:center;">
       <div class="error-icon">!</div>
       <div class="card-title">
-        <% if (state === 'cancelled') { %>eSIM İptal Edildi
-        <% } else if (state === 'expired') { %>eSIM Süresi Doldu
-        <% } else { %>Bir Sorun Oluştu<% } %>
+        <% if (state === 'cancelled') { %>eSIM Cancelled
+        <% } else if (state === 'expired') { %>eSIM Expired
+        <% } else { %>Something Went Wrong<% } %>
       </div>
       <p class="card-subtitle" style="margin-top:8px;">
         <% if (state === 'cancelled') { %>
-          Bu eSIM rezervasyonu iptal edildi. Daha fazla bilgi için acentenizle iletişime geçin.
+          This eSIM booking has been cancelled. Please contact your agency for more information.
         <% } else if (state === 'expired') { %>
-          Bu eSIM'in 30 günlük kurulum süresi doldu. Yeni bir eSIM için acentenizle iletişime geçin.
+          The 30-day installation period for this eSIM has expired. Please contact your agency for a new eSIM.
         <% } else { %>
-          eSIM işleminizde bir hata oluştu. Lütfen acentenizle iletişime geçin.
+          An error occurred with your eSIM. Please contact your agency.
         <% } %>
       </p>
     </div>
 
     <% if (agency && (agency.contactEmail || agency.phone || agency.contactName)) { %>
     <div class="card">
-      <p style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:12px;">İLETİŞİM</p>
+      <p style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:12px;">CONTACT</p>
       <div class="contact-card">
         <% if (agency.contactName) { %>
         <div class="contact-item">
@@ -642,7 +642,7 @@
   </main>
 
   <footer class="page-footer">
-    DataPatch eSIM Servisi tarafından desteklenmektedir
+    Powered by DataPatch eSIM Service
   </footer>
 
   <script>
@@ -650,7 +650,7 @@
     if (!text) return;
     navigator.clipboard.writeText(text).then(function() {
       var orig = btn.textContent;
-      btn.textContent = 'Kopyalandı!';
+      btn.textContent = 'Copied!';
       btn.style.color = 'var(--success)';
       setTimeout(function() {
         btn.textContent = orig;
@@ -666,9 +666,9 @@
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      btn.textContent = 'Kopyalandı!';
+      btn.textContent = 'Copied!';
       btn.style.color = 'var(--success)';
-      setTimeout(function() { btn.textContent = 'Kopyala'; btn.style.color = ''; }, 1500);
+      setTimeout(function() { btn.textContent = 'Copy'; btn.style.color = ''; }, 1500);
     });
   }
   </script>
