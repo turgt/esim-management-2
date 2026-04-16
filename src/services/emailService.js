@@ -78,14 +78,16 @@ function emailLayout(content, { preheader = '' } = {}) {
         <tr><td style="background:linear-gradient(135deg,#ea580c,#f97316);padding:24px 32px;text-align:center;">
           <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
             <tr>
-              <td style="vertical-align:middle;padding-right:10px;">
-                <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);display:inline-block;text-align:center;line-height:36px;">
-                  <span style="font-size:18px;color:#ffffff;">&#9679;</span>
+              <td style="vertical-align:middle;padding-right:12px;">
+                <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" style="width:40px;height:40px" arcsize="50%" fillcolor="#ffffff" stroked="f"><v:textbox inset="0,0,0,0" style="mso-fit-shape-to-text:true"><center><![endif]-->
+                <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.25);display:inline-block;text-align:center;line-height:40px;border:2px solid rgba(255,255,255,0.4);">
+                  <img src="${url}/public/logo-icon.svg" alt="DP" width="24" height="24" style="display:inline-block;vertical-align:middle;margin-top:-2px;" />
                 </div>
+                <!--[if mso]></center></v:textbox></v:roundrect><![endif]-->
               </td>
               <td style="vertical-align:middle;">
-                <span style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;font-weight:500;letter-spacing:3px;color:rgba(255,255,255,0.75);display:block;line-height:1;">DATA</span>
-                <span style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:20px;font-weight:800;color:#ffffff;display:block;line-height:1.2;">PATCH</span>
+                <span style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:11px;font-weight:500;letter-spacing:3px;color:rgba(255,255,255,0.7);display:block;line-height:1;">DATA</span>
+                <span style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:22px;font-weight:800;color:#ffffff;display:block;line-height:1.2;">PATCH</span>
               </td>
             </tr>
           </table>
