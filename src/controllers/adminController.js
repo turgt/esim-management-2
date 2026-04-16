@@ -602,6 +602,43 @@ export async function resolvePayment(req, res) {
   }
 }
 
+// Cancel a pending payment
+export async function cancelPayment(req, res) {
+  try {
+    const payment = await db.Payment.findByPk(req.params.id);
+    if (!payment) {
+      return res.render('error', { message: 'Payment not found' });
+    }
+
+    if (payment.status !== 'pending') {
+      return res.render('error', { message: 'Only pending payments can be cancelled' });
+    }
+
+    await payment.update({
+      status: 'cancelled',
+      metadata: {
+        ...payment.metadata,
+        cancelledAt: new Date().toISOString(),
+        cancelReason: 'admin_manual',
+        cancelledBy: req.session.user.id
+      }
+    });
+
+    await logAudit(ACTIONS.PAYMENT_RESOLVED, {
+      userId: req.session.user.id,
+      entity: 'Payment',
+      entityId: payment.id,
+      details: { merchantOid: payment.merchantOid, action: 'cancelled', note: req.body.cancelNote || '' },
+      ipAddress: getIp(req)
+    });
+
+    res.redirect('/admin/payments');
+  } catch (err) {
+    log.error({ err }, 'cancelPayment error');
+    res.render('error', { message: 'Failed to cancel payment' });
+  }
+}
+
 // Show eSIM detail
 export async function showEsimDetail(req, res) {
   try {

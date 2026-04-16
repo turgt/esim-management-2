@@ -49,6 +49,8 @@
       <span class="badge badge-success"><span class="badge-dot bg-emerald-500"></span>Completed</span>
       <% } else if (payment.status === 'pending') { %>
       <span class="badge badge-warning"><span class="badge-dot bg-amber-500 animate-pulse-dot"></span>Pending</span>
+      <% } else if (payment.status === 'cancelled') { %>
+      <span class="badge badge-neutral"><span class="badge-dot bg-slate-400"></span>Cancelled</span>
       <% } else if (payment.status === 'failed') { %>
       <span class="badge badge-danger"><span class="badge-dot bg-rose-500"></span>Failed</span>
       <% } else { %>
@@ -102,10 +104,15 @@
         View Receipt
       </a>
       <% } else if (payment.status === 'pending') { %>
-      <a href="/payment/status/<%= payment.merchantOid %>" class="btn btn-secondary btn-block btn-sm">
+      <a href="/payment/result/<%= payment.merchantOid %>" class="btn btn-secondary btn-block btn-sm">
         <i data-lucide="clock" class="w-3.5 h-3.5"></i>
         View Status
       </a>
+      <% } else if (payment.status === 'cancelled') { %>
+      <span class="btn btn-secondary btn-block btn-sm opacity-50 cursor-not-allowed pointer-events-none">
+        <i data-lucide="ban" class="w-3.5 h-3.5"></i>
+        Cancelled
+      </span>
       <% } else { %>
       <span class="btn btn-secondary btn-block btn-sm opacity-50 cursor-not-allowed pointer-events-none">
         <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>

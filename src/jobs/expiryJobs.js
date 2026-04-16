@@ -18,14 +18,16 @@ export async function runReminder() {
   for (const booking of expiringSoon) {
     if (booking.travelerEmail) {
       try {
-        const { sendMail } = await import('../services/emailService.js');
-        await sendMail(booking.travelerEmail, 'eSIM kurulum suren tukeniyor!',
-          `<p>Merhaba ${booking.travelerName},</p>
-           <p>eSIM'ini kurman icin <strong>5 gun</strong> kaldi. Su linkten kurabilirsin:</p>
-           <p><a href="${process.env.APP_URL || 'https://datapatch.app'}/e/${booking.token}">eSIM'i Kur</a></p>
-           <p>30 gun icinde kurulmayan eSIM'ler gecersiz olur.</p>`,
-          { type: 'expiry_reminder', userId: null }
-        );
+        const { sendMail, emailLayout, emailButton } = await import('../services/emailService.js');
+        const appUrl = process.env.APP_URL || 'https://datapatch.app';
+        const html = emailLayout(`
+          <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">eSIM Kurulum Suren Dolmak Uzere!</h2>
+          <p style="color:#475569;font-size:15px;line-height:1.6;">Merhaba ${booking.travelerName},</p>
+          <p style="color:#475569;font-size:15px;line-height:1.6;">eSIM'ini kurman icin <strong>5 gun</strong> kaldi. Asagidaki butondan hemen kurabilirsin:</p>
+          ${emailButton(`${appUrl}/e/${booking.token}`, 'eSIM\'i Kur')}
+          <p style="color:#94a3b8;font-size:13px;">30 gun icinde kurulmayan eSIM'ler gecersiz olur.</p>
+        `, { preheader: 'eSIM kurulumu icin 5 gun kaldi' });
+        await sendMail(booking.travelerEmail, 'eSIM Kurulum Hatirlatmasi - DataPatch', html, { type: 'expiry_reminder', userId: null });
       } catch (err) {
         log.error({ err, bookingId: booking.id }, 'Expiry reminder email failed');
       }

@@ -113,15 +113,21 @@ export async function createBooking({ contractId, travelerName, travelerEmail, t
     // 8. Send confirmation email (non-blocking)
     const appUrl = process.env.APP_URL || 'https://datapatch.app';
     if (travelerEmail) {
-      import('./emailService.js').then(({ sendMail }) => {
+      import('./emailService.js').then(({ sendMail, emailLayout, emailButton, emailInfoCard }) => {
         const dueDateStr = dueDateObj.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
-        sendMail(travelerEmail, 'eSIM rezervasyonunuz olusturuldu',
-          `<p>Merhaba ${travelerName},</p>
-           <p>eSIM'iniz <strong>${dueDateStr}</strong> tarihinde hazir olacak.</p>
-           <p>Hazir oldugunda su linkten kurabilirsiniz:</p>
-           <p><a href="${appUrl}/e/${token}">${appUrl}/e/${token}</a></p>`,
-          { type: 'booking_created', userId: null }
-        ).catch(err => log.error({ err }, 'Booking confirmation email failed'));
+        const html = emailLayout(`
+          <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">eSIM Rezervasyonu Olusturuldu</h2>
+          <p style="color:#475569;font-size:15px;line-height:1.6;">Merhaba ${travelerName},</p>
+          <p style="color:#475569;font-size:15px;line-height:1.6;">eSIM'iniz <strong>${dueDateStr}</strong> tarihinde hazir olacak.</p>
+          ${emailInfoCard([
+            { label: 'Tarih', value: dueDateStr },
+            { label: 'Durum', value: 'Hazirlanıyor' },
+          ])}
+          <p style="color:#475569;font-size:15px;line-height:1.6;">Hazir oldugunda asagidaki linkten kurabilirsiniz:</p>
+          ${emailButton(`${appUrl}/e/${token}`, 'eSIM\'i Kur')}
+        `, { preheader: `eSIM'iniz ${dueDateStr} tarihinde hazir olacak` });
+        sendMail(travelerEmail, 'eSIM Rezervasyonu - DataPatch', html, { type: 'booking_created', userId: null })
+          .catch(err => log.error({ err }, 'Booking confirmation email failed'));
       });
     }
 

@@ -4,7 +4,7 @@ import {
   showDashboard, listUsers, createUser, editUser,
   showAssignEsim, assignEsim, showTopup, topupEsim,
   showAllEsims, showEsimDetail,
-  listPayments, retryEsimPurchase, resolvePayment,
+  listPayments, retryEsimPurchase, resolvePayment, cancelPayment,
   listEmails, showEmailDetail, downloadAttachment, replyToEmail,
   showZenditPurchase, zenditPurchase,
   listAgencies, showAgencyDetail, createAgency, createContract,
@@ -46,6 +46,7 @@ router.post('/topup/:esimId', ensureAuth, ensureAdmin, topupRules, validate, top
 router.get('/payments', ensureAuth, ensureAdmin, listPayments);
 router.post('/payments/:id/retry', ensureAuth, ensureAdmin, retryEsimPurchase);
 router.post('/payments/:id/resolve', ensureAuth, ensureAdmin, resolvePayment);
+router.post('/payments/:id/cancel', ensureAuth, ensureAdmin, cancelPayment);
 
 // Vendor Management
 router.get('/vendors', ensureAuth, ensureAdmin, listVendors);

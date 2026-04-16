@@ -462,6 +462,73 @@ body {
 
 .no-tabbar .tabbar { display: none; }
 
+/* HTMX progress bar */
+.htmx-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ea580c, #f97316);
+  z-index: 9999;
+  transition: none;
+  opacity: 0;
+  pointer-events: none;
+}
+.htmx-progress.active {
+  opacity: 1;
+  width: 85%;
+  transition: width 1.5s cubic-bezier(0.1, 0.5, 0.3, 1);
+}
+
+/* HTMX page transition */
+#page-content {
+  animation: htmx-fadeIn 0.2s ease-out;
+}
+@keyframes htmx-fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Skeleton loading */
+.skel-wrap { padding: 4px 0; }
+.skel-header { margin-bottom: 28px; }
+.skel-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+.skel-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+@media (max-width: 640px) {
+  .skel-stats { grid-template-columns: repeat(2, 1fr); }
+  .skel-grid { grid-template-columns: 1fr; }
+}
+
+.skel {
+  background: var(--surface-2, #f1f5f9);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.dark .skel { background: #292524; }
+
+.skel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+  animation: skel-shimmer 1.4s ease-in-out infinite;
+}
+.dark .skel::after {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
+}
+@keyframes skel-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.skel-title { height: 28px; width: 45%; margin-bottom: 10px; border-radius: 8px; }
+.skel-text { height: 16px; border-radius: 6px; }
+.skel-stat { height: 80px; border-radius: 12px; }
+.skel-card { height: 160px; border-radius: 14px; }
+
 /* Admin switch button in user tabbar */
 .tabbar a.tabbar-admin svg { color: var(--accent); }
 .tabbar a.tabbar-admin span { color: var(--accent); }
@@ -471,6 +538,33 @@ body {
 /* Back to App button in admin tabbar */
 .tabbar a.tabbar-back-app svg { color: var(--text-muted); }
 .tabbar a.tabbar-back-app span { color: var(--text-muted); }
+
+/* Scrollable admin tabbar (many items) */
+.tabbar.tabbar-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  max-width: 100%;
+  width: calc(100% - 24px);
+}
+.tabbar.tabbar-scroll::-webkit-scrollbar { display: none; }
+.tabbar.tabbar-scroll a {
+  flex: 0 0 auto;
+  min-width: 56px;
+  padding: 8px 6px;
+}
+
+/* Vendor switch button in user tabbar */
+.tabbar a.tabbar-vendor svg { color: #8b5cf6; }
+.tabbar a.tabbar-vendor span { color: #8b5cf6; }
+.dark .tabbar a.tabbar-vendor svg { color: #a78bfa; }
+.dark .tabbar a.tabbar-vendor span { color: #a78bfa; }
+
+/* Agency switch button in user tabbar */
+.tabbar a.tabbar-agency svg { color: #0891b2; }
+.tabbar a.tabbar-agency span { color: #0891b2; }
+.dark .tabbar a.tabbar-agency svg { color: #22d3ee; }
+.dark .tabbar a.tabbar-agency span { color: #22d3ee; }
 
 /* ============================================
    CONTENT AREA — User Layout

@@ -14,7 +14,7 @@ export default (sequelize, DataTypes) => {
     amount: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
     currency: { type: DataTypes.STRING, defaultValue: 'USD' },
     status: {
-      type: DataTypes.ENUM('pending', 'completed', 'failed', 'refunded'),
+      type: DataTypes.ENUM('pending', 'completed', 'failed', 'refunded', 'cancelled'),
       defaultValue: 'pending'
     },
     provider: { type: DataTypes.STRING, allowNull: true },

@@ -161,6 +161,8 @@ app.use((req, res, next) => {
   res.locals.user = req.session.user;
   res.locals.NODE_ENV = process.env.NODE_ENV;
   res.locals.theme = req.session.user?.theme || 'light';
+  // HTMX partial render flag
+  res.locals.isHtmx = req.headers['hx-request'] === 'true';
   next();
 });
 
