@@ -602,7 +602,7 @@ export async function resolvePayment(req, res) {
   }
 }
 
-// Cancel a pending payment
+// Cancel a pending payment (local + provider)
 export async function cancelPayment(req, res) {
   try {
     const payment = await db.Payment.findByPk(req.params.id);
@@ -614,13 +614,17 @@ export async function cancelPayment(req, res) {
       return res.render('error', { message: 'Only pending payments can be cancelled' });
     }
 
+    // Cancel on provider side
+    const providerResult = await cancelOnProvider(payment);
+
     await payment.update({
       status: 'cancelled',
       metadata: {
         ...payment.metadata,
         cancelledAt: new Date().toISOString(),
         cancelReason: 'admin_manual',
-        cancelledBy: req.session.user.id
+        cancelledBy: req.session.user.id,
+        providerCancelResult: providerResult
       }
     });
 
@@ -628,7 +632,7 @@ export async function cancelPayment(req, res) {
       userId: req.session.user.id,
       entity: 'Payment',
       entityId: payment.id,
-      details: { merchantOid: payment.merchantOid, action: 'cancelled', note: req.body.cancelNote || '' },
+      details: { merchantOid: payment.merchantOid, action: 'cancelled', providerResult, note: req.body.cancelNote || '' },
       ipAddress: getIp(req)
     });
 
@@ -637,6 +641,58 @@ export async function cancelPayment(req, res) {
     log.error({ err }, 'cancelPayment error');
     res.render('error', { message: 'Failed to cancel payment' });
   }
+}
+
+// Cancel payment on Paddle/TurInvoice
+async function cancelOnProvider(payment) {
+  const provider = payment.provider;
+  const txId = payment.providerTransactionId;
+
+  if (!provider || provider === 'pending' || !txId) return 'no_provider';
+
+  if (provider === 'paddle') {
+    try {
+      const env = process.env.PADDLE_ENVIRONMENT || 'sandbox';
+      const apiBase = env === 'production' ? 'https://api.paddle.com' : 'https://sandbox-api.paddle.com';
+      const apiKey = process.env.PADDLE_API_KEY;
+      if (!apiKey) return 'no_api_key';
+
+      const res = await fetch(`${apiBase}/transactions/${txId}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'canceled' })
+      });
+      if (res.ok) {
+        log.info({ paymentId: payment.id, txId }, 'Paddle transaction cancelled via admin');
+        return 'cancelled';
+      }
+      const err = await res.json().catch(() => ({}));
+      log.warn({ paymentId: payment.id, txId, status: res.status, error: err }, 'Paddle cancel failed');
+      return `paddle_error_${res.status}`;
+    } catch (err) {
+      log.error({ err, paymentId: payment.id }, 'Paddle cancel exception');
+      return 'paddle_exception';
+    }
+  }
+
+  if (provider === 'turinvoice') {
+    try {
+      const idOrder = payment.metadata?.turInvoiceIdOrder;
+      if (!idOrder) return 'no_order_id';
+
+      const { cancelOrder, isInitialized } = await import('../services/turInvoiceClient.js');
+      if (!isInitialized()) return 'not_initialized';
+
+      await cancelOrder(idOrder);
+      log.info({ paymentId: payment.id, idOrder }, 'TurInvoice order cancelled via admin');
+      return 'cancelled';
+    } catch (err) {
+      log.error({ err, paymentId: payment.id }, 'TurInvoice cancel exception');
+      return 'turinvoice_exception';
+    }
+  }
+
+  return 'unknown_provider';
 }
 
 // Show eSIM detail
