@@ -118,7 +118,7 @@
       <p class="text-xs text-[var(--text-tertiary)] mb-1">Referral URL</p>
       <p class="text-xs font-mono text-[var(--text-secondary)] break-all"><%= refUrl %></p>
     </div>
-    <div class="flex gap-2 justify-center">
+    <div class="flex flex-wrap gap-2 justify-center">
       <a href="/admin/vendors/<%= vendor.id %>/qr" class="btn btn-primary btn-sm" download>
         <i data-lucide="download" class="w-3.5 h-3.5"></i>
         Download QR
@@ -127,6 +127,10 @@
         <i data-lucide="copy" class="w-3.5 h-3.5"></i>
         Copy Link
       </button>
+      <a href="/admin/vendors/<%= vendor.id %>/brochure" target="_blank" class="btn btn-secondary btn-sm">
+        <i data-lucide="image-down" class="w-3.5 h-3.5"></i>
+        Brochure
+      </a>
     </div>
   </div>
 

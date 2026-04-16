@@ -13,7 +13,7 @@ import {
 import {
   listVendors, showCreateVendor, createVendor,
   showVendorDetail, showEditVendor, updateVendor,
-  deleteVendor, downloadQrCode
+  deleteVendor, downloadQrCode, showVendorBrochure
 } from '../controllers/vendorController.js';
 import {
   showPricing, updateGlobalMarkup, previewChanges, saveOverrides, resetOverride
@@ -57,6 +57,7 @@ router.get('/vendors/:id/edit', ensureAuth, ensureAdmin, showEditVendor);
 router.post('/vendors/:id/edit', ensureAuth, ensureAdmin, updateVendor);
 router.post('/vendors/:id/delete', ensureAuth, ensureAdmin, deleteVendor);
 router.get('/vendors/:id/qr', ensureAuth, ensureAdmin, downloadQrCode);
+router.get('/vendors/:id/brochure', ensureAuth, ensureAdmin, showVendorBrochure);
 
 // Email Management
 router.get('/emails', ensureAuth, ensureAdmin, listEmails);

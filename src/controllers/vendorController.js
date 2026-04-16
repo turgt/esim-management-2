@@ -402,6 +402,30 @@ export async function deleteVendor(req, res) {
   }
 }
 
+// Generate printable A6 brochure with vendor's QR code
+export async function showVendorBrochure(req, res) {
+  try {
+    const vendor = await db.Vendor.findByPk(req.params.id);
+    if (!vendor || !vendor.isActive) {
+      return res.render('error', { message: 'Vendor not found or inactive.' });
+    }
+
+    const appUrl = process.env.APP_URL || 'http://localhost:3000';
+    const refUrl = `${appUrl}/?ref=${vendor.code}`;
+
+    const qrDataUrl = await QRCode.toDataURL(refUrl, {
+      width: 400,
+      margin: 1,
+      color: { dark: '#1c1917', light: '#ffffff' }
+    });
+
+    res.render('vendor/brochure', { qrDataUrl });
+  } catch (err) {
+    log.error({ err }, 'showVendorBrochure error');
+    res.render('error', { message: 'Failed to generate brochure.' });
+  }
+}
+
 // Download QR code as PNG
 export async function downloadQrCode(req, res) {
   try {
