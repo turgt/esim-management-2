@@ -74,15 +74,15 @@
     <% if (typeof offers !== 'undefined' && offers && offers.length > 0) { %>
 
     <!-- Filters & Sort -->
-    <div class="flex flex-col sm:flex-row gap-3 mb-6">
-      <div class="flex gap-1.5 flex-wrap flex-1" id="filterChips">
+    <div class="flex flex-col gap-3 mb-6">
+      <div class="flex gap-1.5 overflow-x-auto flex-nowrap sm:flex-wrap pb-1 sm:pb-0 -mx-1 px-1" id="filterChips" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;">
         <button type="button" class="filter-chip active" data-filter="all" onclick="filterOffers('all', this)">All</button>
         <button type="button" class="filter-chip" data-filter="unlimited" onclick="filterOffers('unlimited', this)">Unlimited</button>
         <button type="button" class="filter-chip" data-filter="gb" onclick="filterOffers('gb', this)">Fixed GB</button>
       </div>
-      <div class="flex items-center gap-2">
-        <label for="sortSelect" class="text-xs text-[var(--text-tertiary)]">Sort:</label>
-        <select id="sortSelect" onchange="sortOffers(this.value)" class="input text-sm !py-2 !px-3 !w-auto !min-w-0">
+      <div class="flex items-center gap-2 sm:self-end">
+        <label for="sortSelect" class="text-xs text-[var(--text-tertiary)] flex-shrink-0">Sort:</label>
+        <select id="sortSelect" onchange="sortOffers(this.value)" class="input text-sm !py-2 !px-3 !w-auto !min-w-0 max-w-[200px]">
           <option value="price-asc">Price: Low to High</option>
           <option value="price-desc">Price: High to Low</option>
           <option value="data-desc">Data: Most First</option>
@@ -116,40 +116,31 @@
         data-duration="<%= durationNum %>"
         data-unlimited="<%= offer.dataUnlimited ? '1' : '0' %>"
         data-subtypes="<%= subTypes.join(',') %>">
-        <div class="offer-header">
-          <span class="offer-region"><%= regionShort || 'Global' %></span>
-          <div class="flex items-center gap-1">
-            <% subTypes.forEach(function(st) { %>
-            <span class="offer-subtype-badge"><%= st %></span>
-            <% }) %>
-            <% if (bestSpeed) { %>
-            <span class="offer-speed-badge"><%= bestSpeed %></span>
-            <% } %>
+        <div class="offer-top">
+          <div class="offer-flag">
+            <% if (regionShort) { %>
+            <img src="https://hatscripts.github.io/circle-flags/flags/<%= regionShort.toLowerCase() %>.svg" alt="<%= regionShort %>">
+            <% } else { %>🌍<% } %>
           </div>
-        </div>
-        <div class="offer-body">
-          <% if (offer.dataUnlimited) { %>
-          <span class="offer-data">Unlimited</span>
-          <% } else if (dataLabel) { %>
-          <span class="offer-data"><%= dataLabel %></span>
-          <span class="offer-data-unit">GB</span>
-          <% } else { %>
-          <span class="offer-data">Data</span>
-          <% } %>
-          <% if (durationLabel) { %>
-          <span class="offer-duration"><%= durationLabel %></span>
-          <% } %>
-        </div>
-        <div class="offer-footer">
           <div>
-            <% if (price) { %>
-            <span class="offer-price">$<%= price %></span>
-            <span class="offer-price-currency"><%= currency %></span>
-            <% } %>
+            <div class="offer-name">
+              <%= offer.title || (regionShort || 'Global') %>
+              <% subTypes.forEach(function(st) { %>
+              <span class="offer-type-badge"><%= st %></span>
+              <% }) %>
+              <% if (bestSpeed) { %>
+              <span class="offer-speed-badge"><%= bestSpeed %></span>
+              <% } %>
+            </div>
+            <div class="offer-meta">
+              <%= offer.dataUnlimited ? 'Unlimited' : (dataLabel ? dataLabel + ' GB' : '') %>
+              <% if (durationLabel) { %> · <%= durationLabel %><% } %>
+            </div>
           </div>
-          <span class="offer-cta">
-            Buy <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-          </span>
+        </div>
+        <div class="offer-foot">
+          <span class="offer-price"><% if (price) { %>$<%= price %><% } %></span>
+          <span class="offer-cta">Buy →</span>
         </div>
       </a>
       <% }) %>
@@ -176,7 +167,7 @@
     </div>
 
     <!-- CTA after plans -->
-    <div class="text-center mt-12 p-8 rounded-2xl bg-[var(--brand-light)] dark:bg-[rgba(79,70,229,0.08)]">
+    <div class="text-center mt-8 sm:mt-12 p-5 sm:p-8 rounded-2xl bg-[var(--brand-light)] dark:bg-[rgba(79,70,229,0.08)]">
       <h3 class="text-lg font-bold text-[var(--text-primary)] mb-2">Ready to get connected?</h3>
       <p class="text-sm text-[var(--text-secondary)] mb-4">Create a free account and purchase your first eSIM in minutes.</p>
       <a href="/auth/register<%= locals.vendorRef ? '?ref=' + vendorRef : '' %>" class="btn btn-primary btn-lg">

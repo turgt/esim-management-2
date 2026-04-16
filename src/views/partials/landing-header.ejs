@@ -36,16 +36,18 @@
           <img src="/public/logo-icon.svg" alt="DataPatch" style="width:32px;height:32px;">
           <span class="text-xl font-bold text-[var(--text-primary)] tracking-tight">DataPatch</span>
         </a>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 sm:gap-3">
           <button onclick="toggleTheme()" class="p-2 rounded-lg text-[var(--text-tertiary)] hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)]" aria-label="Toggle theme">
             <i data-lucide="sun" class="w-4.5 h-4.5 theme-sun" style="display:none;"></i>
             <i data-lucide="moon" class="w-4.5 h-4.5 theme-moon"></i>
           </button>
           <a href="/auth/login" class="btn btn-secondary btn-sm">
-            <i data-lucide="log-in" class="w-4 h-4"></i> Login
+            <i data-lucide="log-in" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Login</span>
           </a>
           <a href="/auth/register<%= locals.vendorRef ? '?ref=' + vendorRef : '' %>" class="btn btn-primary btn-sm">
-            Get Started
+            <span class="sm:hidden">Start</span>
+            <span class="hidden sm:inline">Get Started</span>
           </a>
         </div>
       </div>
