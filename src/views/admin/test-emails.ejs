@@ -1,0 +1,82 @@
+<%- include('../partials/header', {title: 'Admin Test Emails', user: locals.user}) %>
+
+<div class="mb-8">
+  <h1 class="text-page-title">Test Emails</h1>
+  <p class="text-subtitle mt-1">Send test emails to verify templates</p>
+</div>
+
+<% if (result) { %>
+<div class="mb-6 p-4 rounded-xl border <%= result.success ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20' : 'bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/20' %>">
+  <div class="flex items-center gap-2 mb-1">
+    <i data-lucide="<%= result.success ? 'check-circle' : 'x-circle' %>" class="w-4 h-4 <%= result.success ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' %>"></i>
+    <span class="font-semibold text-sm <%= result.success ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300' %>">
+      <%= result.success ? 'Email sent successfully!' : 'Failed to send email' %>
+    </span>
+  </div>
+  <p class="text-xs text-[var(--text-secondary)] ml-6">
+    Template: <strong><%= result.templateType %></strong> &rarr; <strong><%= result.targetEmail %></strong>
+    <% if (!result.success) { %><br>Error: <%= result.error %><% } %>
+  </p>
+</div>
+<% } %>
+
+<div class="card">
+  <div class="p-6">
+    <form method="post" action="/admin/test-emails/send">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div class="mb-5">
+        <label class="block text-sm font-semibold text-[var(--text-primary)] mb-2">Email Template</label>
+        <select name="templateType" required class="input">
+          <% templates.forEach(function(t) { %>
+          <option value="<%= t.value %>" <%= (result && result.templateType === t.value) ? 'selected' : '' %>><%= t.label %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="mb-5">
+        <label class="block text-sm font-semibold text-[var(--text-primary)] mb-2">Send To User</label>
+        <select id="userSelect" class="input" onchange="document.getElementById('targetEmail').value = this.options[this.selectedIndex].dataset.email || ''">
+          <option value="" data-email="">-- Select a user --</option>
+          <% users.forEach(function(u) { %>
+          <option value="<%= u.id %>" data-email="<%= u.email %>"><%= u.displayName || u.username %> (<%= u.email || 'no email' %>)</option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-sm font-semibold text-[var(--text-primary)] mb-2">Target Email Address</label>
+        <input type="email" name="targetEmail" id="targetEmail" required class="input"
+               placeholder="email@example.com"
+               value="<%= (result && result.targetEmail) ? result.targetEmail : '' %>">
+        <p class="text-xs text-[var(--text-tertiary)] mt-1">Select a user above or type any email address</p>
+      </div>
+
+      <button type="submit" class="btn btn-primary">
+        <i data-lucide="send" class="w-4 h-4"></i>
+        Send Test Email
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="mt-8">
+  <h2 class="text-lg font-semibold text-[var(--text-primary)] mb-4">Available Templates</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    <% templates.forEach(function(t) { %>
+    <div class="card p-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-[var(--brand-light)] flex items-center justify-center flex-shrink-0">
+          <i data-lucide="mail" class="w-4 h-4 text-[var(--brand-primary)]"></i>
+        </div>
+        <div>
+          <p class="font-semibold text-sm text-[var(--text-primary)]"><%= t.label %></p>
+          <p class="text-xs text-[var(--text-tertiary)]"><%= t.value %></p>
+        </div>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

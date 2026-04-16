@@ -85,4 +85,33 @@ router.post('/agencies/:id/contracts', ensureAuth, ensureAdmin, createContract);
 router.get('/webhook-logs', ensureAuth, ensureAdmin, listWebhookLogs);
 router.post('/webhook-logs/:id/retry', ensureAuth, ensureAdmin, retryWebhook);
 
+// Test email sending
+router.get('/test-emails', ensureAuth, ensureAdmin, async (req, res) => {
+  const db = (await import('../db/models/index.js')).default;
+  const users = await db.User.findAll({ attributes: ['id', 'username', 'displayName', 'email'], order: [['username', 'ASC']] });
+  const { TEST_TEMPLATE_TYPES } = await import('../services/emailService.js');
+  res.render('admin/test-emails', { title: 'Admin Test Emails', users, templates: TEST_TEMPLATE_TYPES, result: null });
+});
+
+router.post('/test-emails/send', ensureAuth, ensureAdmin, async (req, res) => {
+  const { templateType, targetEmail, userId } = req.body;
+  const db = (await import('../db/models/index.js')).default;
+  const { sendTestEmail, TEST_TEMPLATE_TYPES } = await import('../services/emailService.js');
+  const users = await db.User.findAll({ attributes: ['id', 'username', 'displayName', 'email'], order: [['username', 'ASC']] });
+
+  try {
+    const adminUser = req.session.user;
+    const result = await sendTestEmail(templateType, targetEmail, adminUser);
+    res.render('admin/test-emails', {
+      title: 'Admin Test Emails', users, templates: TEST_TEMPLATE_TYPES,
+      result: { success: true, templateType, targetEmail, data: result }
+    });
+  } catch (err) {
+    res.render('admin/test-emails', {
+      title: 'Admin Test Emails', users, templates: TEST_TEMPLATE_TYPES,
+      result: { success: false, templateType, targetEmail, error: err.message }
+    });
+  }
+});
+
 export default router;

@@ -80,7 +80,7 @@
 <% if (typeof user !== 'undefined' && user) { %>
 <%/* ===== AUTHENTICATED: Topbar + Tabbar Layout ===== */%>
 <%
-  var _isAdminPage = (title === 'Admin Dashboard' || title === 'Manage Users' || title === 'All Datas' || title === 'All eSIMs' || title === 'Data Detail' || title === 'eSIM Detail' || title === 'Assign Data' || title === 'Assign eSIM' || title === 'Admin Payments' || title === 'Vendors' || title === 'Vendor Detail' || title === 'Create Vendor' || title === 'Edit Vendor' || title === 'Emails' || title === 'Email Detail' || title === 'Pricing' || title === 'Zendit Purchase' || (typeof title === 'string' && (title.indexOf('Top-up') !== -1 || title.indexOf('Top Up') !== -1 || title.indexOf('Admin') !== -1 || title.indexOf('Acenteler') !== -1 || title.indexOf('Agencies') !== -1 || title.indexOf('Webhook') !== -1)));
+  var _isAdminPage = (title === 'Admin Dashboard' || title === 'Manage Users' || title === 'All Datas' || title === 'All eSIMs' || title === 'Data Detail' || title === 'eSIM Detail' || title === 'Assign Data' || title === 'Assign eSIM' || title === 'Admin Payments' || title === 'Vendors' || title === 'Vendor Detail' || title === 'Create Vendor' || title === 'Edit Vendor' || title === 'Emails' || title === 'Email Detail' || title === 'Admin Test Emails' || title === 'Pricing' || title === 'Zendit Purchase' || (typeof title === 'string' && (title.indexOf('Top-up') !== -1 || title.indexOf('Top Up') !== -1 || title.indexOf('Admin') !== -1 || title.indexOf('Acenteler') !== -1 || title.indexOf('Agencies') !== -1 || title.indexOf('Webhook') !== -1)));
   var _isAgencyPage = (typeof title === 'string' && (title.indexOf('Agency') !== -1 || title.indexOf('Ajans') !== -1 || title.indexOf('Rezervasyon') !== -1 || title.indexOf('Kontrat') !== -1));
   var _isAgencyUser = (user && user.agencyId);
 %>
@@ -110,7 +110,7 @@
       <a href="/admin/esims" class="<%= (title === 'All Datas' || title === 'All eSIMs' || title === 'Data Detail' || title === 'eSIM Detail' || title === 'Assign Data' || title === 'Assign eSIM' || (typeof title === 'string' && (title.indexOf('Top-up') !== -1 || title.indexOf('Top Up') !== -1))) ? 'active' : '' %>">All Datas</a>
       <a href="/admin/payments" class="<%= title === 'Admin Payments' ? 'active' : '' %>">Payments</a>
       <a href="/admin/vendors" class="<%= (title === 'Vendors' || title === 'Vendor Detail' || title === 'Create Vendor' || title === 'Edit Vendor') ? 'active' : '' %>">Vendors</a>
-      <a href="/admin/emails" class="<%= (title === 'Emails' || title === 'Email Detail') ? 'active' : '' %>">Emails</a>
+      <a href="/admin/emails" class="<%= (title === 'Emails' || title === 'Email Detail' || title === 'Admin Test Emails') ? 'active' : '' %>">Emails</a>
       <a href="/admin/pricing" class="<%= title === 'Pricing' ? 'active' : '' %>">Pricing</a>
       <a href="/admin/zendit/purchase" class="<%= title === 'Zendit Purchase' ? 'active' : '' %>">Zendit</a>
       <a href="/admin/agencies" class="<%= (typeof title === 'string' && (title.indexOf('Acenteler') !== -1 || title.indexOf('Agencies') !== -1 || title.indexOf('Agency') !== -1)) ? 'active' : '' %>">Acenteler</a>

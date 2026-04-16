@@ -2,7 +2,7 @@
 <% if (typeof user !== 'undefined' && user) { %>
   </main>
 <%
-  var _isAdminPage = (title === 'Admin Dashboard' || title === 'Manage Users' || title === 'All Datas' || title === 'All eSIMs' || title === 'Data Detail' || title === 'eSIM Detail' || title === 'Assign Data' || title === 'Assign eSIM' || title === 'Admin Payments' || title === 'Vendors' || title === 'Vendor Detail' || title === 'Create Vendor' || title === 'Edit Vendor' || title === 'Emails' || title === 'Email Detail' || title === 'Pricing' || title === 'Zendit Purchase' || (typeof title === 'string' && (title.indexOf('Top-up') !== -1 || title.indexOf('Top Up') !== -1 || title.indexOf('Admin') !== -1 || title.indexOf('Acenteler') !== -1 || title.indexOf('Agencies') !== -1 || title.indexOf('Webhook') !== -1)));
+  var _isAdminPage = (title === 'Admin Dashboard' || title === 'Manage Users' || title === 'All Datas' || title === 'All eSIMs' || title === 'Data Detail' || title === 'eSIM Detail' || title === 'Assign Data' || title === 'Assign eSIM' || title === 'Admin Payments' || title === 'Vendors' || title === 'Vendor Detail' || title === 'Create Vendor' || title === 'Edit Vendor' || title === 'Emails' || title === 'Email Detail' || title === 'Admin Test Emails' || title === 'Pricing' || title === 'Zendit Purchase' || (typeof title === 'string' && (title.indexOf('Top-up') !== -1 || title.indexOf('Top Up') !== -1 || title.indexOf('Admin') !== -1 || title.indexOf('Acenteler') !== -1 || title.indexOf('Agencies') !== -1 || title.indexOf('Webhook') !== -1)));
   var _isAgencyPage = (typeof title === 'string' && (title.indexOf('Agency') !== -1 || title.indexOf('Ajans') !== -1 || title.indexOf('Rezervasyon') !== -1 || title.indexOf('Kontrat') !== -1));
   var _isAgencyUser = (user && user.agencyId);
   var _isVendorPage = (typeof title === 'string' && (title === 'Vendor Dashboard' || title.indexOf('Vendor') !== -1));
@@ -49,7 +49,7 @@
       <i data-lucide="store" class="w-5 h-5"></i>
       <span>Vendors</span>
     </a>
-    <a href="/admin/emails" class="<%= (title === 'Emails' || title === 'Email Detail') ? 'active' : '' %>">
+    <a href="/admin/emails" class="<%= (title === 'Emails' || title === 'Email Detail' || title === 'Admin Test Emails') ? 'active' : '' %>">
       <i data-lucide="mail" class="w-5 h-5"></i>
       <span>Emails</span>
     </a>

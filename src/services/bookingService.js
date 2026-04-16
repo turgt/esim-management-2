@@ -116,17 +116,17 @@ export async function createBooking({ contractId, travelerName, travelerEmail, t
       import('./emailService.js').then(({ sendMail, emailLayout, emailButton, emailInfoCard }) => {
         const dueDateStr = dueDateObj.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
         const html = emailLayout(`
-          <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">eSIM Rezervasyonu Olusturuldu</h2>
-          <p style="color:#475569;font-size:15px;line-height:1.6;">Merhaba ${travelerName},</p>
-          <p style="color:#475569;font-size:15px;line-height:1.6;">eSIM'iniz <strong>${dueDateStr}</strong> tarihinde hazir olacak.</p>
+          <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">eSIM Booking Confirmed</h2>
+          <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${travelerName},</p>
+          <p style="color:#475569;font-size:15px;line-height:1.6;">Your eSIM will be ready on <strong>${dueDateStr}</strong>.</p>
           ${emailInfoCard([
-            { label: 'Tarih', value: dueDateStr },
-            { label: 'Durum', value: 'Hazirlanıyor' },
+            { label: 'Date', value: dueDateStr },
+            { label: 'Status', value: 'Preparing' },
           ])}
-          <p style="color:#475569;font-size:15px;line-height:1.6;">Hazir oldugunda asagidaki linkten kurabilirsiniz:</p>
-          ${emailButton(`${appUrl}/e/${token}`, 'eSIM\'i Kur')}
-        `, { preheader: `eSIM'iniz ${dueDateStr} tarihinde hazir olacak` });
-        sendMail(travelerEmail, 'eSIM Rezervasyonu - DataPatch', html, { type: 'booking_created', userId: null })
+          <p style="color:#475569;font-size:15px;line-height:1.6;">Once ready, you can set it up using the link below:</p>
+          ${emailButton(`${appUrl}/e/${token}`, 'Set Up eSIM')}
+        `, { preheader: `Your eSIM will be ready on ${dueDateStr}` });
+        sendMail(travelerEmail, 'eSIM Booking Confirmed - DataPatch', html, { type: 'booking_created', userId: null })
           .catch(err => log.error({ err }, 'Booking confirmation email failed'));
       });
     }

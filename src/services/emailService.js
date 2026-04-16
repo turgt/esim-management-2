@@ -63,7 +63,7 @@ const APP_URL = () => process.env.APP_URL || 'http://localhost:3000';
 function emailLayout(content, { preheader = '' } = {}) {
   const url = APP_URL();
   return `<!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -98,13 +98,13 @@ function emailLayout(content, { preheader = '' } = {}) {
         <tr><td style="padding:0 32px 28px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
             <tr><td style="border-top:1px solid #e2e8f0;padding-top:20px;text-align:center;">
-              <p style="margin:0 0 6px;font-size:12px;color:#94a3b8;">DataPatch - eSIM yonetim platformu</p>
+              <p style="margin:0 0 6px;font-size:12px;color:#94a3b8;">DataPatch - eSIM management platform</p>
               <p style="margin:0 0 6px;font-size:12px;color:#94a3b8;">
-                <a href="${url}/legal/privacy" style="color:#94a3b8;text-decoration:underline;">Gizlilik</a> &nbsp;|&nbsp;
-                <a href="${url}/legal/terms" style="color:#94a3b8;text-decoration:underline;">Kosullar</a> &nbsp;|&nbsp;
+                <a href="${url}/legal/privacy" style="color:#94a3b8;text-decoration:underline;">Privacy</a> &nbsp;|&nbsp;
+                <a href="${url}/legal/terms" style="color:#94a3b8;text-decoration:underline;">Terms</a> &nbsp;|&nbsp;
                 <a href="${url}/legal/kvkk" style="color:#94a3b8;text-decoration:underline;">KVKK</a>
               </p>
-              <p style="margin:0;font-size:11px;color:#cbd5e1;">&copy; ${new Date().getFullYear()} DataPatch. Tum haklari saklidir.</p>
+              <p style="margin:0;font-size:11px;color:#cbd5e1;">&copy; ${new Date().getFullYear()} DataPatch. All rights reserved.</p>
             </td></tr>
           </table>
         </td></tr>
@@ -131,37 +131,37 @@ function emailInfoCard(rows, { bgColor = '#f8fafc', borderColor = '#e2e8f0' } = 
 export async function sendVerificationEmail(user, token) {
   const verifyUrl = `${APP_URL()}/auth/verify-email/${token}`;
   const html = emailLayout(`
-    <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Hosgeldiniz!</h2>
-    <p style="color:#475569;font-size:15px;line-height:1.6;">Merhaba ${user.displayName || user.username},</p>
-    <p style="color:#475569;font-size:15px;line-height:1.6;">Lutfen asagidaki butona tiklayarak e-posta adresinizi dogrulayin:</p>
-    ${emailButton(verifyUrl, 'E-postami Dogrula')}
-    <p style="color:#94a3b8;font-size:13px;word-break:break-all;">Ya da bu linki kopyalayin: ${verifyUrl}</p>
-    <p style="color:#94a3b8;font-size:13px;">Bu link 24 saat gecerlidir.</p>
-  `, { preheader: 'E-posta adresinizi dogrulayin' });
-  return sendMail(user.email, 'E-posta Dogrulama - DataPatch', html, { type: 'verification', userId: user.id });
+    <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Welcome!</h2>
+    <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${user.displayName || user.username},</p>
+    <p style="color:#475569;font-size:15px;line-height:1.6;">Please verify your email address by clicking the button below:</p>
+    ${emailButton(verifyUrl, 'Verify Email')}
+    <p style="color:#94a3b8;font-size:13px;word-break:break-all;">Or copy this link: ${verifyUrl}</p>
+    <p style="color:#94a3b8;font-size:13px;">This link expires in 24 hours.</p>
+  `, { preheader: 'Verify your email address' });
+  return sendMail(user.email, 'Verify your email - DataPatch', html, { type: 'verification', userId: user.id });
 }
 
 export async function sendPasswordResetEmail(user, token) {
   const resetUrl = `${APP_URL()}/auth/reset-password/${token}`;
   const html = emailLayout(`
-    <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Sifre Sifirlama</h2>
-    <p style="color:#475569;font-size:15px;line-height:1.6;">Merhaba ${user.displayName || user.username},</p>
-    <p style="color:#475569;font-size:15px;line-height:1.6;">Sifre sifirlama talebinde bulundunuz. Yeni sifrenizi belirlemek icin asagidaki butona tiklayin:</p>
-    ${emailButton(resetUrl, 'Sifremi Sifirla')}
-    <p style="color:#94a3b8;font-size:13px;word-break:break-all;">Ya da bu linki kopyalayin: ${resetUrl}</p>
-    <p style="color:#94a3b8;font-size:13px;">Bu link 1 saat gecerlidir. Eger siz talep etmediyseniz bu e-postayi gormezden gelebilirsiniz.</p>
-  `, { preheader: 'Sifrenizi sifirlayin' });
-  return sendMail(user.email, 'Sifre Sifirlama - DataPatch', html, { type: 'password_reset', userId: user.id });
+    <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Password Reset</h2>
+    <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${user.displayName || user.username},</p>
+    <p style="color:#475569;font-size:15px;line-height:1.6;">You requested a password reset. Click the button below to set a new password:</p>
+    ${emailButton(resetUrl, 'Reset Password')}
+    <p style="color:#94a3b8;font-size:13px;word-break:break-all;">Or copy this link: ${resetUrl}</p>
+    <p style="color:#94a3b8;font-size:13px;">This link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>
+  `, { preheader: 'Reset your password' });
+  return sendMail(user.email, 'Password Reset - DataPatch', html, { type: 'password_reset', userId: user.id });
 }
 
 export async function sendWelcomeEmail(user) {
   const html = emailLayout(`
-    <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Hosgeldiniz!</h2>
-    <p style="color:#475569;font-size:15px;line-height:1.6;">Merhaba ${user.displayName || user.username},</p>
-    <p style="color:#475569;font-size:15px;line-height:1.6;">Hesabiniz dogrulandi. Artik eSIM planlarini goruntuleyebilir ve yonetebilirsiniz.</p>
-    ${emailButton(`${APP_URL()}/offers`, 'eSIM Planlarina Goz At')}
-  `, { preheader: 'Hesabiniz hazir, eSIM planlarina goz atin' });
-  return sendMail(user.email, 'Hosgeldiniz - DataPatch', html, { type: 'welcome', userId: user.id });
+    <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Welcome to DataPatch!</h2>
+    <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${user.displayName || user.username},</p>
+    <p style="color:#475569;font-size:15px;line-height:1.6;">Your account has been verified. You can now browse and manage eSIM plans.</p>
+    ${emailButton(`${APP_URL()}/offers`, 'Browse eSIM Plans')}
+  `, { preheader: 'Your account is ready' });
+  return sendMail(user.email, 'Welcome to DataPatch!', html, { type: 'welcome', userId: user.id });
 }
 
 export async function sendEsimAssignedEmail(user, esim) {
@@ -169,87 +169,87 @@ export async function sendEsimAssignedEmail(user, esim) {
     { label: 'Plan', value: esim.offerId },
   ];
   if (esim.iccid) rows.push({ label: 'ICCID', value: esim.iccid });
-  if (esim.brandName) rows.push({ label: 'Saglayici', value: esim.brandName });
+  if (esim.brandName) rows.push({ label: 'Provider', value: esim.brandName });
 
   const html = emailLayout(`
-    <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">eSIM Atandi!</h2>
-    <p style="color:#475569;font-size:15px;line-height:1.6;">Merhaba ${user.displayName || user.username},</p>
-    <p style="color:#475569;font-size:15px;line-height:1.6;">Hesabiniza bir eSIM plani atandi:</p>
+    <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">eSIM Assigned!</h2>
+    <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${user.displayName || user.username},</p>
+    <p style="color:#475569;font-size:15px;line-height:1.6;">An eSIM plan has been assigned to your account:</p>
     ${emailInfoCard(rows)}
-    ${emailButton(`${APP_URL()}/purchases`, 'eSIM\'lerimi Goruntule')}
-  `, { preheader: 'Hesabiniza yeni bir eSIM atandi' });
-  return sendMail(user.email, 'eSIM Atandi - DataPatch', html, { type: 'esim_assigned', userId: user.id });
+    ${emailButton(`${APP_URL()}/purchases`, 'View My eSIMs')}
+  `, { preheader: 'A new eSIM has been assigned to your account' });
+  return sendMail(user.email, 'eSIM Assigned - DataPatch', html, { type: 'esim_assigned', userId: user.id });
 }
 
 export async function sendPaymentSuccessEmail(user, payment, esim) {
   const rows = [
-    { label: 'Siparis', value: payment.merchantOid },
-    { label: 'Tutar', value: `${parseFloat(payment.amount).toFixed(2)} ${payment.currency}` },
+    { label: 'Order', value: payment.merchantOid },
+    { label: 'Amount', value: `${parseFloat(payment.amount).toFixed(2)} ${payment.currency}` },
     { label: 'Plan', value: payment.offerId },
   ];
   if (esim && esim.iccid) rows.push({ label: 'ICCID', value: esim.iccid });
 
   const html = emailLayout(`
-    <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Odeme Basarili!</h2>
-    <p style="color:#475569;font-size:15px;line-height:1.6;">Merhaba ${user.displayName || user.username},</p>
-    <p style="color:#475569;font-size:15px;line-height:1.6;">Odemeniz islendi ve eSIM'iniz aktive ediliyor.</p>
+    <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Payment Successful!</h2>
+    <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${user.displayName || user.username},</p>
+    <p style="color:#475569;font-size:15px;line-height:1.6;">Your payment has been processed and your eSIM is being activated.</p>
     ${emailInfoCard(rows)}
-    ${emailButton(`${APP_URL()}/purchases`, 'eSIM\'lerimi Goruntule')}
-  `, { preheader: 'Odemeniz basariyla islendi' });
-  return sendMail(user.email, 'Odeme Basarili - DataPatch', html, { type: 'payment_success', userId: user.id });
+    ${emailButton(`${APP_URL()}/purchases`, 'View My eSIMs')}
+  `, { preheader: 'Your payment was successful' });
+  return sendMail(user.email, 'Payment Successful - DataPatch', html, { type: 'payment_success', userId: user.id });
 }
 
 export async function sendPaymentFailedEmail(user, payment) {
   const rows = [
-    { label: 'Siparis', value: payment.merchantOid },
-    { label: 'Tutar', value: `${parseFloat(payment.amount).toFixed(2)} ${payment.currency}` },
+    { label: 'Order', value: payment.merchantOid },
+    { label: 'Amount', value: `${parseFloat(payment.amount).toFixed(2)} ${payment.currency}` },
     { label: 'Plan', value: payment.offerId },
   ];
 
   const html = emailLayout(`
-    <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Odeme Basarisiz</h2>
-    <p style="color:#475569;font-size:15px;line-height:1.6;">Merhaba ${user.displayName || user.username},</p>
-    <p style="color:#475569;font-size:15px;line-height:1.6;">Maalesef odemeniz islenemedi. Hesabinizdan herhangi bir ucret kesilmedi.</p>
+    <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Payment Failed</h2>
+    <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${user.displayName || user.username},</p>
+    <p style="color:#475569;font-size:15px;line-height:1.6;">Unfortunately, your payment could not be processed. No charges were made to your account.</p>
     ${emailInfoCard(rows, { bgColor: '#fef2f2', borderColor: '#fecaca' })}
-    ${emailButton(`${APP_URL()}/offers`, 'Tekrar Dene')}
-  `, { preheader: 'Odemeniz islenemedi' });
-  return sendMail(user.email, 'Odeme Basarisiz - DataPatch', html, { type: 'payment_failed', userId: user.id });
+    ${emailButton(`${APP_URL()}/offers`, 'Try Again')}
+  `, { preheader: 'Your payment could not be processed' });
+  return sendMail(user.email, 'Payment Failed - DataPatch', html, { type: 'payment_failed', userId: user.id });
 }
 
 export async function sendEsimActivationFailedEmail(user, payment) {
   const rows = [
-    { label: 'Siparis', value: payment.merchantOid },
-    { label: 'Tutar', value: `${parseFloat(payment.amount).toFixed(2)} ${payment.currency}` },
-    { label: 'Durum', value: 'Odeme alindi - eSIM manuel aktivasyon bekliyor' },
+    { label: 'Order', value: payment.merchantOid },
+    { label: 'Amount', value: `${parseFloat(payment.amount).toFixed(2)} ${payment.currency}` },
+    { label: 'Status', value: 'Payment received - eSIM pending manual activation' },
   ];
 
   const html = emailLayout(`
-    <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">eSIM Aktivasyon Sorunu</h2>
-    <p style="color:#475569;font-size:15px;line-height:1.6;">Merhaba ${user.displayName || user.username},</p>
-    <p style="color:#475569;font-size:15px;line-height:1.6;">Odemeniz basariyla alindi ancak eSIM'inizin aktivasyonunda bir sorun olustu. Ekibimiz bilgilendirildi ve en kisa surede cozecektir.</p>
+    <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">eSIM Activation Issue</h2>
+    <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${user.displayName || user.username},</p>
+    <p style="color:#475569;font-size:15px;line-height:1.6;">Your payment was successful, but there was an issue activating your eSIM. Our team has been notified and will resolve this shortly.</p>
     ${emailInfoCard(rows, { bgColor: '#fffbeb', borderColor: '#fde68a' })}
-    <p style="color:#475569;font-size:15px;line-height:1.6;">Herhangi bir islem yapmaniza gerek yoktur. Sorun cozuldugunde sizinle iletisime gececegiz.</p>
-  `, { preheader: 'eSIM aktivasyonunda sorun - ekibimiz ilgileniyor' });
-  await sendMail(user.email, 'eSIM Aktivasyon Sorunu - DataPatch', html, { type: 'esim_activation_failed', userId: user.id });
+    <p style="color:#475569;font-size:15px;line-height:1.6;">You do not need to take any action. We will contact you once the issue is resolved.</p>
+  `, { preheader: 'eSIM activation issue - our team is on it' });
+  await sendMail(user.email, 'eSIM Activation Issue - DataPatch', html, { type: 'esim_activation_failed', userId: user.id });
 
   // Also notify admin
   const adminEmail = process.env.ADMIN_EMAIL;
   if (adminEmail) {
     const adminRows = [
-      { label: 'Kullanici', value: `${user.username} (${user.email})` },
-      { label: 'Siparis', value: payment.merchantOid },
-      { label: 'Tutar', value: `${parseFloat(payment.amount).toFixed(2)} ${payment.currency}` },
+      { label: 'User', value: `${user.username} (${user.email})` },
+      { label: 'Order', value: payment.merchantOid },
+      { label: 'Amount', value: `${parseFloat(payment.amount).toFixed(2)} ${payment.currency}` },
       { label: 'Plan', value: payment.offerId },
-      { label: 'Hata', value: payment.metadata?.esimPurchaseError || 'Bilinmiyor' },
+      { label: 'Error', value: payment.metadata?.esimPurchaseError || 'Unknown' },
     ];
 
     const adminHtml = emailLayout(`
-      <h2 style="margin:0 0 16px;color:#dc2626;font-size:22px;">eSIM Satin Alma Hatasi</h2>
-      <p style="color:#475569;font-size:15px;line-height:1.6;">Odeme sonrasi eSIM satin alma islemi basarisiz oldu. Manuel mudahale gerekiyor.</p>
+      <h2 style="margin:0 0 16px;color:#dc2626;font-size:22px;">eSIM Purchase Failed After Payment</h2>
+      <p style="color:#475569;font-size:15px;line-height:1.6;">An eSIM purchase failed after successful payment. Manual intervention is required.</p>
       ${emailInfoCard(adminRows, { bgColor: '#fef2f2', borderColor: '#fecaca' })}
-      ${emailButton(`${APP_URL()}/admin/payments`, 'Admin Panelinde Goruntule')}
-    `, { preheader: 'UYARI: Odeme sonrasi eSIM aktivasyon hatasi' });
-    await sendMail(adminEmail, 'UYARI: eSIM Satin Alma Hatasi - DataPatch', adminHtml, { type: 'admin_alert' });
+      ${emailButton(`${APP_URL()}/admin/payments`, 'View in Admin Panel')}
+    `, { preheader: 'ALERT: eSIM activation failed after payment' });
+    await sendMail(adminEmail, 'ALERT: eSIM Purchase Failed - DataPatch', adminHtml, { type: 'admin_alert' });
   }
 }
 
@@ -295,8 +295,126 @@ export async function sendReplyEmail(to, subject, html, { inReplyTo, userId, fro
   }
 }
 
+// Send a test email for any template type
+export async function sendTestEmail(templateType, targetEmail, user) {
+  const mockUser = { id: user.id, username: user.username, displayName: user.displayName || user.username, email: targetEmail };
+  const mockPayment = { merchantOid: 'TEST_' + Date.now(), amount: '29.99', currency: 'USD', offerId: 'test-7days-5gb', metadata: {} };
+  const mockEsim = { offerId: 'test-7days-5gb', iccid: '8901234567890123456', brandName: 'Airalo' };
+  const mockToken = 'test-token-' + Date.now();
+
+  const templates = {
+    verification: () => {
+      const url = `${APP_URL()}/auth/verify-email/${mockToken}`;
+      const html = emailLayout(`
+        <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Welcome!</h2>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${mockUser.displayName},</p>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Please verify your email address by clicking the button below:</p>
+        ${emailButton(url, 'Verify Email')}
+        <p style="color:#94a3b8;font-size:13px;word-break:break-all;">Or copy this link: ${url}</p>
+        <p style="color:#94a3b8;font-size:13px;">This link expires in 24 hours.</p>
+      `, { preheader: '[TEST] Verify your email address' });
+      return sendMail(targetEmail, '[TEST] Verify your email - DataPatch', html, { type: 'test', userId: user.id });
+    },
+    password_reset: () => {
+      const url = `${APP_URL()}/auth/reset-password/${mockToken}`;
+      const html = emailLayout(`
+        <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Password Reset</h2>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${mockUser.displayName},</p>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">You requested a password reset. Click the button below to set a new password:</p>
+        ${emailButton(url, 'Reset Password')}
+        <p style="color:#94a3b8;font-size:13px;">This link expires in 1 hour.</p>
+      `, { preheader: '[TEST] Reset your password' });
+      return sendMail(targetEmail, '[TEST] Password Reset - DataPatch', html, { type: 'test', userId: user.id });
+    },
+    welcome: () => {
+      const html = emailLayout(`
+        <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Welcome to DataPatch!</h2>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${mockUser.displayName},</p>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Your account has been verified. You can now browse and manage eSIM plans.</p>
+        ${emailButton(`${APP_URL()}/offers`, 'Browse eSIM Plans')}
+      `, { preheader: '[TEST] Your account is ready' });
+      return sendMail(targetEmail, '[TEST] Welcome to DataPatch!', html, { type: 'test', userId: user.id });
+    },
+    esim_assigned: () => {
+      const html = emailLayout(`
+        <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">eSIM Assigned!</h2>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${mockUser.displayName},</p>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">An eSIM plan has been assigned to your account:</p>
+        ${emailInfoCard([{ label: 'Plan', value: mockEsim.offerId }, { label: 'ICCID', value: mockEsim.iccid }, { label: 'Provider', value: mockEsim.brandName }])}
+        ${emailButton(`${APP_URL()}/purchases`, 'View My eSIMs')}
+      `, { preheader: '[TEST] eSIM assigned' });
+      return sendMail(targetEmail, '[TEST] eSIM Assigned - DataPatch', html, { type: 'test', userId: user.id });
+    },
+    payment_success: () => {
+      const html = emailLayout(`
+        <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Payment Successful!</h2>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${mockUser.displayName},</p>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Your payment has been processed and your eSIM is being activated.</p>
+        ${emailInfoCard([{ label: 'Order', value: mockPayment.merchantOid }, { label: 'Amount', value: '29.99 USD' }, { label: 'Plan', value: mockPayment.offerId }])}
+        ${emailButton(`${APP_URL()}/purchases`, 'View My eSIMs')}
+      `, { preheader: '[TEST] Payment successful' });
+      return sendMail(targetEmail, '[TEST] Payment Successful - DataPatch', html, { type: 'test', userId: user.id });
+    },
+    payment_failed: () => {
+      const html = emailLayout(`
+        <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Payment Failed</h2>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${mockUser.displayName},</p>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Unfortunately, your payment could not be processed. No charges were made.</p>
+        ${emailInfoCard([{ label: 'Order', value: mockPayment.merchantOid }, { label: 'Amount', value: '29.99 USD' }, { label: 'Plan', value: mockPayment.offerId }], { bgColor: '#fef2f2', borderColor: '#fecaca' })}
+        ${emailButton(`${APP_URL()}/offers`, 'Try Again')}
+      `, { preheader: '[TEST] Payment failed' });
+      return sendMail(targetEmail, '[TEST] Payment Failed - DataPatch', html, { type: 'test', userId: user.id });
+    },
+    esim_activation_failed: () => {
+      const html = emailLayout(`
+        <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">eSIM Activation Issue</h2>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${mockUser.displayName},</p>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Your payment was successful, but there was an issue activating your eSIM.</p>
+        ${emailInfoCard([{ label: 'Order', value: mockPayment.merchantOid }, { label: 'Amount', value: '29.99 USD' }, { label: 'Status', value: 'Pending manual activation' }], { bgColor: '#fffbeb', borderColor: '#fde68a' })}
+      `, { preheader: '[TEST] eSIM activation issue' });
+      return sendMail(targetEmail, '[TEST] eSIM Activation Issue - DataPatch', html, { type: 'test', userId: user.id });
+    },
+    booking_created: () => {
+      const html = emailLayout(`
+        <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">eSIM Booking Confirmed</h2>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${mockUser.displayName},</p>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Your eSIM will be ready on <strong>January 15, 2026</strong>.</p>
+        ${emailInfoCard([{ label: 'Date', value: 'January 15, 2026' }, { label: 'Status', value: 'Preparing' }])}
+        ${emailButton(`${APP_URL()}/offers`, 'Set Up eSIM')}
+      `, { preheader: '[TEST] Booking confirmed' });
+      return sendMail(targetEmail, '[TEST] eSIM Booking Confirmed - DataPatch', html, { type: 'test', userId: user.id });
+    },
+    expiry_reminder: () => {
+      const html = emailLayout(`
+        <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Your eSIM Setup Is Expiring Soon!</h2>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${mockUser.displayName},</p>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">You have <strong>5 days</strong> left to set up your eSIM.</p>
+        ${emailButton(`${APP_URL()}/offers`, 'Set Up eSIM')}
+        <p style="color:#94a3b8;font-size:13px;">eSIMs not set up within 30 days will expire.</p>
+      `, { preheader: '[TEST] 5 days left to set up eSIM' });
+      return sendMail(targetEmail, '[TEST] eSIM Setup Reminder - DataPatch', html, { type: 'test', userId: user.id });
+    }
+  };
+
+  const fn = templates[templateType];
+  if (!fn) throw new Error(`Unknown template type: ${templateType}`);
+  return fn();
+}
+
+export const TEST_TEMPLATE_TYPES = [
+  { value: 'verification', label: 'Email Verification' },
+  { value: 'password_reset', label: 'Password Reset' },
+  { value: 'welcome', label: 'Welcome' },
+  { value: 'esim_assigned', label: 'eSIM Assigned' },
+  { value: 'payment_success', label: 'Payment Success' },
+  { value: 'payment_failed', label: 'Payment Failed' },
+  { value: 'esim_activation_failed', label: 'eSIM Activation Failed' },
+  { value: 'booking_created', label: 'Booking Confirmed' },
+  { value: 'expiry_reminder', label: 'Expiry Reminder' },
+];
+
 export default {
   sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail,
   sendEsimAssignedEmail, sendPaymentSuccessEmail, sendPaymentFailedEmail,
-  sendEsimActivationFailedEmail, sendReplyEmail
+  sendEsimActivationFailedEmail, sendReplyEmail, sendTestEmail
 };
