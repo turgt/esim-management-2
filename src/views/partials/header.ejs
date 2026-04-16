@@ -119,10 +119,9 @@
     <% } else if (_isAgencyUser && _isAgencyPage && !locals.backUrl) { %>
     <nav class="topbar-nav" preload="mousedown">
       <a href="/agency/dashboard" class="<%= (typeof title === 'string' && title.indexOf('Agency Dashboard') !== -1) ? 'active' : '' %>">Dashboard</a>
-      <a href="/agency/bookings" class="<%= (typeof title === 'string' && title.indexOf('Bookings') !== -1) ? 'active' : '' %>">Bookings</a>
-      <a href="/agency/contracts" class="<%= (typeof title === 'string' && title.indexOf('Contracts') !== -1) ? 'active' : '' %>">Contracts</a>
-      <a href="/offers" class="">Plans</a>
-      <a href="/profile" class="<%= title === 'Profile' ? 'active' : '' %>">Profile</a>
+      <a href="/agency/bookings" class="<%= (typeof title === 'string' && title.indexOf('Booking') !== -1) ? 'active' : '' %>">Bookings</a>
+      <a href="/agency/contracts" class="<%= (typeof title === 'string' && title.indexOf('Contract') !== -1) ? 'active' : '' %>">Contracts</a>
+      <a href="/offers">Back to App</a>
     </nav>
     <% } else if (!locals.backUrl) { %>
     <nav class="topbar-nav" preload="mousedown">

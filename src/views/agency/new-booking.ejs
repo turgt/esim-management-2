@@ -34,7 +34,7 @@
           data-remaining="<%= remaining %>"
           <%= remaining <= 0 ? 'disabled' : '' %>>
           <%= contract.package ? contract.package.title : 'Contract #' + contract.id %>
-          — <%= contract.package ? contract.package.data + ' / ' + contract.package.day + ' gun' : '' %>
+          — <%= contract.package ? contract.package.data + ' / ' + contract.package.day + ' days' : '' %>
           (Remaining: <%= remaining %>)
         </option>
         <% }) %>
@@ -72,7 +72,7 @@
     <div>
       <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Referans No</label>
       <input type="text" name="agencyBookingRef" class="input" placeholder="Booking reference number">
-      <p class="text-xs text-[var(--text-tertiary)] mt-1">Isteğe baglidir. Kendi sisteminizle eslestirmek icin kullanabilirsiniz.</p>
+      <p class="text-xs text-[var(--text-tertiary)] mt-1">Optional. Use to match with your own system.</p>
     </div>
 
     <div>

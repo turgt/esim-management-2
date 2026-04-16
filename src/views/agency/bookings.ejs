@@ -18,10 +18,10 @@
     <%
       const tabDefs = [
         { value: '', label: 'Tumu' },
-        { value: 'pending_provisioning', label: 'Bekliyor' },
+        { value: 'pending_provisioning', label: 'Pending' },
         { value: 'provisioned', label: 'Saglanmis' },
-        { value: 'installed', label: 'Aktif' },
-        { value: 'cancelled', label: 'Iptal' }
+        { value: 'installed', label: 'Active' },
+        { value: 'cancelled', label: 'Cancelled' }
       ];
       const currentStatus = typeof filters !== 'undefined' ? filters.status || '' : '';
     %>
@@ -85,7 +85,7 @@
             <div>
               <p class="text-sm text-[var(--text-primary)]"><%= booking.contract.package.title %></p>
               <p class="text-xs text-[var(--text-tertiary)]">
-                <%= booking.contract.package.data %> / <%= booking.contract.package.day %> gun
+                <%= booking.contract.package.data %> / <%= booking.contract.package.day %> days
               </p>
             </div>
             <% } else { %>

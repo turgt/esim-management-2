@@ -33,7 +33,7 @@
         </p>
         <% if (contract.package) { %>
         <p class="text-xs text-[var(--text-tertiary)] mt-0.5">
-          <%= contract.package.data %> / <%= contract.package.day %> gun
+          <%= contract.package.data %> / <%= contract.package.day %> days
           <% if (contract.package.countryCode) { %>&bull; <%= contract.package.countryCode %><% } %>
         </p>
         <% } %>
@@ -95,7 +95,7 @@
     <% if (contract.status === 'active' && remaining > 0) { %>
     <a href="/agency/bookings/new" class="btn btn-secondary w-full justify-center text-sm">
       <i data-lucide="plus" class="w-4 h-4"></i>
-      Bu Contract ile Rezervasyon
+      Book with this Contract
     </a>
     <% } %>
   </div>

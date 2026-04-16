@@ -106,7 +106,7 @@
         <div>
           <p class="font-semibold text-[var(--text-primary)]"><%= booking.contract.package.title %></p>
           <p class="text-sm text-[var(--text-secondary)]">
-            <%= booking.contract.package.data %> / <%= booking.contract.package.day %> gun
+            <%= booking.contract.package.data %> / <%= booking.contract.package.day %> days
             &bull; <%= booking.contract.package.countryCode %>
           </p>
           <% if (booking.contract.package.operatorTitle) { %>
@@ -233,7 +233,7 @@
       <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
       <div>
         <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Cancellation Reason</label>
-        <input type="text" name="reason" class="input" placeholder="Istege baglidir">
+        <input type="text" name="reason" class="input" placeholder="Optional">
       </div>
       <div class="flex gap-3">
         <button type="button" onclick="document.getElementById('cancel-dialog').classList.add('hidden')" class="btn btn-secondary flex-1">Vazgec</button>
@@ -252,7 +252,7 @@ function copyTokenUrl() {
     label.textContent = 'Kopyalandi';
     setTimeout(function() { label.textContent = 'Kopyala'; }, 2000);
   }).catch(function() {
-    window.prompt('Kopyalamak icin secin:', url);
+    window.prompt('Copy this URL:', url);
   });
 }
 </script>
