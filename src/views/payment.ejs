@@ -106,6 +106,7 @@
     <form id="paymentMethodForm" method="post" action="/payment/create">
       <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
       <input type="hidden" name="packageId" value="<%= offerId %>">
+      <input type="hidden" name="vendor" value="<%= payment.metadata?.vendor || 'airalo' %>">
       <input type="hidden" name="amount" value="<%= amount %>">
       <input type="hidden" name="currency" value="<%= currency %>">
       <input type="hidden" name="planName" value="<%= payment.metadata?.planName || '' %>">
