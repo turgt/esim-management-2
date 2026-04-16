@@ -103,7 +103,7 @@
       </div>
     </div>
 
-    <form id="paymentMethodForm" method="post" action="/payment/create">
+    <form id="paymentMethodForm" method="post" action="/payment/create" hx-boost="false">
       <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
       <input type="hidden" name="packageId" value="<%= offerId %>">
       <input type="hidden" name="vendor" value="<%= payment.metadata?.vendor || 'airalo' %>">

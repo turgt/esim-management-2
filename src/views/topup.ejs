@@ -171,7 +171,7 @@
       <p class="text-lg font-bold text-[var(--brand-primary)] mt-1" id="modalPlanPrice"></p>
       <p class="text-xs text-[var(--text-tertiary)] mt-2 font-mono">ICCID: <%= esim.iccid %></p>
     </div>
-    <form id="topupForm" method="post" action="/payment/topup/create">
+    <form id="topupForm" method="post" action="/payment/topup/create" hx-boost="false">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <% if (esim.vendor === 'airalo') { %>
       <input type="hidden" name="packageId" id="modalOfferId" value="">

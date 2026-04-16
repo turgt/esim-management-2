@@ -221,7 +221,7 @@
 
     <!-- Purchase button (sticky) -->
     <div class="plan-panel-buy">
-      <form id="purchaseForm" method="post" action="/payment/create" data-no-protect="1">
+      <form id="purchaseForm" method="post" action="/payment/create" data-no-protect="1" hx-boost="false">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <input type="hidden" name="packageId" id="ppPackageId" value="">
         <input type="hidden" name="vendor" value="airalo">
