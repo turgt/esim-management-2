@@ -415,7 +415,8 @@ export async function showVendorBrochure(req, res) {
 
     const qrDataUrl = await QRCode.toDataURL(refUrl, {
       width: 400,
-      margin: 1,
+      margin: 2,
+      errorCorrectionLevel: 'H',
       color: { dark: '#1c1917', light: '#ffffff' }
     });
 
