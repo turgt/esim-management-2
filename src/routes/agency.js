@@ -16,6 +16,7 @@ const router = express.Router();
 router.use(ensureAgency);
 
 router.get('/', showDashboard);
+router.get('/dashboard', showDashboard);
 router.get('/bookings', listBookings);
 router.get('/bookings/new', showNewBookingForm);
 router.post('/bookings', handleCreateBooking);
