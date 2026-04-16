@@ -2,8 +2,8 @@
 <% if (typeof user !== 'undefined' && user) { %>
   </main>
 <%
-  var _isAdminPage = (title === 'Admin Dashboard' || title === 'Manage Users' || title === 'All Datas' || title === 'All eSIMs' || title === 'Data Detail' || title === 'eSIM Detail' || title === 'Assign Data' || title === 'Assign eSIM' || title === 'Admin Payments' || title === 'Vendors' || title === 'Vendor Detail' || title === 'Create Vendor' || title === 'Edit Vendor' || title === 'Emails' || title === 'Email Detail' || title === 'Admin Test Emails' || title === 'Pricing' || title === 'Zendit Purchase' || (typeof title === 'string' && (title.indexOf('Top-up') !== -1 || title.indexOf('Top Up') !== -1 || title.indexOf('Admin') !== -1 || title.indexOf('Acenteler') !== -1 || title.indexOf('Agencies') !== -1 || title.indexOf('Webhook') !== -1)));
-  var _isAgencyPage = (typeof title === 'string' && (title.indexOf('Agency') !== -1 || title.indexOf('Ajans') !== -1 || title.indexOf('Rezervasyon') !== -1 || title.indexOf('Kontrat') !== -1));
+  var _isAdminPage = (title === 'Admin Dashboard' || title === 'Manage Users' || title === 'All Datas' || title === 'All eSIMs' || title === 'Data Detail' || title === 'eSIM Detail' || title === 'Assign Data' || title === 'Assign eSIM' || title === 'Admin Payments' || title === 'Vendors' || title === 'Vendor Detail' || title === 'Create Vendor' || title === 'Edit Vendor' || title === 'Emails' || title === 'Email Detail' || title === 'Admin Test Emails' || title === 'Pricing' || title === 'Zendit Purchase' || title === 'Agencies' || (typeof title === 'string' && (title.indexOf('Top-up') !== -1 || title.indexOf('Top Up') !== -1 || title.indexOf('Admin') !== -1 || title.indexOf('Webhook') !== -1)));
+  var _isAgencyPage = (typeof title === 'string' && (title.indexOf('Agency Dashboard') !== -1 || title.indexOf('Booking') !== -1 || title.indexOf('Contract') !== -1));
   var _isAgencyUser = (user && user.agencyId);
   var _isVendorPage = (typeof title === 'string' && (title === 'Vendor Dashboard' || title.indexOf('Vendor') !== -1));
 %>
@@ -61,9 +61,9 @@
       <i data-lucide="shopping-bag" class="w-5 h-5"></i>
       <span>Zendit</span>
     </a>
-    <a href="/admin/agencies" class="<%= (typeof title === 'string' && (title.indexOf('Acenteler') !== -1 || title.indexOf('Agencies') !== -1 || title.indexOf('Agency') !== -1)) ? 'active' : '' %>">
+    <a href="/admin/agencies" class="<%= title === 'Agencies' ? 'active' : '' %>">
       <i data-lucide="building-2" class="w-5 h-5"></i>
-      <span>Acenteler</span>
+      <span>Agencies</span>
     </a>
     <a href="/admin/webhook-logs" class="<%= (typeof title === 'string' && title.indexOf('Webhook') !== -1) ? 'active' : '' %>">
       <i data-lucide="webhook" class="w-5 h-5"></i>
@@ -76,17 +76,17 @@
   </nav>
   <% } else if (_isAgencyUser && _isAgencyPage) { %>
   <nav class="tabbar" preload="mousedown">
-    <a href="/agency/dashboard" class="<%= (typeof title === 'string' && (title.indexOf('Dashboard') !== -1 || title.indexOf('Ajans') !== -1)) ? 'active' : '' %>">
+    <a href="/agency/dashboard" class="<%= (typeof title === 'string' && title.indexOf('Agency Dashboard') !== -1) ? 'active' : '' %>">
       <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
       <span>Dashboard</span>
     </a>
-    <a href="/agency/bookings" class="<%= (typeof title === 'string' && title.indexOf('Rezervasyon') !== -1) ? 'active' : '' %>">
+    <a href="/agency/bookings" class="<%= (typeof title === 'string' && title.indexOf('Bookings') !== -1) ? 'active' : '' %>">
       <i data-lucide="calendar-check" class="w-5 h-5"></i>
-      <span>Rezervasyon</span>
+      <span>Bookings</span>
     </a>
-    <a href="/agency/contracts" class="<%= (typeof title === 'string' && title.indexOf('Kontrat') !== -1) ? 'active' : '' %>">
+    <a href="/agency/contracts" class="<%= (typeof title === 'string' && title.indexOf('Contracts') !== -1) ? 'active' : '' %>">
       <i data-lucide="file-text" class="w-5 h-5"></i>
-      <span>Kontratlar</span>
+      <span>Contracts</span>
     </a>
     <a href="/profile" class="<%= title === 'Profile' ? 'active' : '' %>">
       <i data-lucide="user" class="w-5 h-5"></i>
@@ -124,7 +124,7 @@
     <% if (_isAgencyUser) { %>
     <a href="/agency/dashboard" class="<%= _isAgencyPage ? 'active' : '' %> tabbar-agency">
       <i data-lucide="building-2" class="w-5 h-5"></i>
-      <span>Acente</span>
+      <span>Agency</span>
     </a>
     <% } %>
     <% if (user.isAdmin) { %>
