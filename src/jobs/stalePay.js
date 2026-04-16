@@ -23,50 +23,61 @@ export async function run() {
 
   for (const payment of stalePayments) {
     try {
-      // Try to cancel in the payment provider
-      await cancelInProvider(payment);
+      const providerStatus = await checkProviderStatus(payment);
 
-      await payment.update({
-        status: 'cancelled',
-        metadata: {
-          ...payment.metadata,
-          cancelledAt: new Date().toISOString(),
-          cancelReason: 'auto_stale',
-          staleCutoffHours: STALE_HOURS
-        }
-      });
+      if (providerStatus === 'paid') {
+        // Provider says paid but we missed it — trigger completion flow
+        log.warn({ paymentId: payment.id, merchantOid: payment.merchantOid, provider: payment.provider },
+          'Provider shows PAID but local status is pending — triggering completion');
+        await reconcileAsPaid(payment);
+      } else if (providerStatus === 'skip') {
+        // Provider in ambiguous state, skip this cycle
+        log.info({ paymentId: payment.id }, 'Provider in ambiguous state, skipping');
+      } else {
+        // Provider says not paid (expired/pending/failed/unknown) — safe to cancel locally
+        await payment.update({
+          status: 'cancelled',
+          metadata: {
+            ...payment.metadata,
+            cancelledAt: new Date().toISOString(),
+            cancelReason: 'auto_stale',
+            providerStatus,
+            staleCutoffHours: STALE_HOURS
+          }
+        });
 
-      log.info({
-        paymentId: payment.id,
-        merchantOid: payment.merchantOid,
-        provider: payment.provider,
-        ageHours: Math.round((Date.now() - new Date(payment.createdAt).getTime()) / 3600000)
-      }, 'Stale payment cancelled');
+        log.info({
+          paymentId: payment.id,
+          merchantOid: payment.merchantOid,
+          provider: payment.provider,
+          providerStatus,
+          ageHours: Math.round((Date.now() - new Date(payment.createdAt).getTime()) / 3600000)
+        }, 'Stale payment cancelled');
+      }
     } catch (err) {
-      log.error({ err, paymentId: payment.id, merchantOid: payment.merchantOid }, 'Failed to cancel stale payment');
+      log.error({ err, paymentId: payment.id, merchantOid: payment.merchantOid }, 'Failed to process stale payment');
     }
   }
 }
 
-async function cancelInProvider(payment) {
+// Returns: 'paid' | 'unpaid' | 'skip' | 'no_provider'
+async function checkProviderStatus(payment) {
   const provider = payment.provider;
   const txId = payment.providerTransactionId;
 
-  if (!txId) {
-    log.debug({ paymentId: payment.id }, 'No provider transaction ID, skipping provider cancel');
-    return;
-  }
+  if (!provider || provider === 'pending') return 'no_provider';
+  if (!txId) return 'no_provider';
 
   if (provider === 'paddle') {
-    await cancelPaddleTransaction(txId, payment);
+    return checkPaddleStatus(txId, payment);
   } else if (provider === 'turinvoice') {
-    await cancelTurInvoiceOrder(payment);
-  } else {
-    log.debug({ paymentId: payment.id, provider }, 'Unknown provider, local cancel only');
+    return checkTurInvoiceStatus(payment);
   }
+
+  return 'no_provider';
 }
 
-async function cancelPaddleTransaction(transactionId, payment) {
+async function checkPaddleStatus(transactionId, payment) {
   try {
     const environment = process.env.PADDLE_ENVIRONMENT || 'sandbox';
     const apiBase = environment === 'production'
@@ -75,66 +86,151 @@ async function cancelPaddleTransaction(transactionId, payment) {
     const apiKey = process.env.PADDLE_API_KEY;
 
     if (!apiKey) {
-      log.warn({ paymentId: payment.id }, 'No Paddle API key, skipping Paddle cancel');
-      return;
+      log.debug({ paymentId: payment.id }, 'No Paddle API key, cannot check');
+      return 'no_provider';
     }
 
-    // Paddle: GET transaction to check if it's still open/draft, then cancel if possible
     const response = await fetch(`${apiBase}/transactions/${transactionId}`, {
       headers: { 'Authorization': `Bearer ${apiKey}` }
     });
 
     if (!response.ok) {
-      log.warn({ paymentId: payment.id, transactionId, status: response.status }, 'Paddle transaction fetch failed');
-      return;
+      log.warn({ paymentId: payment.id, transactionId, httpStatus: response.status }, 'Paddle status check failed');
+      return 'skip';
     }
 
     const data = await response.json();
     const txStatus = data.data?.status;
 
-    // Only cancel if transaction is still in a cancellable state
-    if (txStatus === 'draft' || txStatus === 'ready' || txStatus === 'billed') {
-      // Paddle doesn't have a direct cancel endpoint for one-time transactions
-      // but we can mark it as canceled locally. If it's 'billed', the user already paid.
-      if (txStatus === 'billed') {
-        log.warn({ paymentId: payment.id, transactionId }, 'Paddle transaction is billed — skipping cancel, needs manual review');
-        return;
-      }
+    log.info({ paymentId: payment.id, transactionId, paddleStatus: txStatus }, 'Paddle status checked');
 
-      log.info({ paymentId: payment.id, transactionId, paddleStatus: txStatus }, 'Paddle transaction in cancellable state, marking cancelled locally');
-    } else if (txStatus === 'completed' || txStatus === 'canceled') {
-      log.info({ paymentId: payment.id, transactionId, paddleStatus: txStatus }, 'Paddle transaction already finalized');
-    } else {
-      log.info({ paymentId: payment.id, transactionId, paddleStatus: txStatus }, 'Paddle transaction status noted');
+    // Paddle statuses: draft, ready, billed, paid, completed, canceled, past_due
+    if (txStatus === 'completed' || txStatus === 'paid') {
+      return 'paid';
+    } else if (txStatus === 'billed') {
+      // Billed = customer charged but not yet completed
+      // Cancel on Paddle side via PATCH API
+      await cancelPaddleTransaction(apiBase, apiKey, transactionId, payment);
+      return 'unpaid';
+    } else if (txStatus === 'canceled' || txStatus === 'past_due') {
+      return 'unpaid';
+    } else if (txStatus === 'draft' || txStatus === 'ready') {
+      // Not yet paid, expires naturally on Paddle's side
+      return 'unpaid';
     }
+
+    return 'unpaid';
   } catch (err) {
-    log.error({ err, paymentId: payment.id, transactionId }, 'Paddle cancel check failed');
+    log.error({ err, paymentId: payment.id }, 'Paddle status check exception');
+    return 'skip';
   }
 }
 
-async function cancelTurInvoiceOrder(payment) {
+// PATCH /transactions/:id with {"status":"canceled"} — works for billed transactions
+async function cancelPaddleTransaction(apiBase, apiKey, transactionId, payment) {
+  try {
+    const response = await fetch(`${apiBase}/transactions/${transactionId}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ status: 'canceled' })
+    });
+
+    if (response.ok) {
+      log.info({ paymentId: payment.id, transactionId }, 'Paddle transaction canceled via API');
+    } else {
+      const errData = await response.json().catch(() => ({}));
+      log.warn({ paymentId: payment.id, transactionId, httpStatus: response.status, error: errData },
+        'Paddle cancel API failed — will cancel locally only');
+    }
+  } catch (err) {
+    log.error({ err, paymentId: payment.id, transactionId }, 'Paddle cancel API exception');
+  }
+}
+
+async function checkTurInvoiceStatus(payment) {
   try {
     const idOrder = payment.metadata?.turInvoiceIdOrder;
     if (!idOrder) {
-      log.debug({ paymentId: payment.id }, 'No TurInvoice order ID, skipping');
-      return;
+      log.debug({ paymentId: payment.id }, 'No TurInvoice order ID');
+      return 'no_provider';
     }
 
-    const { getOrder } = await import('../services/turInvoiceClient.js');
+    const { getOrder, cancelOrder, isInitialized } = await import('../services/turInvoiceClient.js');
+    if (!isInitialized()) {
+      log.debug({ paymentId: payment.id }, 'TurInvoice not initialized');
+      return 'skip';
+    }
+
     const order = await getOrder(idOrder);
     const orderState = order?.state || order?.status;
 
-    if (orderState === 'created' || orderState === 'pending') {
-      log.info({ paymentId: payment.id, idOrder, orderState }, 'TurInvoice order still pending, marking cancelled locally');
-    } else if (orderState === 'paid' || orderState === 'completed') {
-      log.warn({ paymentId: payment.id, idOrder, orderState }, 'TurInvoice order already paid — skipping cancel, needs manual review');
-      // Don't cancel locally if it's paid
-      throw new Error(`TurInvoice order ${idOrder} is already paid, manual review needed`);
-    } else {
-      log.info({ paymentId: payment.id, idOrder, orderState }, 'TurInvoice order state noted');
+    log.info({ paymentId: payment.id, idOrder, turInvoiceState: orderState }, 'TurInvoice status checked');
+
+    if (orderState === 'paid' || orderState === 'completed') {
+      return 'paid';
+    } else if (orderState === 'failed' || orderState === 'cancelled' || orderState === 'expired') {
+      return 'unpaid';
+    } else if (orderState === 'created' || orderState === 'pending') {
+      // Not yet paid — cancel on TurInvoice via DELETE API
+      try {
+        await cancelOrder(idOrder);
+        log.info({ paymentId: payment.id, idOrder }, 'TurInvoice order cancelled via API');
+      } catch (cancelErr) {
+        log.warn({ err: cancelErr, paymentId: payment.id, idOrder }, 'TurInvoice cancel API failed — will cancel locally only');
+      }
+      return 'unpaid';
+    }
+
+    return 'unpaid';
+  } catch (err) {
+    log.error({ err, paymentId: payment.id }, 'TurInvoice status check exception');
+    return 'skip';
+  }
+}
+
+// When provider says paid but we missed the webhook
+async function reconcileAsPaid(payment) {
+  try {
+    const { processPaddleWebhook } = await import('../services/paymentService.js');
+
+    // Mark as completed — the webhook handler will take care of eSIM purchase
+    await payment.update({
+      status: 'completed',
+      metadata: {
+        ...payment.metadata,
+        reconciledAt: new Date().toISOString(),
+        reconcileReason: 'stale_job_provider_paid'
+      }
+    });
+
+    log.info({ paymentId: payment.id, merchantOid: payment.merchantOid }, 'Stale payment reconciled as completed');
+
+    // Try to trigger eSIM purchase if not already done
+    if (!payment.esimId) {
+      try {
+        let purchaseFn;
+        if (payment.type === 'topup' && payment.targetIccid) {
+          ({ topupEsimAfterPayment: purchaseFn } = await import('../services/paymentService.js'));
+        } else {
+          ({ purchaseEsimAfterPayment: purchaseFn } = await import('../services/paymentService.js'));
+        }
+        await purchaseFn(payment);
+        log.info({ paymentId: payment.id }, 'eSIM purchase triggered after reconciliation');
+      } catch (purchaseErr) {
+        log.error({ err: purchaseErr, paymentId: payment.id }, 'eSIM purchase failed after reconciliation');
+        await payment.update({
+          metadata: {
+            ...payment.metadata,
+            esimPurchaseFailed: true,
+            esimPurchaseError: purchaseErr.message
+          }
+        });
+      }
     }
   } catch (err) {
-    if (err.message?.includes('manual review')) throw err;
-    log.error({ err, paymentId: payment.id }, 'TurInvoice cancel check failed');
+    log.error({ err, paymentId: payment.id }, 'Reconciliation failed');
   }
 }

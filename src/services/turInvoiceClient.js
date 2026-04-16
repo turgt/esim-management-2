@@ -124,6 +124,14 @@ export async function refund({ idOrder, amount, description }) {
   });
 }
 
+export async function cancelOrder(idOrder) {
+  return withAutoRelogin(async () => {
+    const res = await api().delete('/api/v1/tsp/order', { params: { idOrder } });
+    log.info({ idOrder }, 'TurInvoice order cancelled');
+    return res.data;
+  });
+}
+
 export function isInitialized() {
   return sessionCookie !== null;
 }
