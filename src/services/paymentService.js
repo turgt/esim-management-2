@@ -141,15 +141,22 @@ export async function createTurInvoiceCheckout({ payment, paymentType }) {
     throw new Error('TurInvoice createOrder returned no idOrder');
   }
 
-  const orderDetails = await turInvoice.getOrder(idOrder);
-
   await payment.update({
+    provider: 'turinvoice',
     providerTransactionId: String(idOrder),
     metadata: {
       ...payment.metadata,
       turInvoiceIdOrder: idOrder,
+      paymentType
+    }
+  });
+
+  const orderDetails = await turInvoice.getOrder(idOrder);
+
+  await payment.update({
+    metadata: {
+      ...payment.metadata,
       paymentUrl: orderDetails.paymentUrl,
-      paymentType,
       turInvoiceState: orderDetails.state
     }
   });
@@ -197,23 +204,24 @@ export async function handleTurInvoiceCallback(payload) {
       }
     });
 
+    let esim = null;
     try {
-      await purchaseEsimAfterPayment(payment);
-      await sendPaymentSuccessEmail(payment);
+      esim = await purchaseEsimAfterPayment(payment);
     } catch (err) {
       cbLog.error({ err, merchantOid: payment.merchantOid }, 'eSIM purchase after TurInvoice payment failed');
       await payment.update({
         metadata: { ...payment.metadata, esimPurchaseFailed: true, esimError: err.message }
       });
-      await sendEsimActivationFailedEmail(payment);
     }
+
+    await sendEmailNotification(payment, esim);
   } else if (payload.state === 'failed' || payload.state === 'cancelled') {
     cbLog.warn({ idOrder, state: payload.state }, 'TurInvoice payment failed/cancelled');
     await payment.update({
       status: 'failed',
       metadata: { ...payment.metadata, turInvoiceState: payload.state }
     });
-    await sendPaymentFailedEmail(payment);
+    await sendEmailNotification(payment, null);
   }
 }
 

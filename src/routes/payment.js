@@ -396,8 +396,13 @@ router.get('/result/:merchantOid', ensureAuth, async (req, res) => {
   try {
     const payment = await findByMerchantOid(req.params.merchantOid);
 
-    if (!payment || payment.userId !== req.session.user.id) {
-      return res.render('error', { message: 'Payment not found', title: 'Error' });
+    if (!payment || (payment.userId !== req.session.user.id && !req.session.user.isAdmin)) {
+      return res.render('error', {
+        title: 'Payment Not Found',
+        errorTitle: 'Payment Not Found',
+        errorMessage: 'The requested payment could not be found.',
+        user: req.session.user
+      });
     }
 
     res.render('payment-result', {
@@ -406,7 +411,12 @@ router.get('/result/:merchantOid', ensureAuth, async (req, res) => {
     });
   } catch (err) {
     log.error({ err }, 'Payment result page error');
-    res.render('error', { message: 'Failed to load payment result', title: 'Error' });
+    res.render('error', {
+      title: 'Error',
+      errorTitle: 'Something went wrong',
+      errorMessage: 'Failed to load payment result.',
+      user: req.session.user
+    });
   }
 });
 
