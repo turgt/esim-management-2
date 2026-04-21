@@ -184,19 +184,19 @@ async function checkTurInvoiceStatus(payment) {
 
     if (orderState === 'paid' || orderState === 'completed') {
       return 'paid';
-    } else if (orderState === 'failed' || orderState === 'cancelled' || orderState === 'expired') {
-      return 'unpaid';
-    } else if (orderState === 'created' || orderState === 'pending') {
-      // Not yet paid — cancel on TurInvoice via DELETE API
-      try {
-        await cancelOrder(idOrder);
-        log.info({ paymentId: payment.id, idOrder }, 'TurInvoice order cancelled via API');
-      } catch (cancelErr) {
-        log.warn({ err: cancelErr, paymentId: payment.id, idOrder }, 'TurInvoice cancel API failed — will cancel locally only');
-      }
-      return 'unpaid';
     }
 
+    const isTerminal = orderState === 'failed' || orderState === 'cancelled' || orderState === 'expired';
+    if (!isTerminal) {
+      // Any non-terminal, non-paid state ('new', 'created', 'pending', unknown) —
+      // cancel on TurInvoice via DELETE API so the customer can't pay a stale order.
+      try {
+        await cancelOrder(idOrder);
+        log.info({ paymentId: payment.id, idOrder, orderState }, 'TurInvoice order cancelled via API');
+      } catch (cancelErr) {
+        log.warn({ err: cancelErr, paymentId: payment.id, idOrder, orderState }, 'TurInvoice cancel API failed — will cancel locally only');
+      }
+    }
     return 'unpaid';
   } catch (err) {
     log.error({ err, paymentId: payment.id }, 'TurInvoice status check exception');
