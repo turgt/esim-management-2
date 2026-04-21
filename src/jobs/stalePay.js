@@ -186,7 +186,7 @@ async function checkTurInvoiceStatus(payment) {
       return 'paid';
     }
 
-    const isTerminal = orderState === 'failed' || orderState === 'cancelled' || orderState === 'expired';
+    const isTerminal = orderState === 'failed' || orderState === 'cancelled' || orderState === 'expired' || orderState === 'deleted';
     if (!isTerminal) {
       // Any non-terminal, non-paid state ('new', 'created', 'pending', unknown) —
       // cancel on TurInvoice via DELETE API so the customer can't pay a stale order.
