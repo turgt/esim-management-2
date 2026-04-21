@@ -1303,6 +1303,59 @@ export async function listWebhookLogs(req, res) {
   }
 }
 
+export async function listPaymentWebhookLogs(req, res) {
+  try {
+    const { provider, page = 1 } = req.query;
+    const limit = 50;
+    const offset = (page - 1) * limit;
+    const where = {};
+    if (provider && provider !== 'all') where.provider = provider;
+    const { count, rows: logs } = await db.PaymentWebhookLog.findAndCountAll({
+      where,
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset
+    });
+
+    const { Op } = db.Sequelize;
+    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const providers = ['paddle', 'turinvoice'];
+    const health = [];
+    for (const p of providers) {
+      const last = await db.PaymentWebhookLog.findOne({
+        where: { provider: p },
+        order: [['createdAt', 'DESC']]
+      });
+      const recentCount = await db.PaymentWebhookLog.count({
+        where: { provider: p, createdAt: { [Op.gt]: dayAgo } }
+      });
+      const pendingCount = await db.Payment.count({
+        where: { provider: p, status: 'pending' }
+      });
+      health.push({
+        provider: p,
+        lastAt: last ? last.createdAt : null,
+        last24hCount: recentCount,
+        pendingPayments: pendingCount
+      });
+    }
+
+    res.render('admin/payment-webhooks', {
+      title: 'Payment Webhooks',
+      user: req.session.user,
+      logs,
+      total: count,
+      page: Number(page),
+      totalPages: Math.ceil(count / limit),
+      filter: provider || 'all',
+      health
+    });
+  } catch (err) {
+    log.error({ err }, 'listPaymentWebhookLogs failed');
+    res.status(500).render('error', { title: 'Error', user: req.session.user, errorTitle: 'Error', errorMessage: 'Failed to load payment webhook logs.' });
+  }
+}
+
 export async function retryWebhook(req, res) {
   try {
     const { processWebhook } = await import('./webhookController.js');

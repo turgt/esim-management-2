@@ -10,7 +10,8 @@ import {
   listAgencies, showAgencyDetail, createAgency, createContract,
   assignAgencyUser, removeAgencyUser, updateAgencyUserRole,
   toggleAgencyStatus, updateAgency, deleteAgency, terminateContract,
-  listWebhookLogs, retryWebhook
+  listWebhookLogs, retryWebhook,
+  listPaymentWebhookLogs
 } from '../controllers/adminController.js';
 import {
   listVendors, showCreateVendor, createVendor,
@@ -94,6 +95,7 @@ router.post('/agencies/:id/delete', ensureAuth, ensureAdmin, deleteAgency);
 // Webhook Logs
 router.get('/webhook-logs', ensureAuth, ensureAdmin, listWebhookLogs);
 router.post('/webhook-logs/:id/retry', ensureAuth, ensureAdmin, retryWebhook);
+router.get('/payment-webhooks', ensureAuth, ensureAdmin, listPaymentWebhookLogs);
 
 // Test email sending
 router.get('/test-emails', ensureAuth, ensureAdmin, async (req, res) => {

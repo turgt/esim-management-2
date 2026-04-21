@@ -32,6 +32,7 @@ import proxyRoutes from './routes/proxy.js';
 import { startSync as startAiraloSync } from './services/airaloSync.js';
 import { cookieParser, doubleCsrfProtection, csrfTokenMiddleware, csrfErrorHandler } from './middleware/csrf.js';
 import { verifyPaddleWebhook, processPaddleWebhook } from './services/paymentService.js';
+import { logPaymentWebhook } from './services/webhookLogger.js';
 import { handleAiraloWebhook } from './controllers/webhookController.js';
 import { handleCallback as handleTurInvoiceCallback } from './controllers/turInvoiceController.js';
 import { initialize as initTurInvoice, isEnabled as turInvoiceEnabled } from './services/turInvoiceClient.js';
@@ -170,18 +171,26 @@ app.use((req, res, next) => {
 // Raw body is captured via the express.json() verify callback above (req.rawBody)
 app.post('/payment/webhook', async (req, res) => {
   const wLog = logger.child({ module: 'paddle-webhook' });
+  const eventType = req.body?.event_type;
+  const paddleTxId = req.body?.data?.id;
+  const merchantOid = req.body?.data?.custom_data?.merchant_oid;
+  let signatureValid = false;
   try {
     const signature = req.headers['paddle-signature'];
-    if (!verifyPaddleWebhook(req.rawBody || '', signature)) {
-      wLog.warn({ event_type: req.body?.event_type }, 'Paddle webhook signature verification failed');
+    signatureValid = verifyPaddleWebhook(req.rawBody || '', signature);
+    if (!signatureValid) {
+      wLog.warn({ event_type: eventType }, 'Paddle webhook signature verification failed');
+      await logPaymentWebhook({ provider: 'paddle', eventType, signatureValid: false, processed: false, error: 'invalid_signature', merchantOid, providerTransactionId: paddleTxId, payload: req.body });
       return res.status(401).json({ error: 'Invalid signature' });
     }
 
-    wLog.info({ event_type: req.body?.event_type }, 'Paddle webhook received');
+    wLog.info({ event_type: eventType }, 'Paddle webhook received');
     await processPaddleWebhook(req.body);
+    await logPaymentWebhook({ provider: 'paddle', eventType, signatureValid: true, processed: true, merchantOid, providerTransactionId: paddleTxId, payload: req.body });
     res.json({ received: true });
   } catch (err) {
     wLog.error({ err }, 'Paddle webhook processing error');
+    await logPaymentWebhook({ provider: 'paddle', eventType, signatureValid, processed: false, error: err.message, merchantOid, providerTransactionId: paddleTxId, payload: req.body });
     res.status(500).json({ error: 'Internal error' });
   }
 });

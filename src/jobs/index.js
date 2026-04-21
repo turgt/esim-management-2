@@ -4,6 +4,7 @@ import { run as webhookRetry } from './webhookRetry.js';
 import { run as provisionWatchdog } from './provisionWatchdog.js';
 import { runReminder, runMarker } from './expiryJobs.js';
 import { run as cancelStalePayments } from './stalePay.js';
+import { run as webhookHealth } from './webhookHealth.js';
 
 const log = logger.child({ module: 'jobs' });
 
@@ -24,6 +25,10 @@ export function startJobs() {
   // Cancel stale pending payments every 30 minutes
   cron.schedule('*/30 * * * *', async () => {
     try { await cancelStalePayments(); } catch (err) { log.error({ err }, 'cancelStalePayments job error'); }
+  });
+  // Webhook health check every hour at :15 (offset from stale payment job)
+  cron.schedule('15 * * * *', async () => {
+    try { await webhookHealth(); } catch (err) { log.error({ err }, 'webhookHealth job error'); }
   });
   log.info('Background jobs scheduled');
 }

@@ -114,7 +114,8 @@
       <a href="/admin/pricing" class="<%= title === 'Pricing' ? 'active' : '' %>">Pricing</a>
       <a href="/admin/zendit/purchase" class="<%= title === 'Zendit Purchase' ? 'active' : '' %>">Zendit</a>
       <a href="/admin/agencies" class="<%= title === 'Agencies' ? 'active' : '' %>">Agencies</a>
-      <a href="/admin/webhook-logs" class="<%= (typeof title === 'string' && title.indexOf('Webhook') !== -1) ? 'active' : '' %>">Webhooks</a>
+      <a href="/admin/webhook-logs" class="<%= (title === 'Webhook Logs') ? 'active' : '' %>">Airalo Webhooks</a>
+      <a href="/admin/payment-webhooks" class="<%= (title === 'Payment Webhooks') ? 'active' : '' %>">Payment Webhooks</a>
     </nav>
     <% } else if (_isAgencyUser && _isAgencyPage && !locals.backUrl) { %>
     <nav class="topbar-nav" preload="mousedown">

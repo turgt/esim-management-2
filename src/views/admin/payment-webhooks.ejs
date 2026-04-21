@@ -1,0 +1,119 @@
+<%- include('../partials/header', {title: 'Payment Webhooks', user: locals.user}) %>
+
+<div class="mb-8 flex items-center justify-between">
+  <div>
+    <p class="text-sm text-[var(--text-secondary)] mb-1">Payment Providers</p>
+    <h1 class="text-page-title">Payment Webhooks</h1>
+  </div>
+</div>
+
+<!-- Health summary -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+  <% health.forEach(function(h) { %>
+  <% const isHealthy = h.last24hCount > 0 || h.pendingPayments === 0; %>
+  <div class="card p-4">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-sm font-semibold text-[var(--text-primary)] capitalize"><%= h.provider %></h3>
+      <span class="badge <%= isHealthy ? 'badge-success' : 'badge-danger' %>">
+        <%= isHealthy ? 'Healthy' : 'Silent' %>
+      </span>
+    </div>
+    <dl class="grid grid-cols-2 gap-3 text-sm">
+      <div>
+        <dt class="text-xs text-[var(--text-tertiary)] uppercase">Last webhook</dt>
+        <dd class="text-[var(--text-secondary)]">
+          <%= h.lastAt ? new Date(h.lastAt).toLocaleString() : 'Never' %>
+        </dd>
+      </div>
+      <div>
+        <dt class="text-xs text-[var(--text-tertiary)] uppercase">24h count</dt>
+        <dd class="text-[var(--text-secondary)]"><%= h.last24hCount %></dd>
+      </div>
+      <div>
+        <dt class="text-xs text-[var(--text-tertiary)] uppercase">Pending payments</dt>
+        <dd class="text-[var(--text-secondary)]"><%= h.pendingPayments %></dd>
+      </div>
+    </dl>
+  </div>
+  <% }) %>
+</div>
+
+<!-- Provider Filter -->
+<div class="flex items-center gap-2 mb-6 flex-wrap">
+  <% const providers = ['all', 'paddle', 'turinvoice']; %>
+  <% providers.forEach(function(p) { %>
+  <a href="/admin/payment-webhooks?provider=<%= p %>"
+    class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors capitalize
+    <%= filter === p
+      ? 'bg-[var(--brand-primary)] text-white'
+      : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]' %>">
+    <%= p %>
+  </a>
+  <% }) %>
+  <span class="ml-auto text-sm text-[var(--text-tertiary)]">Total: <%= total %></span>
+</div>
+
+<div class="table-container">
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Provider</th>
+          <th>Event</th>
+          <th>Signature</th>
+          <th>Processed</th>
+          <th>Tx ID</th>
+          <th>Merchant Oid</th>
+          <th>Error</th>
+          <th>Received</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (logs.length > 0) { %>
+        <% logs.forEach(function(row) { %>
+        <tr>
+          <td><span class="badge badge-neutral capitalize"><%= row.provider %></span></td>
+          <td><span class="font-mono text-xs text-[var(--text-secondary)]"><%= row.eventType || '-' %></span></td>
+          <td>
+            <% if (row.signatureValid === true) { %>
+              <span class="badge badge-success">Valid</span>
+            <% } else if (row.signatureValid === false) { %>
+              <span class="badge badge-danger">Invalid</span>
+            <% } else { %>
+              <span class="text-[var(--text-tertiary)]">—</span>
+            <% } %>
+          </td>
+          <td>
+            <% if (row.processed) { %>
+              <span class="badge badge-success">Yes</span>
+            <% } else { %>
+              <span class="badge badge-danger">No</span>
+            <% } %>
+          </td>
+          <td><span class="font-mono text-xs text-[var(--text-tertiary)]"><%= row.providerTransactionId || '-' %></span></td>
+          <td><span class="font-mono text-xs text-[var(--text-tertiary)]"><%= row.merchantOid || '-' %></span></td>
+          <td>
+            <% if (row.error) { %>
+              <span class="text-xs text-[var(--danger)]" title="<%= row.error %>"><%= row.error.length > 40 ? row.error.substring(0, 40) + '…' : row.error %></span>
+            <% } else { %>
+              <span class="text-[var(--text-tertiary)]">—</span>
+            <% } %>
+          </td>
+          <td><span class="text-xs text-[var(--text-secondary)]"><%= new Date(row.createdAt).toLocaleString() %></span></td>
+        </tr>
+        <% }) %>
+        <% } else { %>
+        <tr>
+          <td colspan="8" class="text-center py-8 text-[var(--text-tertiary)]">No webhooks logged yet</td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<% if (totalPages > 1) { %>
+<%- include('../partials/pagination', { page, totalPages, baseUrl: `/admin/payment-webhooks?provider=${filter}` }) %>
+<% } %>
+
+<%- include('../partials/footer') %>
