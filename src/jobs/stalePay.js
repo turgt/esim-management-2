@@ -35,8 +35,10 @@ export async function run() {
         log.info({ paymentId: payment.id }, 'Provider in ambiguous state, skipping');
       } else {
         // Provider says not paid (expired/pending/failed/unknown) — safe to cancel locally
+        const effectiveProvider = resolveProvider(payment);
         await payment.update({
           status: 'cancelled',
+          provider: effectiveProvider,
           metadata: {
             ...payment.metadata,
             cancelledAt: new Date().toISOString(),
@@ -62,19 +64,30 @@ export async function run() {
 
 // Returns: 'paid' | 'unpaid' | 'skip' | 'no_provider'
 async function checkProviderStatus(payment) {
-  const provider = payment.provider;
+  const effectiveProvider = resolveProvider(payment);
   const txId = payment.providerTransactionId;
 
-  if (!provider || provider === 'pending') return 'no_provider';
+  if (!effectiveProvider || effectiveProvider === 'pending') return 'no_provider';
   if (!txId) return 'no_provider';
 
-  if (provider === 'paddle') {
+  if (effectiveProvider === 'paddle') {
     return checkPaddleStatus(txId, payment);
-  } else if (provider === 'turinvoice') {
+  } else if (effectiveProvider === 'turinvoice') {
     return checkTurInvoiceStatus(payment);
   }
 
   return 'no_provider';
+}
+
+// Resolve the real provider by cross-checking metadata signals.
+// Historical bug: some TurInvoice orders were saved with provider='paddle'
+// because createPayment hardcoded 'paddle' and the old createTurInvoiceCheckout
+// did not update the column. Use metadata.turInvoiceIdOrder as the source of
+// truth when present.
+function resolveProvider(payment) {
+  if (payment.metadata?.turInvoiceIdOrder) return 'turinvoice';
+  if (payment.metadata?.provider === 'turinvoice') return 'turinvoice';
+  return payment.provider;
 }
 
 async function checkPaddleStatus(transactionId, payment) {
@@ -197,8 +210,10 @@ async function reconcileAsPaid(payment) {
     const { processPaddleWebhook } = await import('../services/paymentService.js');
 
     // Mark as completed — the webhook handler will take care of eSIM purchase
+    const effectiveProvider = resolveProvider(payment);
     await payment.update({
       status: 'completed',
+      provider: effectiveProvider,
       metadata: {
         ...payment.metadata,
         reconciledAt: new Date().toISOString(),
