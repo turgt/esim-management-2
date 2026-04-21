@@ -65,9 +65,13 @@
       <i data-lucide="building-2" class="w-5 h-5"></i>
       <span>Agencies</span>
     </a>
-    <a href="/admin/webhook-logs" class="<%= (typeof title === 'string' && title.indexOf('Webhook') !== -1) ? 'active' : '' %>">
+    <a href="/admin/webhook-logs" class="<%= title === 'Webhook Logs' ? 'active' : '' %>">
       <i data-lucide="webhook" class="w-5 h-5"></i>
-      <span>Webhooks</span>
+      <span>Airalo</span>
+    </a>
+    <a href="/admin/payment-webhooks" class="<%= title === 'Payment Webhooks' ? 'active' : '' %>">
+      <i data-lucide="credit-card" class="w-5 h-5"></i>
+      <span>Pay Hook</span>
     </a>
     <a href="/offers" class="tabbar-back-app">
       <i data-lucide="arrow-left" class="w-5 h-5"></i>
