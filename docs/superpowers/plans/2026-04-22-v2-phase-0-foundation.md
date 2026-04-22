@@ -2,13 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Scaffold a brand-new parallel repo `esim-platform-v2` with the production-grade foundation defined in Section 7 Phase 0 of the design spec, deployable to Railway staging with magic-link login working end-to-end.
+**Goal:** Scaffold a brand-new parallel repo `datapatch-v2` with the production-grade foundation defined in Section 7 Phase 0 of the design spec, deployable to Railway staging with magic-link login working end-to-end.
 
 **Architecture:** Single Next.js 15 App Router application with TypeScript strict, multi-tenant-ready Prisma schema skeleton, Auth.js v5 magic-link via Nodemailer (Mailpit in dev, Resend SMTP in prod), Docker compose for local dev (Postgres + Redis + Mailpit), and GitHub Actions CI that runs on every PR. This phase produces a deployable "hello world" app; no business logic yet.
 
 **Tech Stack:** Node 20 LTS, pnpm, Next.js 15, TypeScript strict, Tailwind v4, shadcn/ui, Prisma, Postgres 16, Redis, Auth.js v5, Nodemailer, Resend (SMTP), Zod, Vitest, Playwright, Docker, GitHub Actions, Railway, Neon.
 
-**Target repo path:** `/Users/turgt/Desktop/CODES/esim-platform-v2` (sibling to current V1 repo — V1 stays untouched).
+**Target repo path:** `/Users/turgt/Desktop/CODES/datapatch-v2` (sibling to current V1 repo — V1 stays untouched).
 
 **Exit criterion:**
 1. `pnpm dev` locally: home page loads, magic link can be sent and caught in Mailpit, clicking link logs you in, `/dashboard` shows your email.
@@ -21,7 +21,7 @@
 ## File Structure (created by this plan)
 
 ```
-esim-platform-v2/
+datapatch-v2/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                          # lint + typecheck + test + build
@@ -89,16 +89,16 @@ esim-platform-v2/
 ## Task 1: Create repo, README, LICENSE, .gitignore
 
 **Files:**
-- Create: `/Users/turgt/Desktop/CODES/esim-platform-v2/README.md`
-- Create: `/Users/turgt/Desktop/CODES/esim-platform-v2/LICENSE`
-- Create: `/Users/turgt/Desktop/CODES/esim-platform-v2/.gitignore`
-- Create: `/Users/turgt/Desktop/CODES/esim-platform-v2/.nvmrc`
+- Create: `/Users/turgt/Desktop/CODES/datapatch-v2/README.md`
+- Create: `/Users/turgt/Desktop/CODES/datapatch-v2/LICENSE`
+- Create: `/Users/turgt/Desktop/CODES/datapatch-v2/.gitignore`
+- Create: `/Users/turgt/Desktop/CODES/datapatch-v2/.nvmrc`
 
 - [ ] **Step 1.1: Create repo directory and initialize git**
 
 ```bash
-mkdir -p /Users/turgt/Desktop/CODES/esim-platform-v2
-cd /Users/turgt/Desktop/CODES/esim-platform-v2
+mkdir -p /Users/turgt/Desktop/CODES/datapatch-v2
+cd /Users/turgt/Desktop/CODES/datapatch-v2
 git init --initial-branch=main
 ```
 
@@ -163,7 +163,7 @@ tmp/
 - [ ] **Step 1.4: Write `README.md`**
 
 ```markdown
-# esim-platform-v2
+# datapatch-v2
 
 Parallel V2 rebuild of the eSIM management platform (see V1: esim-management-2).
 See `docs/superpowers/specs/` in the V1 repo for the target architecture design.
@@ -215,7 +215,7 @@ SOFTWARE.
 - [ ] **Step 1.6: Verify + commit**
 
 ```bash
-cd /Users/turgt/Desktop/CODES/esim-platform-v2
+cd /Users/turgt/Desktop/CODES/datapatch-v2
 ls -la
 git add .
 git commit -m "chore: initial repo scaffold"
@@ -234,7 +234,7 @@ Expected: files present, one commit on main.
 - [ ] **Step 2.1: Run create-next-app**
 
 ```bash
-cd /Users/turgt/Desktop/CODES/esim-platform-v2
+cd /Users/turgt/Desktop/CODES/datapatch-v2
 pnpm dlx create-next-app@latest . \
   --typescript \
   --tailwind \
@@ -644,7 +644,7 @@ export const env: Env = loadEnv();
 
 ```
 # --- Database ---
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/esim_v2?schema=public"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/datapatch_v2?schema=public"
 
 # --- Auth.js ---
 # Generate with: openssl rand -base64 32
@@ -667,7 +667,7 @@ REDIS_URL="redis://localhost:6379"
 ```bash
 cat > .env.local <<'EOF'
 NODE_ENV=development
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/esim_v2?schema=public
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/datapatch_v2?schema=public
 NEXTAUTH_SECRET=$(openssl rand -base64 32 | tr -d '\n')
 NEXTAUTH_URL=http://localhost:3000
 EMAIL_SERVER_HOST=localhost
@@ -748,12 +748,12 @@ Do NOT commit `.env.local` — it's gitignored.
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: esim-v2-postgres
+    container_name: datapatch-v2-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: esim_v2
+      POSTGRES_DB: datapatch_v2
     ports:
       - '5432:5432'
     volumes:
@@ -766,7 +766,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: esim-v2-redis
+    container_name: datapatch-v2-redis
     restart: unless-stopped
     ports:
       - '6379:6379'
@@ -780,7 +780,7 @@ services:
 
   mailpit:
     image: axllent/mailpit:latest
-    container_name: esim-v2-mailpit
+    container_name: datapatch-v2-mailpit
     restart: unless-stopped
     ports:
       - '1025:1025' # SMTP
@@ -1032,7 +1032,7 @@ Expected: migration created under `prisma/migrations/<timestamp>_init/` with SQL
 - [ ] **Step 8.6: Verify tables exist**
 
 ```bash
-docker compose exec postgres psql -U postgres -d esim_v2 -c '\dt'
+docker compose exec postgres psql -U postgres -d datapatch_v2 -c '\dt'
 ```
 
 Expected: lists `users`, `tenants`, `user_tenant_memberships`, `audit_logs`, `accounts`, `sessions`, `verification_tokens`, `_prisma_migrations`.
@@ -1307,7 +1307,7 @@ import { beforeAll } from 'vitest';
 
 beforeAll(() => {
   process.env.NODE_ENV = 'test';
-  process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/esim_v2_test?schema=public';
+  process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/datapatch_v2_test?schema=public';
   process.env.NEXTAUTH_SECRET = 'test-secret-'.padEnd(32, 'x');
   process.env.NEXTAUTH_URL = 'http://localhost:3000';
   process.env.EMAIL_SERVER_HOST = 'localhost';
@@ -1602,7 +1602,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: esim_v2_test
+          POSTGRES_DB: datapatch_v2_test
         ports: ['5432:5432']
         options: >-
           --health-cmd "pg_isready -U postgres"
@@ -1611,7 +1611,7 @@ jobs:
           --health-retries 10
     env:
       NODE_ENV: test
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/esim_v2_test?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/datapatch_v2_test?schema=public
       NEXTAUTH_SECRET: ci-secret-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
       NEXTAUTH_URL: http://localhost:3000
       EMAIL_SERVER_HOST: localhost
@@ -1662,7 +1662,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: esim_v2_test
+          POSTGRES_DB: datapatch_v2_test
         ports: ['5432:5432']
         options: >-
           --health-cmd "pg_isready -U postgres"
@@ -1679,7 +1679,7 @@ jobs:
           MP_SMTP_AUTH_ALLOW_INSECURE: '1'
     env:
       NODE_ENV: test
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/esim_v2_test?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/datapatch_v2_test?schema=public
       NEXTAUTH_SECRET: ci-secret-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
       NEXTAUTH_URL: http://localhost:3000
       EMAIL_SERVER_HOST: localhost
@@ -1712,12 +1712,12 @@ jobs:
 
 Create the GitHub repo first (manual):
 ```bash
-gh repo create esim-platform-v2 --private --source=. --remote=origin --push
+gh repo create datapatch-v2 --private --source=. --remote=origin --push
 ```
 
 If `gh` not available: create empty private repo on GitHub, then:
 ```bash
-git remote add origin git@github.com:turgt/esim-platform-v2.git
+git remote add origin git@github.com:turgt/datapatch-v2.git
 git push -u origin main
 ```
 
@@ -1815,11 +1815,11 @@ CMD ["node", "server.js"]
 - [ ] **Step 13.3: Build + test locally**
 
 ```bash
-docker build -t esim-v2:local .
+docker build -t datapatch-v2:local .
 # Run with dev DB
 docker run --rm -p 3001:3000 \
   --network host \
-  -e DATABASE_URL="postgresql://postgres:postgres@localhost:5432/esim_v2?schema=public" \
+  -e DATABASE_URL="postgresql://postgres:postgres@localhost:5432/datapatch_v2?schema=public" \
   -e NEXTAUTH_SECRET="$(openssl rand -base64 32 | tr -d '\n')" \
   -e NEXTAUTH_URL="http://localhost:3001" \
   -e EMAIL_SERVER_HOST="localhost" \
@@ -1828,7 +1828,7 @@ docker run --rm -p 3001:3000 \
   -e EMAIL_SERVER_PASSWORD="" \
   -e EMAIL_FROM="noreply@local" \
   -e REDIS_URL="redis://localhost:6379" \
-  esim-v2:local
+  datapatch-v2:local
 ```
 
 Visit http://localhost:3001 — should load the home page. `Ctrl+C` to stop.
@@ -1904,13 +1904,13 @@ Insert above the existing `@prisma` COPY line in `Dockerfile`.
 
 Manual steps (user executes):
 
-1. Go to https://console.neon.tech → create project "esim-platform-v2-staging".
+1. Go to https://console.neon.tech → create project "datapatch-v2-staging".
 2. Copy the **pooled** connection string (Neon gives you pooled + direct; use pooled for app).
 3. Also copy the **direct** (unpooled) URL — Prisma migrations need it. Neon dashboard shows both.
 
 - [ ] **Step 14.4: Provision Upstash Redis (manual)**
 
-1. Go to https://console.upstash.com → create Redis database "esim-v2-staging".
+1. Go to https://console.upstash.com → create Redis database "datapatch-v2-staging".
 2. Copy the `UPSTASH_REDIS_REST_URL` OR the standard `redis://...` TCP URL (we use the TCP URL for BullMQ compatibility later).
 
 - [ ] **Step 14.5: Create Railway project + service (manual)**
@@ -1918,9 +1918,9 @@ Manual steps (user executes):
 ```bash
 # Install Railway CLI if not installed
 pnpm dlx @railway/cli login
-cd /Users/turgt/Desktop/CODES/esim-platform-v2
+cd /Users/turgt/Desktop/CODES/datapatch-v2
 pnpm dlx @railway/cli init
-# When prompted, create a new project "esim-platform-v2"
+# When prompted, create a new project "datapatch-v2"
 pnpm dlx @railway/cli link
 ```
 
