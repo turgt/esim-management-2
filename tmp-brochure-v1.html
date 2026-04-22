@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataPatch A6 Brochure — Print Ready</title>
+<link href="https://api.fontshare.com/v2/css?f[]=boska@400,500,700&f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Satoshi', sans-serif;
+    background: #e8e4df;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+  .page-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #78716c;
+    margin-bottom: 24px;
+    letter-spacing: 0.5px;
+  }
+  .page-size {
+    margin-top: 20px;
+    font-size: 11px;
+    color: #a8a29e;
+  }
+
+  /* A6 at ~3.2x */
+  .card {
+    width: 504px;
+    height: 710px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow:
+      0 1px 3px rgba(0,0,0,0.06),
+      0 8px 30px rgba(0,0,0,0.12),
+      0 20px 60px rgba(0,0,0,0.08);
+  }
+
+  /* ===== TOP: Orange band with eSIM identity ===== */
+  .top-band {
+    background: #ea580c;
+    padding: 20px 28px 0;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  /* Signal wave arcs — decorative, print-safe */
+  .signal-waves {
+    position: absolute;
+    top: 8px; right: 18px;
+    width: 100px; height: 100px;
+    pointer-events: none;
+  }
+  .signal-waves .arc {
+    position: absolute;
+    border: 2.5px solid rgba(255,255,255,0.2);
+    border-radius: 50%;
+    border-left-color: transparent;
+    border-bottom-color: transparent;
+    transform: rotate(-45deg);
+  }
+  .signal-waves .arc:nth-child(1) { width: 30px; height: 30px; top: 36px; right: 36px; border-color: rgba(255,255,255,0.35); border-left-color: transparent; border-bottom-color: transparent; }
+  .signal-waves .arc:nth-child(2) { width: 52px; height: 52px; top: 25px; right: 25px; }
+  .signal-waves .arc:nth-child(3) { width: 74px; height: 74px; top: 14px; right: 14px; border-color: rgba(255,255,255,0.12); border-left-color: transparent; border-bottom-color: transparent; }
+  .signal-waves .arc:nth-child(4) { width: 96px; height: 96px; top: 3px; right: 3px; border-color: rgba(255,255,255,0.07); border-left-color: transparent; border-bottom-color: transparent; }
+
+  .top-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    position: relative;
+    z-index: 1;
+  }
+  .top-row svg { width: 32px; height: 32px; }
+  .top-brand {
+    font-weight: 700;
+    font-size: 17px;
+    color: #fff;
+    letter-spacing: -0.2px;
+  }
+
+  /* Giant eSIM text */
+  .esim-hero {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    padding-bottom: 18px;
+  }
+  .esim-text {
+    font-family: 'Satoshi', sans-serif;
+    font-size: 82px;
+    font-weight: 900;
+    line-height: 0.85;
+    letter-spacing: -3px;
+    color: #fff;
+  }
+  .esim-text .e-letter {
+    color: #fde1c5;
+  }
+  .esim-chip {
+    flex-shrink: 0;
+    margin-bottom: 6px;
+  }
+
+  /* ===== SIM CHIP ILLUSTRATION ===== */
+  .chip-visual {
+    position: relative;
+    width: 68px;
+    height: 52px;
+  }
+  .chip-body {
+    width: 68px;
+    height: 52px;
+    border-radius: 8px;
+    border: 2.5px solid #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Chip contact pads */
+  .chip-body::before {
+    content: '';
+    position: absolute;
+    top: 8px; left: 8px; right: 8px; bottom: 8px;
+    border: 1.5px solid rgba(255,255,255,0.5);
+    border-radius: 3px;
+  }
+  .chip-body::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 8px; right: 8px;
+    height: 1.5px;
+    background: rgba(255,255,255,0.4);
+    transform: translateY(-0.5px);
+  }
+  .chip-vline {
+    position: absolute;
+    top: 8px; bottom: 8px;
+    left: 50%;
+    width: 1.5px;
+    background: rgba(255,255,255,0.4);
+    transform: translateX(-0.5px);
+  }
+  .chip-hline2 {
+    position: absolute;
+    top: 25%;
+    left: 8px; width: 44%;
+    height: 1.5px;
+    background: rgba(255,255,255,0.25);
+  }
+  .chip-hline3 {
+    position: absolute;
+    bottom: 25%;
+    right: 8px; width: 44%;
+    height: 1.5px;
+    background: rgba(255,255,255,0.25);
+  }
+  /* "e" badge on chip */
+  .chip-e {
+    position: absolute;
+    bottom: -6px; right: -6px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    color: #ea580c;
+    font-family: 'Boska', serif;
+    font-size: 14px;
+    font-weight: 700;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  /* ===== HEADLINE SECTION (white) ===== */
+  .headline-section {
+    padding: 22px 28px 0;
+    position: relative;
+  }
+  /* Circuit trace decoration */
+  .circuit-trace {
+    position: absolute;
+    top: 0; left: 28px;
+    width: 2px; height: 22px;
+    background: #ea580c;
+  }
+  .circuit-trace::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 40px; height: 2px;
+    background: #ea580c;
+  }
+
+  .headline-section h2 {
+    font-family: 'Boska', serif;
+    font-size: 34px;
+    font-weight: 700;
+    color: #1c1917;
+    line-height: 1.1;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+  .headline-section h2 em {
+    font-style: italic;
+    color: #ea580c;
+  }
+  .headline-section p {
+    font-size: 13px;
+    color: #78716c;
+    line-height: 1.5;
+    max-width: 360px;
+  }
+  .headline-section p strong {
+    color: #1c1917;
+    font-weight: 700;
+  }
+
+  /* ===== QR + STEPS ===== */
+  .content {
+    flex: 1;
+    padding: 18px 28px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .qr-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .qr-frame {
+    width: 140px; height: 140px;
+    border-radius: 14px;
+    border: 2.5px solid #1c1917;
+    padding: 9px;
+    background: #fff;
+    position: relative;
+  }
+  /* Orange corner brackets */
+  .qr-corner {
+    position: absolute;
+    width: 18px; height: 18px;
+  }
+  .qr-corner::before,
+  .qr-corner::after {
+    content: '';
+    position: absolute;
+    background: #ea580c;
+  }
+  .qr-corner.tl { top: -1px; left: -1px; }
+  .qr-corner.tl::before { top: 0; left: 0; width: 18px; height: 3px; border-radius: 2px 0 0 0; }
+  .qr-corner.tl::after  { top: 0; left: 0; width: 3px; height: 18px; border-radius: 2px 0 0 0; }
+  .qr-corner.tr { top: -1px; right: -1px; }
+  .qr-corner.tr::before { top: 0; right: 0; width: 18px; height: 3px; }
+  .qr-corner.tr::after  { top: 0; right: 0; width: 3px; height: 18px; }
+  .qr-corner.bl { bottom: -1px; left: -1px; }
+  .qr-corner.bl::before { bottom: 0; left: 0; width: 18px; height: 3px; }
+  .qr-corner.bl::after  { bottom: 0; left: 0; width: 3px; height: 18px; }
+  .qr-corner.br { bottom: -1px; right: -1px; }
+  .qr-corner.br::before { bottom: 0; right: 0; width: 18px; height: 3px; }
+  .qr-corner.br::after  { bottom: 0; right: 0; width: 3px; height: 18px; }
+
+  .qr-pattern {
+    width: 100%; height: 100%;
+    background: repeating-conic-gradient(#1c1917 0% 25%, #fff 0% 50%) 0 0 / 10px 10px;
+    border-radius: 6px;
+    position: relative;
+  }
+  .qr-logo {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 30px; height: 30px;
+    background: #fff; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 4px #fff;
+  }
+  .qr-logo svg { width: 20px; height: 20px; }
+
+  .scan-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .scan-line {
+    width: 10px; height: 2px;
+    background: #ea580c;
+    border-radius: 1px;
+  }
+  .scan-text {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    color: #1c1917;
+  }
+
+  /* Steps */
+  .steps-col {
+    flex: 1;
+    padding-top: 2px;
+  }
+  .steps-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #ea580c;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .steps-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #ece9e4;
+  }
+  .step {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .step-n {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: #1c1917;
+    color: #fff;
+    font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-body {
+    padding-top: 3px;
+  }
+  .step-body strong {
+    font-weight: 700;
+    color: #1c1917;
+    font-size: 14px;
+    display: block;
+    line-height: 1.2;
+  }
+  .step-body span {
+    font-size: 12px;
+    color: #78716c;
+    line-height: 1.3;
+  }
+
+  /* No SIM callout */
+  .callout {
+    margin-top: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1.5px solid #ea580c;
+    border-radius: 8px;
+    padding: 6px 10px;
+  }
+  .callout-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #ea580c;
+    flex-shrink: 0;
+  }
+  .callout span {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ea580c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    background: #1c1917;
+    padding: 12px 28px 14px;
+    flex-shrink: 0;
+  }
+  .footer-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .footer-label {
+    font-size: 9px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .footer-url {
+    font-weight: 700;
+    font-size: 13px;
+    color: #f97316;
+  }
+
+  .pay-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+  }
+  .pc {
+    height: 28px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .pc svg { display: block; }
+  .pc-visa { background: #1a1f71; width: 50px; padding: 5px 6px; }
+  .pc-mc { background: #1a1a1a; width: 50px; padding: 2px 4px; }
+  .pc-apple { background: #000; width: 50px; border: 1px solid #333; padding: 2px 2px; }
+  .pc-sbp { background: #fff; width: 50px; padding: 2px 4px; }
+  .pc-mir { background: #fff; width: 50px; padding: 4px 3px; }
+
+  /* ===== PRINT MEDIA ===== */
+  @media print {
+    body { background: none; padding: 0; }
+    .card {
+      box-shadow: none;
+      border-radius: 0;
+      width: 105mm;
+      height: 148mm;
+    }
+    .page-label, .page-size { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-label">Print-optimized &bull; Hotel Reception Stand</div>
+
+<div class="card">
+
+  <!-- ===== ORANGE BAND — eSIM HERO ===== -->
+  <div class="top-band">
+    <!-- Signal wave arcs -->
+    <div class="signal-waves">
+      <div class="arc"></div>
+      <div class="arc"></div>
+      <div class="arc"></div>
+      <div class="arc"></div>
+    </div>
+
+    <!-- Logo -->
+    <div class="top-row">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+        <circle cx="32" cy="32" r="30" fill="rgba(255,255,255,0.2)"/>
+        <ellipse cx="32" cy="32" rx="12" ry="30" fill="none" stroke="#fff" stroke-width="1" opacity=".35"/>
+        <line x1="2" y1="32" x2="62" y2="32" stroke="#fff" stroke-width=".8" opacity=".35"/>
+        <rect x="20" y="20" width="24" height="24" rx="4" fill="none" stroke="#fff" stroke-width="2.5"/>
+        <line x1="32" y1="20" x2="32" y2="44" stroke="#fff" stroke-width="1" opacity=".5"/>
+        <line x1="20" y1="32" x2="44" y2="32" stroke="#fff" stroke-width="1" opacity=".5"/>
+      </svg>
+      <div class="top-brand">DataPatch</div>
+    </div>
+
+    <!-- Giant eSIM + chip illustration -->
+    <div class="esim-hero">
+      <div class="esim-text"><span class="e-letter">e</span>SIM</div>
+      <div class="esim-chip">
+        <div class="chip-visual">
+          <div class="chip-body">
+            <div class="chip-vline"></div>
+            <div class="chip-hline2"></div>
+            <div class="chip-hline3"></div>
+          </div>
+          <div class="chip-e">e</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== HEADLINE (white) ===== -->
+  <div class="headline-section">
+    <div class="circuit-trace"></div>
+    <h2>Instant data,<br><em>zero hassle.</em></h2>
+    <p>Get connected in <strong>200+ countries</strong> in seconds. No SIM swap, no roaming fees — just scan and go.</p>
+  </div>
+
+  <!-- ===== QR + STEPS ===== -->
+  <div class="content">
+    <div class="qr-col">
+      <div class="qr-frame">
+        <div class="qr-corner tl"></div>
+        <div class="qr-corner tr"></div>
+        <div class="qr-corner bl"></div>
+        <div class="qr-corner br"></div>
+        <div class="qr-pattern">
+          <div class="qr-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+              <defs><linearGradient id="ql" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#ea580c"/><stop offset="100%" stop-color="#f97316"/></linearGradient></defs>
+              <circle cx="32" cy="32" r="30" fill="url(#ql)"/>
+              <rect x="20" y="20" width="24" height="24" rx="4" fill="none" stroke="#fff" stroke-width="2.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="scan-label">
+        <div class="scan-line"></div>
+        <div class="scan-text">Scan me</div>
+        <div class="scan-line"></div>
+      </div>
+    </div>
+
+    <div class="steps-col">
+      <div class="steps-title">How it works</div>
+      <div class="step">
+        <div class="step-n">1</div>
+        <div class="step-body">
+          <strong>Scan</strong>
+          <span>Point your camera at the QR code</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">2</div>
+        <div class="step-body">
+          <strong>Choose a plan</strong>
+          <span>Pick the data package for your trip</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-n">3</div>
+        <div class="step-body">
+          <strong>Get online</strong>
+          <span>Activate and connect instantly</span>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-dot"></div>
+        <span>No physical SIM needed</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER (dark, thin) ===== -->
+  <div class="footer">
+    <div class="footer-top">
+      <span class="footer-label">We accept</span>
+      <div class="footer-url">datapatch.net</div>
+    </div>
+    <div class="pay-row">
+      <!-- VISA -->
+      <div class="pc pc-visa">
+        <svg viewBox="0.5 0.5 999 323.684" fill="none" xmlns="http://www.w3.org/2000/svg" width="36">
+          <path d="M651.185.5c-70.933 0-134.322 36.766-134.322 104.694 0 77.9 112.423 83.28 112.423 122.415 0 16.478-18.884 31.229-51.137 31.229-45.773 0-79.984-20.611-79.984-20.611l-14.638 68.547s39.41 17.41 91.734 17.41c77.552 0 138.576-38.572 138.576-107.66 0-82.316-112.89-87.537-112.89-123.86 0-12.91 15.501-27.053 47.662-27.053 36.286 0 65.892 14.99 65.892 14.99l14.326-66.204S696.614.5 651.185.5zM2.218 5.497L.5 15.49s29.842 5.461 56.719 16.356c34.606 12.492 37.072 19.765 42.9 42.353l63.51 244.832h85.138L379.927 5.497h-84.942L210.707 218.67l-34.39-180.696c-3.154-20.68-19.13-32.477-38.685-32.477H2.218zm411.865 0L347.449 319.03h80.999l66.4-313.534h-80.765zm451.759 0c-19.532 0-29.88 10.457-37.474 28.73L709.699 319.03h84.942l16.434-47.468h103.483l9.994 47.468H999.5L934.115 5.497h-68.273zm11.047 84.707l25.178 117.653h-67.454z" fill="#fff"/>
+        </svg>
+      </div>
+      <!-- MASTERCARD -->
+      <div class="pc pc-mc">
+        <svg viewBox="18 14 84 52" fill="none" xmlns="http://www.w3.org/2000/svg" width="42">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M49.6521 58.595H70.3479V21.4044H49.6521V58.595Z" fill="#FF5F00"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M50.966 40.0003C50.966 32.4552 54.4988 25.7354 59.9999 21.4044C55.977 18.2376 50.9003 16.348 45.3828 16.348C32.3208 16.348 21.7324 26.937 21.7324 40.0003C21.7324 53.063 32.3208 63.652 45.3828 63.652C50.9003 63.652 55.977 61.7624 59.9999 58.5956C54.4988 54.2646 50.966 47.5448 50.966 40.0003Z" fill="#EB001B"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M98.2675 40.0003C98.2675 53.063 87.6791 63.652 74.6171 63.652C69.0996 63.652 64.0229 61.7624 60 58.5956C65.5011 54.2646 69.0339 47.5448 69.0339 40.0003C69.0339 32.4552 65.5011 25.7354 60 21.4044C64.0229 18.2376 69.0996 16.348 74.6171 16.348C87.6791 16.348 98.2675 26.937 98.2675 40.0003Z" fill="#F79E1B"/>
+        </svg>
+      </div>
+      <!-- APPLE PAY -->
+      <div class="pc pc-apple">
+        <svg viewBox="13 19 95 42" fill="none" xmlns="http://www.w3.org/2000/svg" width="44">
+          <path d="M31.7358 25.6955C32.8058 24.3572 33.5319 22.5603 33.3404 20.724C31.7741 20.8019 29.8627 21.7573 28.7562 23.0967C27.7626 24.2436 26.8832 26.1158 27.1124 27.8751C28.8707 28.0276 30.6273 26.9962 31.7358 25.6955Z" fill="white"/>
+          <path d="M33.3204 28.2186C30.7671 28.0665 28.5961 29.6678 27.3767 29.6678C26.1567 29.6678 24.2894 28.2952 22.2698 28.3322C19.6412 28.3708 17.2022 29.8571 15.8682 32.2209C13.1246 36.9497 15.1442 43.9642 17.8122 47.8155C19.1079 49.7209 20.6694 51.8189 22.7269 51.7435C24.6709 51.6672 25.4328 50.4847 27.7958 50.4847C30.1571 50.4847 30.8435 51.7435 32.9013 51.7054C35.0353 51.6672 36.3695 49.799 37.6651 47.8918C39.1515 45.7198 39.7599 43.6225 39.7982 43.5073C39.7599 43.4692 35.6832 41.9053 35.6454 37.2158C35.6069 33.2892 38.8461 31.4215 38.9985 31.3057C37.1694 28.6003 34.3113 28.2952 33.3204 28.2186Z" fill="white"/>
+          <path d="M55.5533 22.9046C61.103 22.9046 64.9675 26.7301 64.9675 32.2997C64.9675 37.8892 61.0235 41.7345 55.4142 41.7345H49.2696V51.5062H44.8301V22.9046L55.5533 22.9046ZM49.2695 38.0081H54.3635C58.2288 38.0081 60.4286 35.9271 60.4286 32.3196C60.4286 28.7124 58.2288 26.6509 54.3834 26.6509H49.2695V38.0081Z" fill="white"/>
+          <path d="M66.1274 45.5799C66.1274 41.9326 68.9222 39.6929 73.8778 39.4154L79.5858 39.0786V37.4732C79.5858 35.1541 78.0198 33.7666 75.404 33.7666C72.9258 33.7666 71.3797 34.9556 71.0035 36.8191H66.9601C67.1979 33.0528 70.4086 30.278 75.5623 30.278C80.6165 30.278 83.8471 32.9538 83.8471 37.136V51.5062H79.7441V48.0772H79.6454C78.4365 50.3963 75.8001 51.8629 73.065 51.8629C68.9818 51.8629 66.1274 49.3258 66.1274 45.5799ZM79.5858 43.697V42.0518L74.452 42.3688C71.8951 42.5473 70.4484 43.6771 70.4484 45.461C70.4484 47.2842 71.9547 48.4736 74.254 48.4736C77.2468 48.4736 79.5858 46.4122 79.5858 43.697Z" fill="white"/>
+          <path d="M87.7206 59.177V55.7082C88.0372 55.7874 88.7506 55.7874 89.1077 55.7874C91.0896 55.7874 92.1601 54.9551 92.8139 52.8145C92.8139 52.7747 93.1908 51.5459 93.1908 51.5261L85.6592 30.6546H90.2967L95.5696 47.6214H95.6484L100.921 30.6546H105.44L97.6303 52.5962C95.8472 57.6508 93.7857 59.276 89.4648 59.276C89.1077 59.276 88.0372 59.2363 87.7206 59.177Z" fill="white"/>
+        </svg>
+      </div>
+      <!-- SBP -->
+      <div class="pc pc-sbp">
+        <svg viewBox="-2 0 102 120" fill="none" xmlns="http://www.w3.org/2000/svg" width="22">
+          <path d="M0 26.12l14.532 25.975v15.844L.017 93.863z" fill="#5b57a2"/>
+          <path d="M55.797 42.643l13.617-8.346 27.868-.026-41.485 25.414z" fill="#d90751"/>
+          <path d="M55.72 25.967l.077 34.39-14.566-8.95V0l14.49 25.967z" fill="#fab718"/>
+          <path d="M97.282 34.271l-27.869.026-13.693-8.33L41.231 0l56.05 34.271z" fill="#ed6f26"/>
+          <path d="M55.797 94.007V77.322l-14.566-8.78.008 51.458z" fill="#63b22f"/>
+          <path d="M69.38 85.737L14.531 52.095 0 26.12l97.223 59.583-27.844.034z" fill="#1487c9"/>
+          <path d="M41.24 120l14.556-25.993 13.583-8.27 27.843-.034z" fill="#017f36"/>
+          <path d="M.017 93.863l41.333-25.32-13.896-8.526-12.922 7.922z" fill="#984995"/>
+        </svg>
+      </div>
+      <!-- MIR -->
+      <div class="pc pc-mir">
+        <svg viewBox="20 5 375 110" xmlns="http://www.w3.org/2000/svg" width="38">
+          <defs><linearGradient id="mg" x1="370" x2="290" gradientUnits="userSpaceOnUse"><stop stop-color="#1F5CD7"/><stop stop-color="#02AEFF" offset="1"/></linearGradient></defs>
+          <path d="m31 13h33c3 0 12-1 16 13 3 9 7 23 13 44h2c6-22 11-37 13-44 4-14 14-13 18-13h31v96h-32v-57h-2l-17 57h-24l-17-57h-3v57h-31m139-96h32v57h3l21-47c4-9 13-10 13-10h30v96h-32v-57h-2l-21 47c-4 9-14 10-14 10h-30m142-29v29h-30v-50h98c-4 12-18 21-34 21" fill="#0f754e"/>
+          <path d="m382 53c4-18-8-40-34-40h-68c2 21 20 40 39 40" fill="url(#mg)"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-size">A6 &bull; 105 &times; 148 mm &bull; Print-ready &bull; CMYK-safe colors</div>
+
+</body>
+</html>

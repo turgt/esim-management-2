@@ -19,7 +19,15 @@
       "Bash(python3:*)",
       "Bash(python:*)",
       "Bash(npx playwright:*)",
-      "WebFetch(domain:developer.paddle.com)"
+      "WebFetch(domain:developer.paddle.com)",
+      "Bash(railway ssh:*)",
+      "Bash(railway run:*)",
+      "Bash(railway status:*)",
+      "Bash(railway service:*)",
+      "Bash(railway variables:*)",
+      "Bash(railway list)",
+      "Bash(railway connect:*)",
+      "Bash(git push:*)"
     ]
   }
 }
