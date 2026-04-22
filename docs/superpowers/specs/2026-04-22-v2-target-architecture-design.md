@@ -48,8 +48,8 @@ User selected option 6 from the brainstorm — "hepsi bir arada": code quality +
 | UI | Tailwind v4 + shadcn/ui (Radix primitives) |
 | ORM | Prisma |
 | Auth | Auth.js v5 (NextAuth) + Prisma adapter |
-| DB | Postgres 16 (Neon prod, Docker dev) |
-| Cache + queue | Upstash Redis (prod), Docker Redis (dev) |
+| DB | Postgres 16 (Railway-native prod, Docker dev) |
+| Cache + queue | Redis 7 (Railway-native prod, Docker dev) |
 | Background jobs | BullMQ |
 | Storage | Cloudflare R2 (S3-compatible) |
 | Email | Resend |
@@ -189,7 +189,7 @@ type Role =
 - Format: `ak_live_<24char>` / `ak_test_<24char>`.
 - Storage: hashed only (plaintext returned once at creation).
 - Per-key scopes (`bookings:read`, `bookings:write`, `esims:read`).
-- Per-key rate limit (Upstash `@upstash/ratelimit`).
+- Per-key rate limit (`@upstash/ratelimit` library, works with any Redis — backed by Railway Redis in prod).
 - Last-used tracking (async, batched).
 
 ---
@@ -342,7 +342,7 @@ Replaces V1's in-process `node-cron` (not cluster-safe, no retry, no observabili
 
 **Dashboard:** Bull Board at `/admin/jobs` — `platform_admin` only.
 
-**Deploy shape:** Next.js app + BullMQ worker in the same Railway service, started as two processes (via `concurrently` or `pm2`). Fits within 8GB/8vCPU budget because Postgres (Neon) and Redis (Upstash) are managed externally.
+**Deploy shape:** Next.js app + BullMQ worker in the same Railway service, started as two processes (via `concurrently` or `pm2`). Postgres and Redis run as separate Railway services in the same project, connected via Railway's private network. Fits within the 8GB/8vCPU app budget because DB and Redis each have their own Railway service with independent resources.
 
 ### 6.3 Observability
 Tuned for 8GB/8vCPU capacity; no distributed tracing at MVP.
@@ -396,7 +396,7 @@ V1 audit debts resolved structurally in V2:
 | IDOR | App-level tenant scoping + repository pattern |
 | Session fixation | Auth.js rotates on login |
 | CSP unsafe-inline | Strict CSP with nonces (Next.js built-in) |
-| Rate limit (in-memory) | Upstash `@upstash/ratelimit` |
+| Rate limit (in-memory) | `@upstash/ratelimit` against Railway Redis |
 | Webhook auth optional | Mandatory at ingest layer; no env bypass |
 | ICCID spoofing | DB-side lookup; client-supplied never trusted |
 | Price manipulation | Server-side price authority + lock |
@@ -433,7 +433,7 @@ Timeline: **10 weeks** (~2.5 months) for solo + AI-assisted.
 - Tailwind v4 + shadcn/ui init.
 - Vitest + Playwright scaffold.
 - GitHub Actions CI.
-- Railway staging environment + Neon staging DB.
+- Railway staging environment (app + Postgres + Redis services in one Railway project).
 - **Exit criterion:** "hello world" deployed; magic-link login works; CI green.
 
 ### Phase 1 — Platform Core (2 weeks)
@@ -470,7 +470,7 @@ Timeline: **10 weeks** (~2.5 months) for solo + AI-assisted.
 ### Phase 4 — Hardening + Real-Data Testing (1 week)
 - Security scan (OWASP ZAP, npm audit, Snyk).
 - Load test (k6) — 100 concurrent checkouts.
-- Backup strategy: Neon PITR + weekly logical dump to R2.
+- Backup strategy: Railway Postgres daily automatic backups + weekly `pg_dump` to R2 via Railway cron.
 - Runbook: webhook replay, tenant provision, emergency cancel, data export, DR.
 - GDPR: privacy policy, data export endpoint, delete-me flow.
 - Alert rules: Sentry + BetterStack + queue depth.
@@ -490,7 +490,7 @@ Key insight: user count is still low, so we can do a one-shot cutover. But V2 is
 
 ### Staging Phase (Phase 2 end, week ~5)
 - V2 deployed to Railway, custom domain **v2.datapatch.net** (separate service from v1).
-- Initial **prod data import** v1 Postgres snapshot → v2 schema mapping → v2 Neon.
+- Initial **prod data import** v1 Postgres snapshot → v2 schema mapping → v2 Railway Postgres.
 - Payment providers in sandbox mode.
 - Emails routed through Resend test domain + BCC internal; no real customer mail.
 - V1 continues serving production. V2 reachable with admin login for iterative testing.
