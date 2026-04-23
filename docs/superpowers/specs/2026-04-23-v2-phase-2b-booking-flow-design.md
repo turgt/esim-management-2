@@ -542,7 +542,7 @@ PADDLE_ENVIRONMENT             # 'sandbox' | 'production'
 PADDLE_DEFAULT_PRICE_ID_*      # optional — only if seed maps SKU→Paddle priceId
 AIRALO_CLIENT_ID
 AIRALO_CLIENT_SECRET
-AIRALO_BASE_URL                # 'https://sandbox-partners-api.airalo.com/v2' | prod
+AIRALO_BASE_URL                # 'https://partners-api.airalo.com/v2' | prod
 AIRALO_WEBHOOK_SECRET          # bearer + HMAC
 EMAIL_FROM                     # already used for magic link; reaffirm
 EMAIL_REPLY_TO                 # optional
