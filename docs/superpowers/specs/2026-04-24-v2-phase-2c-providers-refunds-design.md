@@ -159,21 +159,22 @@ No tenant-scoped model additions → ESLint `no-restricted-syntax` selector unch
 ### 6.1 Source
 Port from V1 `/Users/turgt/Desktop/CODES/esim-management-2/src/services/turinvoiceClient.js` (141 LOC). First task in plan is a read-through of V1 client to enumerate exposed methods and document actual field names — no assumptions here.
 
-### 6.2 PaymentProvider interface
+### 6.2 PaymentProvider interface extension
+Phase 2b shipped `PaymentProvider` as `{ id, createCheckout, verifyWebhook }` in `src/server/providers/payment/types.ts`. Phase 2c extends it by adding `refund()`:
+
 ```ts
-interface PaymentProvider {
-  createCheckout(input: {
-    order: Order;
-    returnUrl: string;
-  }): Promise<{ checkoutUrl: string; externalRef: string }>;
-
-  refund(payment: Payment): Promise<RefundResult>;
-}
-
-type RefundResult =
+export type RefundResult =
   | { ok: true; providerRefundId: string }
   | { ok: false; reason: 'already_refunded' | 'not_refundable' | 'provider_error'; message: string };
+
+export interface PaymentProvider {
+  readonly id: PaymentProviderId;
+  createCheckout(input: CreateCheckoutInput): Promise<CheckoutSession>;
+  verifyWebhook(req: NextRequest, rawBody: string): Promise<NormalizedPaymentEvent>;
+  refund(payment: Payment): Promise<RefundResult>;  // NEW
+}
 ```
+Both `paddleProvider` (existing) and `turInvoiceProvider` (new) implement `refund()`. `PaymentProviderId` union extends from `'paddle'` to `'paddle' | 'turinvoice'`.
 
 ### 6.3 Flow
 1. User picks TurInvoice radio + clicks **Pay** → server action `startCheckout(orderId, 'turinvoice')`.
@@ -190,35 +191,26 @@ type RefundResult =
    - `failed`/`cancelled` → `AWAITING_PAYMENT → FAILED`.
    - `refunded` event (external refund from TurInvoice dashboard) → `REFUND_PENDING | PAID → REFUNDED`.
 
-### 6.4 Security — callback signature
-V1 shipped with an audit finding where `TURINVOICE_CALLBACK_SECRET` unset silently bypassed verification. V2 closes this at two layers:
-- `env.ts`: `TURINVOICE_CALLBACK_SECRET: z.string().min(16)` — boot fails without secret.
-- Handler: if signature missing or mismatches, `400` and do NOT enqueue. No "optional" branch.
+### 6.4 Security — callback verification
+V1's verification scheme (confirmed by reading `src/controllers/turInvoiceController.js`): TurInvoice sends a JSON body with a plaintext `secret_key` field; V1 timing-safe compares it to `process.env.TURINVOICE_CALLBACK_SECRET`. **Not HMAC** — shared-secret field inside the body. The V1 audit finding was that if the env var was unset, the handler accepted callbacks anyway; the fix made the env var mandatory.
 
-Signature scheme inherits V1's (confirm HMAC algorithm + header name during V1 read-through in plan task 1).
+V2 closes it at two layers:
+- `env.ts`: `TURINVOICE_CALLBACK_SECRET: z.string().min(16)` — boot fails without secret or with a short one.
+- `verifyWebhook` implementation: compare `body.secret_key` to env value using `crypto.timingSafeEqual` on equal-length Buffers; reject `401` on any mismatch or missing field. **Strip `secret_key` from the stored `WebhookEvent.payload` JSON** (V1 sanitized it via `sanitizeTurInvoicePayload`; V2 mirrors this so secrets never hit DB).
 
 ### 6.5 Refund
-`TurInvoiceProvider.refund(payment)`:
-- If V1 client exposes a refund/void endpoint → port it. On success, return `{ok:true, providerRefundId}`.
-- If V1 has no such endpoint → `refund()` returns `{ok:false, reason:'not_refundable', message:'TurInvoice refunds must be issued manually in the provider dashboard; use Mark Cancelled after processing.'}`. Admin UI surfaces this message and disables Retry.
+V1 exposes `PUT /api/v1/tsp/refund` (confirmed in `src/services/turinvoiceClient.js::refund`) that accepts `{idOrder, amount?, description?}`. V2 `TurInvoiceProvider.refund(payment)` calls it with `{idOrder: Number(payment.externalId), description: 'Refund requested by admin'}` (full refund by omitting `amount`). Maps success → `{ok:true, providerRefundId: response.idRefund ?? String(payment.externalId)}`. Non-2xx → `{ok:false, reason:'provider_error', message: extractError(err)}`.
 
 ## 7. Zendit adapter
 
 ### 7.1 Source
 Port from V1 `/Users/turgt/Desktop/CODES/esim-management-2/src/services/zenditClient.js` (98 LOC).
 
-### 7.2 EsimProvider interface
-```ts
-interface EsimProvider {
-  listPackages(): Promise<ProviderPackage[]>;
-  createEsim(input: {
-    packageExternalId: string;
-    orderId: string;
-  }): Promise<{ iccid: string; activationCode: string; qrCodeUrl: string }>;
-  getStatus(iccid: string): Promise<EsimStatus>;
-  getUsage(iccid: string): Promise<{ usedBytes: bigint; totalBytes: bigint | null }>;
-}
-```
+### 7.2 EsimProvider interface (unchanged from Phase 2b)
+Phase 2b shipped `EsimProvider` as `{ id, purchase, getStatus, syncPackages, verifyWebhook }`. Zendit implements all five.
+- `syncPackages()` populates `ProviderPackage` rows with `providerId='zendit'` — those rows power the admin assign picker.
+- `getStatus(iccid)` returns `{status: 'active' | 'expired' | 'unknown', usageMb?}` per existing shape. Used by `esim.syncStatuses` job.
+- `verifyWebhook()` throws `NotImplemented` — Zendit has no webhook route (§7.4); the interface member must exist to satisfy the type.
 
 ### 7.3 Admin-assign flow
 Server action `assignZenditEsim({tenantId, userId, packageExternalId, adminUserId})`:
@@ -340,14 +332,17 @@ for each order in stale:
 
 ## 10. Config & secrets
 
-### 10.1 New env vars
+### 10.1 New env vars (V1 parity; TurInvoice uses login/password session auth, not API key)
 | Var | Required | Notes |
 |---|---|---|
-| `TURINVOICE_API_KEY` | yes | Server-side. |
-| `TURINVOICE_API_BASE` | yes | e.g. `https://api.turinvoice.com/v1`. |
-| `TURINVOICE_CALLBACK_SECRET` | yes (min 16 chars) | HMAC secret; must match TurInvoice dashboard. |
-| `ZENDIT_API_KEY` | yes | Server-side. |
-| `ZENDIT_API_BASE` | yes | e.g. `https://api.zendit.com/v1`. |
+| `TURINVOICE_HOST` | yes | e.g. `https://api.turinvoice.com`. No trailing slash. |
+| `TURINVOICE_LOGIN` | yes | Session auth: username. |
+| `TURINVOICE_PASSWORD` | yes | Session auth: password. Stored as Railway secret. |
+| `TURINVOICE_IDTSP` | yes | Numeric TSP id provisioned by TurInvoice. |
+| `TURINVOICE_CURRENCY` | no (default `USD`) | Default currency per V1 behaviour. |
+| `TURINVOICE_CALLBACK_SECRET` | yes (min 16 chars) | Plaintext compared to `body.secret_key` in callback. |
+| `ZENDIT_API_KEY` | yes | Bearer token. |
+| `ZENDIT_API_BASE` | no (default `https://api.zendit.io/v1`) | V1 default. |
 
 All added to:
 - `src/server/env.ts` (Zod schema, `min(1)` or `min(16)` as noted).
