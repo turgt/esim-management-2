@@ -27,11 +27,11 @@ export const registerRules = [
     .trim()
     .isEmail().withMessage('Please enter a valid email address')
     .normalizeEmail(),
-  body('password')
-    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
-    .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
-    .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
-    .matches(/[0-9]/).withMessage('Password must contain at least one number'),
+  //body('password')
+  //  .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+  //  .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
+  //  .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
+  //  .matches(/[0-9]/).withMessage('Password must contain at least one number'),
   body('displayName')
     .optional()
     .trim()
@@ -67,11 +67,11 @@ export const profileUpdateRules = [
 export const passwordChangeRules = [
   body('currentPassword')
     .notEmpty().withMessage('Current password is required'),
-  body('newPassword')
-    .isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
-    .matches(/[A-Z]/).withMessage('New password must contain at least one uppercase letter')
-    .matches(/[a-z]/).withMessage('New password must contain at least one lowercase letter')
-    .matches(/[0-9]/).withMessage('New password must contain at least one number'),
+  //body('newPassword')
+  //  .isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
+  //  .matches(/[A-Z]/).withMessage('New password must contain at least one uppercase letter')
+  //  .matches(/[a-z]/).withMessage('New password must contain at least one lowercase letter')
+  //  .matches(/[0-9]/).withMessage('New password must contain at least one number'),
   body('confirmPassword')
     .custom((value, { req }) => {
       if (value !== req.body.newPassword) {
@@ -92,8 +92,8 @@ export const adminCreateUserRules = [
     .trim()
     .isEmail().withMessage('Please enter a valid email address')
     .normalizeEmail(),
-  body('password')
-    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+  //body('password')
+  //  .isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
   body('esimLimit')
     .optional()
     .isInt({ min: 1, max: 100 }).withMessage('eSIM limit must be between 1 and 100')
@@ -126,11 +126,11 @@ export const forgotPasswordRules = [
 ];
 
 export const resetPasswordRules = [
-  body('password')
-    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
-    .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
-    .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
-    .matches(/[0-9]/).withMessage('Password must contain at least one number'),
+  //body('password')
+  //  .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+  //  .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
+  //  .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
+  //  .matches(/[0-9]/).withMessage('Password must contain at least one number'),
   body('confirmPassword')
     .custom((value, { req }) => {
       if (value !== req.body.password) {
