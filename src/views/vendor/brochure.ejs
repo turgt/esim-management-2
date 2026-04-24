@@ -50,11 +50,51 @@
     border: 1px solid #d6d3d1;
   }
   .btn-back:hover { background: #f5f5f4; }
+  .btn-size {
+    background: #fff;
+    color: #44403c;
+    border: 1px solid #d6d3d1;
+    min-width: 44px;
+    justify-content: center;
+  }
+  .btn-size:hover { background: #f5f5f4; }
+  .btn-size.active {
+    background: #1c1917;
+    color: #fff;
+    border-color: #1c1917;
+  }
+  .size-group {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #d6d3d1;
+  }
+  .size-group .btn-size {
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+  }
   .page-size {
     margin-top: 20px;
     font-size: 11px;
     color: #a8a29e;
   }
+
+  /* ===== CARD FRAME: sizing wrapper for A6/A5/A4 ===== */
+  .card-frame {
+    position: relative;
+    transition: width 0.2s, height 0.2s;
+  }
+  .card-frame[data-size="a6"] { width: 504px; height: 710px; }
+  .card-frame[data-size="a5"] { width: 713px; height: 1004px; }
+  .card-frame[data-size="a4"] { width: 1008px; height: 1420px; }
+  .card-frame .card {
+    transform-origin: top left;
+  }
+  .card-frame[data-size="a5"] .card { transform: scale(1.414); }
+  .card-frame[data-size="a4"] .card { transform: scale(2); }
 
   /* A6 at ~3.2x */
   .card {
@@ -459,7 +499,11 @@
 
   @media print {
     body { background: none; padding: 0; }
+    .card-frame { width: auto !important; height: auto !important; }
+    .card-frame .card { transform: none !important; }
     .card { box-shadow: none; border-radius: 0; width: 105mm; height: 148mm; }
+    .card-frame[data-size="a5"] .card { width: 148mm; height: 210mm; }
+    .card-frame[data-size="a4"] .card { width: 210mm; height: 297mm; }
     .toolbar, .page-size { display: none; }
   }
 </style>
@@ -471,11 +515,17 @@
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     Download Image
   </button>
+  <div class="size-group" role="group" aria-label="Page size">
+    <button type="button" class="btn-size active" data-size="a6" onclick="setSize('a6')">A6</button>
+    <button type="button" class="btn-size" data-size="a5" onclick="setSize('a5')">A5</button>
+    <button type="button" class="btn-size" data-size="a4" onclick="setSize('a4')">A4</button>
+  </div>
   <button class="btn-back" onclick="window.close(); history.back();">
     &larr; Back
   </button>
 </div>
 
+<div class="card-frame" id="cardFrame" data-size="a6">
 <div class="card">
 
   <!-- World map watermark -->
@@ -673,26 +723,46 @@
   </div>
 
 </div>
+</div>
 
-<div class="page-size">A6 &bull; 105 &times; 148 mm</div>
+<div class="page-size" id="pageSizeLabel">A6 &bull; 105 &times; 148 mm</div>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
+var SIZE_META = {
+  a6: { label: 'A6 • 105 × 148 mm', scale: 4 },
+  a5: { label: 'A5 • 148 × 210 mm', scale: 3 },
+  a4: { label: 'A4 • 210 × 297 mm', scale: 2 }
+};
+
+function setSize(size) {
+  if (!SIZE_META[size]) return;
+  document.getElementById('cardFrame').setAttribute('data-size', size);
+  document.getElementById('pageSizeLabel').textContent = SIZE_META[size].label;
+  var buttons = document.querySelectorAll('.btn-size');
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].classList.toggle('active', buttons[i].getAttribute('data-size') === size);
+  }
+}
+
 async function downloadBrochure() {
   var btn = document.getElementById('downloadBtn');
   var originalText = btn.textContent;
   btn.disabled = true;
   btn.textContent = 'Generating...';
   try {
-    var card = document.querySelector('.card');
-    var canvas = await html2canvas(card, {
-      scale: 4,
+    var frame = document.getElementById('cardFrame');
+    var size = frame.getAttribute('data-size') || 'a6';
+    var canvas = await html2canvas(frame, {
+      scale: SIZE_META[size].scale,
       useCORS: true,
       backgroundColor: '#ffffff',
-      logging: false
+      logging: false,
+      width: frame.offsetWidth,
+      height: frame.offsetHeight
     });
     var link = document.createElement('a');
-    link.download = 'datapatch-brochure-a6.png';
+    link.download = 'datapatch-brochure-' + size + '.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
   } catch (e) {
