@@ -29,6 +29,9 @@
  *   --dry-run                      (don't write to DB, just report)
  */
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 import axios from 'axios';
 import db from '../src/db/models/index.js';
 import logger from '../src/lib/logger.js';
