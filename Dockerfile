@@ -21,6 +21,7 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=builder /app/public/styles.css ./public/styles.css
 COPY src/ ./src/
 COPY public/ ./public/
+COPY scripts/ ./scripts/
 COPY .sequelizerc ./
 
 # Create non-root user
