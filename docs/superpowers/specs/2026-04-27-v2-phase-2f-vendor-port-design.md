@@ -18,7 +18,9 @@ Feature parity with V1: vendor CRUD, referral cookie capture, signup attribution
 - **Tenant-specific brochure branding** — DataPatch logo and copy stay static. A `tenant.brochureLogoUrl?` override is YAGNI for now.
 - **PDF generation** — `html2canvas` PNG export is sufficient (V1 parity).
 - **Cross-tenant referral attribution** — explicitly excluded (see "Approach" below).
-- **Vendor self-service profile editing** — vendor managers see read-only profile; super_admin / agency_admin edit.
+- **Vendor self-service profile editing** — vendor managers see read-only profile; platform_admin / agency_admin edit.
+
+(Note: throughout this spec, "platform admin" / "platform_admin" refers to the V2 `platform_admin` Role enum value, equivalent to V1's super-admin.)
 
 ## Approach
 
@@ -91,11 +93,12 @@ model Order {
 }
 
 enum Role {
-  super_admin
-  agency_admin
-  agency_staff
-  vendor_manager   // NEW
   customer
+  agency_staff
+  agency_admin
+  vendor_manager   // NEW
+  platform_staff
+  platform_admin
 }
 ```
 
@@ -152,7 +155,7 @@ enum Role {
 | Vendor inactive | Cookie set; lookup filter excludes inactive → no attribution |
 | Vendor in different tenant than signup tenant | Lookup `where: { tenantId: signupTenantId }` excludes → no attribution |
 | Cookie set on `alpha`, signup on `beta` | Same as above (cross-tenant guard) |
-| Signup on `admin.v2…` (super-admin) | `x-tenant-id` not set → no attribution (super-admins are not referred) |
+| Signup on `admin.v2…` (platform-admin) | `x-tenant-id` not set → no attribution (platform-admins are not referred) |
 | Two `?ref=` visits | Last wins (cookie overwrite) |
 | Email scanner pre-fetches magic link | Scanner has no cookie → callback runs but `events.createUser` may or may not fire (depends on `useVerificationToken` semantics, see Phase 2e fix #18). User's later click does not create a new user → no attribution. **This is a known limitation.** |
 | User signs up on inactive cookie | No attribution; vendor reactivation does not retroactively attribute |
@@ -214,43 +217,51 @@ if (referredByUser?.referredByVendorId) {
 
 **Source of truth:** `VendorManager(vendorId, userId)` row existence is the gate for "this user manages this vendor." The `Role.vendor_manager` enum value is a **display category** (drives sidebar visibility, "My Vendors" menu) — not the access decision. This way, an `agency_staff` user added as a manager can access the vendor without losing their staff role, and an `agency_admin` already has access via tenant role without needing a `VendorManager` row.
 
-**Helper:** `requireVendorRoleOnVendor(vendorId, options) → vendor`. Throws Forbidden / NotFound. Internal logic:
+**Helper:** `requireVendorRoleOnVendor(vendorId, options) → { user, vendor }`. Follows the existing V2 RBAC pattern (see `src/server/rbac/roles.ts` — `requireAuthenticatedUser`, `requirePlatformRole`, `requireAgencyRoleOnTenant`).
 
 ```ts
+// src/server/rbac/vendor.ts (new)
+import type { Vendor, Role } from '@prisma/client';
+import { prisma } from '@/src/lib/db';
+import { requireAuthenticatedUser, isPlatformRole, getMembershipRole } from './roles';
+
 export async function requireVendorRoleOnVendor(
   vendorId: string,
-  { allowManagers = true } = {}
-) {
-  const session = await auth();
-  if (!session?.user) throw new ForbiddenError();
+  { allowManagers = true }: { allowManagers?: boolean } = {},
+): Promise<{ user: { id: string; email: string }; vendor: Vendor }> {
+  const user = await requireAuthenticatedUser();
 
   const vendor = await prisma.vendor.findUnique({
     where: { id: vendorId },
-    include: { managers: { where: { userId: session.user.id }, select: { userId: true } } }
+    include: { managers: { where: { userId: user.id }, select: { userId: true } } },
   });
-  if (!vendor) throw new NotFoundError();
+  if (!vendor) throw new Error('NotFound: vendor not found.');
 
-  // 1. super_admin: always
-  if (session.user.role === 'super_admin') return vendor;
-
-  // 2. agency_admin on this vendor's tenant
-  const m = await prisma.userTenantMembership.findUnique({
-    where: { userId_tenantId: { userId: session.user.id, tenantId: vendor.tenantId } }
+  // 1. Platform roles (cross-tenant)
+  const anyPlatform = await prisma.userTenantMembership.findFirst({
+    where: { userId: user.id, role: { in: ['platform_admin', 'platform_staff'] } },
+    select: { role: true },
   });
-  if (m?.role === 'agency_admin') return vendor;
+  if (anyPlatform) return { user, vendor };
 
-  // 3. VendorManager row (the gate for vendor self-service access)
-  if (allowManagers && vendor.managers.length > 0) return vendor;
+  // 2. agency_admin on the vendor's tenant
+  const role = await getMembershipRole(user.id, vendor.tenantId);
+  if (role === 'agency_admin') return { user, vendor };
 
-  throw new ForbiddenError();
+  // 3. VendorManager row (gate for vendor self-service)
+  if (allowManagers && vendor.managers.length > 0) return { user, vendor };
+
+  throw new Error('Forbidden: vendor role required.');
 }
 ```
 
-For mutation actions (create, edit, delete, manager add/remove) callers pass `{ allowManagers: false }` — managers cannot mutate. View routes (dashboard, brochure) use the default.
+For mutation actions (create, edit, delete, manager add/remove), callers pass `{ allowManagers: false }` — managers cannot mutate. View routes (dashboard, brochure) use the default.
 
-**Cross-tenant guard for `agency_admin`:** the membership lookup is keyed by `vendor.tenantId`. An `agency_admin` on tenant A cannot view a vendor on tenant B because the membership query for tenant B won't return `agency_admin`.
+**Cross-tenant guard for `agency_admin`:** `getMembershipRole(user.id, vendor.tenantId)` — if the agency_admin is on tenant A and the vendor is on tenant B, lookup returns null, falling through to manager check (likely also fails) → Forbidden.
 
-| Action | super_admin | agency_admin (own tenant) | VendorManager row (own vendor) | customer / unrelated |
+**Note on platform_staff:** read-only platform support role. Treated like `platform_admin` for vendor RBAC because the matrix doesn't distinguish (V2 currently uses `isPlatformRole` for that). If we want platform_staff to be view-only on vendors later, refine the helper at that point.
+
+| Action | platform_admin / platform_staff | agency_admin (own tenant) | VendorManager row (own vendor) | agency_staff / customer |
 |---|---|---|---|---|
 | Vendor list cross-tenant | ✅ | ❌ | ❌ | ❌ |
 | Vendor list own tenant | ✅ | ✅ | ❌ | ❌ |
@@ -272,7 +283,7 @@ await prisma.$transaction(async (tx) => {
   // Upgrade for category display only:
   // - missing membership → create with vendor_manager
   // - existing customer → upgrade to vendor_manager
-  // - higher role (agency_staff / agency_admin / super_admin) → leave alone
+  // - higher role (agency_staff / agency_admin / platform_*) → leave alone
   if (!existing) {
     await tx.userTenantMembership.create({
       data: { userId, tenantId: vendor.tenantId, role: 'vendor_manager' }
@@ -315,15 +326,15 @@ await prisma.$transaction(async (tx) => {
 
 | Path | Layout | Allowed roles |
 |---|---|---|
-| `admin.v2…/[locale]/admin/vendors` | super-admin | super_admin |
-| `admin.v2…/[locale]/admin/vendors/new` | super-admin | super_admin |
-| `admin.v2…/[locale]/admin/vendors/[id]` | super-admin | super_admin |
-| `admin.v2…/[locale]/admin/vendors/[id]/edit` | super-admin | super_admin |
+| `admin.v2…/[locale]/admin/vendors` | platform-admin | platform_admin / platform_staff |
+| `admin.v2…/[locale]/admin/vendors/new` | platform-admin | platform_admin |
+| `admin.v2…/[locale]/admin/vendors/[id]` | platform-admin | platform_admin / platform_staff |
+| `admin.v2…/[locale]/admin/vendors/[id]/edit` | platform-admin | platform_admin |
 | `<slug>.v2…/[locale]/a/[agencySlug]/vendors` | agency | agency_admin |
 | `<slug>.v2…/[locale]/a/[agencySlug]/vendors/new` | agency | agency_admin |
 | `<slug>.v2…/[locale]/a/[agencySlug]/vendors/[id]` | agency | agency_admin |
 | `<slug>.v2…/[locale]/a/[agencySlug]/vendors/[id]/edit` | agency | agency_admin |
-| `<slug>.v2…/[locale]/v` | vendor | vendor_manager / agency_admin / super_admin (router based on managed-vendors count) |
+| `<slug>.v2…/[locale]/v` | vendor | VendorManager row OR agency_admin OR platform_* (routes based on managed-vendor count) |
 | `<slug>.v2…/[locale]/v/[vendorId]/dashboard` | vendor | same |
 | `<slug>.v2…/[locale]/v/[vendorId]/brochure` | vendor | same |
 
@@ -343,7 +354,7 @@ await prisma.$transaction(async (tx) => {
 3. **30-day chart (Recharts):** registrations + purchases + revenue, three series, daily granularity.
 4. **Two side-by-side tables:** Recent Referred Users (last 10, masked email like `u***@gmail.com`, displayName, signup date), Recent Sales (last 10: date, plan name from Esim metadata, amount USD, refund status badge "paid"/"partially refunded"/"refunded", commission earned).
 
-**Privacy:** Vendor managers do NOT see full email addresses of referred users. They see displayName (if set) or masked email (`u***@domain.com`). Agency admins and super admins see full info.
+**Privacy:** Vendor managers do NOT see full email addresses of referred users. They see displayName (if set) or masked email (`u***@domain.com`). Agency admins and platform roles see full info.
 
 **Settings tab (read-only for vendor_manager):** vendor name, code, commissionBps, isActive, manager list, contactInfo, notes. Edit lives in admin layouts only.
 
@@ -396,7 +407,7 @@ PR-B depends on PR-A merge (model + RBAC + helpers).
 - **Tenant logo on brochure:** if a tenant wants their own brand on the brochure (instead of DataPatch), add `tenant.brochureLogoUrl?` and a config in admin. Out of scope for 2f.
 - **Cross-tenant vendor (global scope):** if there's ever a use case for a vendor that earns from multiple tenants, add `Vendor.scope: 'tenant' | 'global'` enum. Out of scope.
 - **Verification token cleanup:** unrelated housekeeping; tracked separately.
-- **Commission payout / payable status:** this design tracks *earned* commission only. Actual payout to vendors (invoicing, payment) is out of scope; super-admin can export totals.
+- **Commission payout / payable status:** this design tracks *earned* commission only. Actual payout to vendors (invoicing, payment) is out of scope; platform-admin can export totals.
 - **Vendor self-service profile editing:** if vendors want to update their own contact info / notes, expose a limited edit form in the vendor dashboard. Out of scope.
 
 ## Risks
@@ -425,7 +436,7 @@ src/server/auth/events-create-user.ts                              # cookie cons
 src/auth.ts                                                        # add events.createUser
 middleware.ts                                                      # add ?ref= cookie set + strip
 src/server/booking/create-booking.ts                               # extend with vendor attribution
-app/[locale]/(admin)/admin/vendors/page.tsx                        # list (super-admin)
+app/[locale]/(admin)/admin/vendors/page.tsx                        # list (platform-admin)
 app/[locale]/(admin)/admin/vendors/new/page.tsx
 app/[locale]/(admin)/admin/vendors/[id]/page.tsx
 app/[locale]/(admin)/admin/vendors/[id]/edit/page.tsx
@@ -455,7 +466,7 @@ e2e/vendor-dashboard.spec.ts
 
 PR-A merged when:
 - [ ] Migration applies cleanly to local + test DB.
-- [ ] Vendor CRUD works for super_admin (cross-tenant) and agency_admin (own tenant).
+- [ ] Vendor CRUD works for platform_admin (cross-tenant) and agency_admin (own tenant).
 - [ ] `?ref=CODE` middleware sets cookie + strips param + redirects.
 - [ ] Magic-link signup with cookie sets `User.referredByVendorId`.
 - [ ] `createBooking` snapshots `commissionBpsSnapshot` onto Order when user is referred.
@@ -467,7 +478,7 @@ PR-A merged when:
 - [ ] No new lint / type / prettier warnings.
 
 PR-B merged when:
-- [ ] Vendor dashboard renders for vendor_manager / agency_admin / super_admin.
+- [ ] Vendor dashboard renders for vendor_manager / agency_admin / platform_admin.
 - [ ] 30-day chart shows correct registration / purchase / revenue series.
 - [ ] Brochure renders A4/A5/A6 toggle works, html2canvas PNG downloads.
 - [ ] QR points at correct subdomain (`tenantBaseUrl({slug})/?ref=CODE`).
