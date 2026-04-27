@@ -109,7 +109,7 @@ enum Role {
 
 ## Referral Capture Flow
 
-1. **QR scanned / link clicked:** `https://<slug>.v2.datapatch.net/?ref=CODE` (apex `v2.datapatch.net/?ref=...` for platform vendor).
+1. **QR scanned / link clicked:** `https://<slug>.v2.datapatch.net/?ref=CODE` (platform vendor uses slug `platform`, e.g. `platform.v2.datapatch.net/?ref=...`). Apex does not host vendor pages.
 2. **Middleware** matches `?ref=` query on **non-API paths only** (`/api/*` skipped to avoid colliding with Auth.js callback query strings):
    - Sanitize `code` against `^[a-f0-9]{8}$`. Invalid → silently strip and 302 without setting cookie.
    - Set `Set-Cookie: dp_ref=CODE; Domain=.v2.datapatch.net; Path=/; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax`.
@@ -124,15 +124,12 @@ enum Role {
      createUser: async ({ user }) => {
        const ref = (await cookies()).get('dp_ref')?.value;
        if (!/^[a-f0-9]{8}$/.test(ref ?? '')) return;
-       // Tenant resolution: x-tenant-id is set by middleware on tenant subdomains.
-       // On apex, the header is absent — fall back to the seeded platform tenant.
-       const headerTenantId = (await headers()).get('x-tenant-id');
-       const resolvedTenantId =
-         headerTenantId ??
-         (await prisma.tenant.findUnique({ where: { slug: 'platform' }, select: { id: true } }))?.id;
-       if (!resolvedTenantId) return;
+       // x-tenant-id is set by middleware on tenant subdomains (including /api/* paths).
+       // Apex / www / admin do NOT set this header; signups there can't be attributed to a vendor.
+       const tenantId = (await headers()).get('x-tenant-id');
+       if (!tenantId) return;
        const vendor = await prisma.vendor.findFirst({
-         where: { code: ref, tenantId: resolvedTenantId, isActive: true }
+         where: { code: ref, tenantId, isActive: true }
        });
        if (vendor) {
          await prisma.user.update({
@@ -144,7 +141,7 @@ enum Role {
      }
    }
    ```
-   **Verify on implementation:** middleware must set `x-tenant-id` on `/api/auth/*` requests too (Phase 2e fix #17 only bypasses next-intl for API paths; the tenant header should still be set). If the header is dropped on API paths, `events.createUser` will always resolve to platform tenant — bug.
+   **Note:** The platform tenant is reached at `platform.v2.datapatch.net` (a normal tenant subdomain), not on apex. Apex serves only `/api/*` routes — no signup happens there. The cookie domain `.v2.datapatch.net` carries across all subdomains, so a `?ref=` set on one tenant subdomain is visible to the magic-link callback on the same tenant.
 7. **Existing users (re-login):** `events.createUser` does NOT fire; cookie remains until expiry but is ignored. Attribution can only happen at signup.
 
 **Edge cases:**
@@ -155,7 +152,7 @@ enum Role {
 | Vendor inactive | Cookie set; lookup filter excludes inactive → no attribution |
 | Vendor in different tenant than signup tenant | Lookup `where: { tenantId: signupTenantId }` excludes → no attribution |
 | Cookie set on `alpha`, signup on `beta` | Same as above (cross-tenant guard) |
-| Apex signup (`v2.datapatch.net`) | `tenantId === platform` → only platform vendors match |
+| Signup on `admin.v2…` (super-admin) | `x-tenant-id` not set → no attribution (super-admins are not referred) |
 | Two `?ref=` visits | Last wins (cookie overwrite) |
 | Email scanner pre-fetches magic link | Scanner has no cookie → callback runs but `events.createUser` may or may not fire (depends on `useVerificationToken` semantics, see Phase 2e fix #18). User's later click does not create a new user → no attribution. **This is a known limitation.** |
 | User signs up on inactive cookie | No attribution; vendor reactivation does not retroactively attribute |
