@@ -19,7 +19,7 @@ export async function runReminder() {
     if (booking.travelerEmail) {
       try {
         const { sendMail, emailLayout, emailButton } = await import('../services/emailService.js');
-        const appUrl = process.env.APP_URL || 'https://datapatch.app';
+        const appUrl = process.env.APP_URL || 'https://datapatch.net';
         const html = emailLayout(`
           <h2 style="margin:0 0 16px;color:#1e293b;font-size:22px;">Your eSIM Setup Is Expiring Soon!</h2>
           <p style="color:#475569;font-size:15px;line-height:1.6;">Hi ${booking.travelerName},</p>

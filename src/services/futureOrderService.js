@@ -5,7 +5,7 @@ const log = logger.child({ module: 'futureOrder' });
 
 const WEBHOOK_URL = process.env.APP_URL
   ? `${process.env.APP_URL}/api/webhooks/airalo`
-  : 'https://datapatch.app/api/webhooks/airalo';
+  : 'https://datapatch.net/api/webhooks/airalo';
 
 export async function submitFutureOrder({ packageId, dueDate, agencySlug, bookingId }) {
   const dueDateStr = formatDueDateUTC(dueDate);
