@@ -111,7 +111,7 @@ export async function createBooking({ contractId, travelerName, travelerEmail, t
     await transaction.commit();
 
     // 8. Send confirmation email (non-blocking)
-    const appUrl = process.env.APP_URL || 'https://datapatch.app';
+    const appUrl = process.env.APP_URL || 'https://datapatch.net';
     if (travelerEmail) {
       import('./emailService.js').then(({ sendMail, emailLayout, emailButton, emailInfoCard }) => {
         const dueDateStr = dueDateObj.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
