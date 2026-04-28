@@ -150,7 +150,7 @@ async function handleFulfilled(booking, payload) {
 
     // Send "eSIM ready" email to traveler (non-blocking)
     if (booking.travelerEmail) {
-      const appUrl = process.env.APP_URL || 'https://datapatch.app';
+      const appUrl = process.env.APP_URL || 'https://datapatch.net';
       import('../services/emailService.js').then(mod => {
         const sendMail = mod.sendMail || mod.default?.sendMail || mod.default;
         if (typeof sendMail === 'function') {

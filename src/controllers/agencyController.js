@@ -5,7 +5,7 @@ import logger from '../lib/logger.js';
 
 const log = logger.child({ module: 'agency' });
 
-const APP_URL = process.env.APP_URL || 'https://datapatch.app';
+const APP_URL = process.env.APP_URL || 'https://datapatch.net';
 const DATE_CHANGE_CUTOFF_HOURS = 72;
 
 // GET /agency
