@@ -21,21 +21,53 @@ export async function initialize() {
   }
 
   try {
-    airalo = new Airalo({
-      client_id: clientId,
-      client_secret: clientSecret,
-    });
-    await airalo.initialize();
-    log.info('Airalo SDK initialized');
+    await reinitializeSdk();
 
     // Get access token for REST calls not covered by SDK
     await refreshToken();
 
-    // Refresh token every 23 hours (tokens typically expire in 24h)
-    setInterval(refreshToken, 23 * 60 * 60 * 1000);
+    // Refresh both the SDK's internal token and the REST token every 23 hours
+    // (tokens typically expire in 24h). The SDK caches its own token internally
+    // and otherwise never refreshes it for the lifetime of the process.
+    setInterval(refreshAll, 23 * 60 * 60 * 1000);
   } catch (err) {
     log.error({ err }, 'Failed to initialize Airalo SDK');
   }
+}
+
+// Re-create the SDK so its internal token cache is rebuilt with a fresh token.
+async function reinitializeSdk() {
+  const clientId = process.env.AIRALO_CLIENT_ID;
+  const clientSecret = process.env.AIRALO_CLIENT_SECRET;
+  airalo = new Airalo({ client_id: clientId, client_secret: clientSecret });
+  await airalo.initialize();
+  log.info('Airalo SDK initialized');
+}
+
+async function refreshAll() {
+  try {
+    await reinitializeSdk();
+  } catch (err) {
+    log.error({ err }, 'Failed to re-initialize Airalo SDK on schedule');
+  }
+  await refreshToken();
+}
+
+// Run an SDK call and, if it fails with a 401, re-initialize the SDK and retry once.
+async function withSdkAuthRetry(label, fn) {
+  try {
+    return await fn();
+  } catch (err) {
+    if (!is401(err)) throw err;
+    log.warn({ label }, 'Airalo SDK 401 — re-initializing and retrying once');
+    await reinitializeSdk();
+    return await fn();
+  }
+}
+
+function is401(err) {
+  const msg = err?.message || '';
+  return /status code:\s*401/i.test(msg) || err?.response?.status === 401;
 }
 
 // Refresh OAuth token for direct REST calls
@@ -82,7 +114,9 @@ export async function getCountryPackages(countryCode) {
 // Place an order (returns order with sims array containing iccid, qrcode_url, lpa, etc.)
 export async function createOrder(packageId, quantity = 1, description = '') {
   if (!airalo) throw new Error('Airalo not initialized');
-  const result = await airalo.order(packageId, quantity, description || `DataPatch order ${Date.now()}`);
+  const result = await withSdkAuthRetry('order', () =>
+    airalo.order(packageId, quantity, description || `DataPatch order ${Date.now()}`)
+  );
   log.info({ packageId, quantity, orderId: result?.data?.id }, 'Airalo order placed');
   return result;
 }
@@ -149,9 +183,11 @@ export function isInitialized() {
 
 export async function createFutureOrder({ packageId, dueDate, webhookUrl, description }) {
   if (!airalo) throw new Error('Airalo not initialized');
-  const result = await airalo.createFutureOrder(
-    packageId, 1, dueDate, webhookUrl,
-    description || `DataPatch future order ${Date.now()}`
+  const result = await withSdkAuthRetry('createFutureOrder', () =>
+    airalo.createFutureOrder(
+      packageId, 1, dueDate, webhookUrl,
+      description || `DataPatch future order ${Date.now()}`
+    )
   );
   log.info({ packageId, dueDate, requestId: result?.data?.request_id }, 'Airalo future order created');
   return result;
@@ -159,7 +195,9 @@ export async function createFutureOrder({ packageId, dueDate, webhookUrl, descri
 
 export async function cancelFutureOrder(requestId) {
   if (!airalo) throw new Error('Airalo not initialized');
-  const result = await airalo.cancelFutureOrder(requestId);
+  const result = await withSdkAuthRetry('cancelFutureOrder', () =>
+    airalo.cancelFutureOrder(requestId)
+  );
   log.info({ requestId }, 'Airalo future order cancelled');
   return result;
 }
