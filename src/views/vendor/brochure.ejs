@@ -729,10 +729,14 @@
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
+// Base card is 504×710 (A6 at ~3.2x). To produce a sharp PNG at the
+// requested paper size we scale the *capture* (not the DOM) so html2canvas
+// doesn't have to follow CSS `transform: scale(...)` on a child node — that
+// path is buggy in v1.4.1 and was producing half-rendered A5/A4 output.
 var SIZE_META = {
-  a6: { label: 'A6 • 105 × 148 mm', scale: 4 },
-  a5: { label: 'A5 • 148 × 210 mm', scale: 3 },
-  a4: { label: 'A4 • 210 × 297 mm', scale: 2 }
+  a6: { label: 'A6 • 105 × 148 mm', captureScale: 4 },
+  a5: { label: 'A5 • 148 × 210 mm', captureScale: 4 * 1.414 },
+  a4: { label: 'A4 • 210 × 297 mm', captureScale: 4 * 2 }
 };
 
 function setSize(size) {
@@ -753,14 +757,27 @@ async function downloadBrochure() {
   try {
     var frame = document.getElementById('cardFrame');
     var size = frame.getAttribute('data-size') || 'a6';
-    var canvas = await html2canvas(frame, {
-      scale: SIZE_META[size].scale,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false,
-      width: frame.offsetWidth,
-      height: frame.offsetHeight
-    });
+    // Capture the inner .card (504×710) directly. The frame's CSS transform
+    // is only for on-screen preview; for the export we ignore it and let
+    // html2canvas's `scale` option produce the final paper-size resolution.
+    var card = frame.querySelector('.card');
+    // Temporarily strip the preview-only CSS transform so html2canvas
+    // captures the un-scaled 504×710 layout; we re-apply it after.
+    var prevInlineTransform = card.style.transform;
+    card.style.transform = 'none';
+    var canvas;
+    try {
+      canvas = await html2canvas(card, {
+        scale: SIZE_META[size].captureScale,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: card.offsetWidth,
+        height: card.offsetHeight
+      });
+    } finally {
+      card.style.transform = prevInlineTransform;
+    }
     var link = document.createElement('a');
     link.download = 'datapatch-brochure-' + size + '.png';
     link.href = canvas.toDataURL('image/png');
