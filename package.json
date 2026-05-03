@@ -20,7 +20,8 @@
     "reset-db": "sequelize-cli db:drop && sequelize-cli db:create && npm run migrate && npm run seed",
     "health": "curl -f http://localhost:3000/health || exit 1",
     "analyze": "node --inspect --experimental-json-modules src/server.js",
-    "test": "node --test 'tests/integration/*.test.js'"
+    "test": "node --test 'tests/integration/*.test.js'",
+    "audit:csp": "node scripts/audit-csp-inline.mjs"
   },
   "dependencies": {
     "airalo-sdk": "^1.2.2",
