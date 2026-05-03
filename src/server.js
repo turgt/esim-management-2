@@ -14,6 +14,7 @@ import httpLogger from './lib/httpLogger.js';
 import { validateEnv } from './lib/validateEnv.js';
 import { bootstrap } from './lib/startup.js';
 import { startJobs } from './jobs/index.js';
+import { shutdownRedis } from './lib/redisClient.js';
 
 // Validate environment variables early
 validateEnv();
@@ -101,7 +102,7 @@ app.use(httpLogger);
 
 // Rate limiting in production
 if (process.env.NODE_ENV === 'production') {
-  app.use(smartRateLimit(15 * 60 * 1000, 200));
+  app.use(smartRateLimit(15 * 60 * 1000, 200, 'global'));
 }
 
 // EJS settings
@@ -206,8 +207,8 @@ app.use('/webhooks', webhookRoutes);
 
 // Proxy routes — public, no CSRF needed (traveler-facing eSIM pages)
 // Rate limit: 30 req/min per IP on /e and /api/booking-status
-app.use('/e', smartRateLimit(60 * 1000, 30));
-app.use('/api/booking-status', smartRateLimit(60 * 1000, 30));
+app.use('/e', smartRateLimit(60 * 1000, 30, 'public-esim'));
+app.use('/api/booking-status', smartRateLimit(60 * 1000, 30, 'booking-status'));
 app.use('/', proxyRoutes);
 
 // CSRF protection (after session, before routes)
@@ -304,21 +305,17 @@ app.use((err, req, res, next) => {
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received, shutting down gracefully');
-  server.close(() => {
+async function gracefulShutdown(signal) {
+  logger.info({ signal }, 'Received shutdown signal, closing server');
+  server.close(async () => {
+    await shutdownRedis().catch(() => {});
     logger.info('Process terminated');
     process.exit(0);
   });
-});
+}
 
-process.on('SIGINT', () => {
-  logger.info('SIGINT received, shutting down gracefully');
-  server.close(() => {
-    logger.info('Process terminated');
-    process.exit(0);
-  });
-});
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 process.on('uncaughtException', (err) => {
   logger.fatal({ err }, 'Uncaught exception');

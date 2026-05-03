@@ -17,6 +17,19 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   app:
     build: .
     ports:
@@ -24,6 +37,7 @@ services:
     environment:
       NODE_ENV: development
       DATABASE_URL: postgres://esim:esim123@db:5432/esim_db
+      REDIS_URL: redis://redis:6379
       SESSION_SECRET: local-dev-secret-change-in-prod
       PORT: 3000
       COUNTRY: TR
@@ -63,6 +77,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./src:/app/src
       - ./public:/app/public
@@ -70,3 +86,4 @@ services:
 
 volumes:
   pgdata:
+  redisdata:

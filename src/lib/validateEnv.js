@@ -44,6 +44,17 @@ export function validateEnv() {
     log.warn({ configured: configuredSmtp, missing: missingSmtp }, 'Partial SMTP configuration');
   }
 
+  // Redis is required for durable rate limiting in production. Without it, rate
+  // limit counters live in process memory and reset on every container restart,
+  // leaving login/payment endpoints briefly unprotected during deploys.
+  if (!process.env.REDIS_URL) {
+    if (process.env.NODE_ENV === 'production') {
+      log.warn('REDIS_URL not set — rate limits will reset on every container restart. Provision Redis and set REDIS_URL for durable rate limiting.');
+    } else {
+      log.info('REDIS_URL not set — using in-memory rate limiter (acceptable for development)');
+    }
+  }
+
   // Airalo webhook verification: warn if mode is `required` but no secret is
   // available (no AIRALO_WEBHOOK_SECRET, no AIRALO_CLIENT_SECRET) — every
   // inbound webhook would be rejected with 401.

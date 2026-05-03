@@ -1,7 +1,34 @@
+import { RateLimiterRedis, RateLimiterMemory } from 'rate-limiter-flexible';
 import cacheService from '../services/cacheService.js';
 import logger from '../lib/logger.js';
+import { getRedisClient, pingRedis } from '../lib/redisClient.js';
 
 const log = logger.child({ module: 'performance' });
+
+// Build a rate limiter backed by Redis when REDIS_URL is configured, falling back
+// to per-process memory when it is not. Redis-backed instances also use a memory
+// "insurance" limiter so brief Redis outages keep enforcing a per-instance limit
+// rather than letting all traffic through unmetered.
+function buildLimiter(keyPrefix, points, durationSec) {
+  const insuranceLimiter = new RateLimiterMemory({ points, duration: durationSec });
+  const redis = getRedisClient();
+
+  if (!redis) {
+    return insuranceLimiter;
+  }
+
+  return new RateLimiterRedis({
+    storeClient: redis,
+    keyPrefix: `rl:${keyPrefix}`,
+    points,
+    duration: durationSec,
+    insuranceLimiter
+  });
+}
+
+function clientIp(req) {
+  return req.ip || req.connection?.remoteAddress || 'unknown';
+}
 
 // Helper function to safely set headers
 function safeSetHeader(res, name, value) {
@@ -69,97 +96,82 @@ export function cacheMonitor(req, res, next) {
   next();
 }
 
-// Rate limiting with smart throttling
-export function smartRateLimit(windowMs = 15 * 60 * 1000, maxRequests = 100) {
-  const requests = new Map();
+// Smart rate limiting with role-aware multipliers. Each call creates three
+// independent buckets (anon / authed / admin) so a logged-in user gets a higher
+// limit than an anonymous visitor sharing the same IP. Buckets are keyed per
+// instance via `name` so multiple smartRateLimit middlewares do not collide.
+let smartSeq = 0;
+export function smartRateLimit(windowMs = 15 * 60 * 1000, maxRequests = 100, name) {
+  const durationSec = Math.ceil(windowMs / 1000);
+  const instanceName = name || `smart-${++smartSeq}`;
+  const anon = buildLimiter(`${instanceName}:anon`, maxRequests, durationSec);
+  const authed = buildLimiter(`${instanceName}:authed`, maxRequests * 2, durationSec);
+  const admin = buildLimiter(`${instanceName}:admin`, maxRequests * 5, durationSec);
 
-  return (req, res, next) => {
-    const ip = req.ip || req.connection.remoteAddress;
-    const now = Date.now();
-    const windowStart = now - windowMs;
+  return async (req, res, next) => {
+    const ip = clientIp(req);
+    const isAuthenticated = Boolean(req.session && req.session.user);
+    const isAdmin = Boolean(isAuthenticated && req.session.user.isAdmin);
+    const limiter = isAdmin ? admin : isAuthenticated ? authed : anon;
+    const role = isAdmin ? 'admin' : isAuthenticated ? 'authed' : 'anon';
 
-    if (requests.has(ip)) {
-      const userRequests = requests.get(ip).filter(time => time > windowStart);
-      requests.set(ip, userRequests);
-    } else {
-      requests.set(ip, []);
-    }
-
-    const userRequests = requests.get(ip);
-
-    const isAuthenticated = req.session && req.session.user;
-    const isAdmin = isAuthenticated && req.session.user.isAdmin;
-
-    let limit = maxRequests;
-    if (isAdmin) {
-      limit = maxRequests * 5;
-    } else if (isAuthenticated) {
-      limit = maxRequests * 2;
-    }
-
-    if (userRequests.length >= limit) {
-      log.warn({ ip, count: userRequests.length, limit }, 'Rate limit exceeded');
+    try {
+      const result = await limiter.consume(ip);
+      safeSetHeader(res, 'X-RateLimit-Limit', limiter.points);
+      safeSetHeader(res, 'X-RateLimit-Remaining', Math.max(0, result.remainingPoints));
+      safeSetHeader(res, 'X-RateLimit-Reset', Math.ceil((Date.now() + result.msBeforeNext) / 1000));
+      return next();
+    } catch (rejRes) {
+      if (rejRes instanceof Error) {
+        log.warn({ err: rejRes.message, ip, name: instanceName }, 'Rate limiter unavailable — failing open');
+        return next();
+      }
+      const retryAfterSec = Math.ceil(rejRes.msBeforeNext / 1000);
+      log.warn({ ip, role, name: instanceName, limit: limiter.points }, 'Rate limit exceeded');
+      safeSetHeader(res, 'Retry-After', retryAfterSec);
+      safeSetHeader(res, 'X-RateLimit-Limit', limiter.points);
+      safeSetHeader(res, 'X-RateLimit-Remaining', 0);
+      safeSetHeader(res, 'X-RateLimit-Reset', Math.ceil((Date.now() + rejRes.msBeforeNext) / 1000));
       return res.status(429).render('error', {
         message: 'Too many requests. Please slow down.',
         title: 'Rate Limited'
       });
     }
-
-    userRequests.push(now);
-    requests.set(ip, userRequests);
-
-    safeSetHeader(res, 'X-RateLimit-Limit', limit);
-    safeSetHeader(res, 'X-RateLimit-Remaining', Math.max(0, limit - userRequests.length));
-    safeSetHeader(res, 'X-RateLimit-Reset', Math.ceil((windowStart + windowMs) / 1000));
-
-    next();
   };
 }
 
-// Endpoint-specific rate limiters
-export function endpointRateLimit(windowMs, maxRequests) {
-  const requests = new Map();
+// Endpoint-specific rate limiter. Single bucket per call, distinguished by `name`.
+let endpointSeq = 0;
+export function endpointRateLimit(windowMs, maxRequests, name) {
+  const durationSec = Math.ceil(windowMs / 1000);
+  const instanceName = name || `ep-${++endpointSeq}`;
+  const limiter = buildLimiter(instanceName, maxRequests, durationSec);
 
-  setInterval(() => {
-    const now = Date.now();
-    for (const [key, times] of requests.entries()) {
-      const filtered = times.filter(t => t > now - windowMs);
-      if (filtered.length === 0) {
-        requests.delete(key);
-      } else {
-        requests.set(key, filtered);
+  return async (req, res, next) => {
+    const ip = clientIp(req);
+    try {
+      await limiter.consume(ip);
+      return next();
+    } catch (rejRes) {
+      if (rejRes instanceof Error) {
+        log.warn({ err: rejRes.message, ip, name: instanceName }, 'Rate limiter unavailable — failing open');
+        return next();
       }
-    }
-  }, 5 * 60 * 1000);
-
-  return (req, res, next) => {
-    const ip = req.ip || req.connection.remoteAddress;
-    const now = Date.now();
-    const windowStart = now - windowMs;
-
-    if (!requests.has(ip)) {
-      requests.set(ip, []);
-    }
-
-    const ipRequests = requests.get(ip).filter(t => t > windowStart);
-
-    if (ipRequests.length >= maxRequests) {
+      const retryAfterSec = Math.ceil(rejRes.msBeforeNext / 1000);
+      log.warn({ ip, name: instanceName, limit: limiter.points }, 'Endpoint rate limit exceeded');
+      safeSetHeader(res, 'Retry-After', retryAfterSec);
       return res.status(429).render('error', {
         message: 'Too many attempts. Please try again later.',
         title: 'Rate Limited'
       });
     }
-
-    ipRequests.push(now);
-    requests.set(ip, ipRequests);
-    next();
   };
 }
 
 // Pre-built rate limiters for specific endpoints
-export const registrationRateLimit = endpointRateLimit(60 * 60 * 1000, 5);  // 5 per hour
-export const loginRateLimit = endpointRateLimit(15 * 60 * 1000, 10);        // 10 per 15 min
-export const passwordResetRateLimit = endpointRateLimit(60 * 60 * 1000, 3); // 3 per hour
+export const registrationRateLimit = endpointRateLimit(60 * 60 * 1000, 5, 'register');     // 5 per hour
+export const loginRateLimit = endpointRateLimit(15 * 60 * 1000, 10, 'login');               // 10 per 15 min
+export const passwordResetRateLimit = endpointRateLimit(60 * 60 * 1000, 3, 'password-reset'); // 3 per hour
 
 // Database query optimization monitor
 export function queryMonitor() {
@@ -201,13 +213,15 @@ export function queryMonitor() {
 }
 
 // Health check endpoint with detailed metrics
-export function healthCheck(req, res) {
+export async function healthCheck(req, res) {
   const memUsage = process.memoryUsage();
   const uptime = process.uptime();
   const cacheStats = cacheService.getStats();
 
   const cpuUsage = process.cpuUsage();
   const cpuPercent = Math.round((cpuUsage.user + cpuUsage.system) / 1000000 / uptime * 100);
+
+  const redis = await pingRedis();
 
   const health = {
     status: 'healthy',
@@ -228,6 +242,7 @@ export function healthCheck(req, res) {
       hitRate: cacheStats.stats ?
         Math.round((cacheStats.stats.hits / (cacheStats.stats.hits + cacheStats.stats.misses)) * 100) || 0 : 0
     },
+    redis,
     system: {
       nodeVersion: process.version,
       platform: process.platform,
@@ -258,6 +273,16 @@ export function healthCheck(req, res) {
 
   if (health.cache.hitRate < 30 && health.cache.stats.hits + health.cache.stats.misses > 100) {
     warnings.push('Low cache hit rate');
+    if (health.status === 'healthy') health.status = 'warning';
+  }
+
+  // Redis: configured-but-down is a warning (rate limiter falls back to in-memory).
+  // not_configured is fine (dev) but flagged as a warning in production.
+  if (redis.status !== 'not_configured' && !redis.ok) {
+    warnings.push('Redis unavailable — rate limiting degraded');
+    if (health.status === 'healthy') health.status = 'warning';
+  } else if (redis.status === 'not_configured' && process.env.NODE_ENV === 'production') {
+    warnings.push('Redis not configured — rate limits do not survive restarts');
     if (health.status === 'healthy') health.status = 'warning';
   }
 
