@@ -35,6 +35,11 @@ services:
       AIRALO_CLIENT_ID: ""
       AIRALO_CLIENT_SECRET: ""
       AIRALO_ENV: "sandbox"
+      # Airalo webhook signature verification.
+      # Mode: optional (default — log result, still process), required (reject 401 on invalid), disabled (skip).
+      # AIRALO_WEBHOOK_SECRET defaults to AIRALO_CLIENT_SECRET when unset.
+      AIRALO_WEBHOOK_SECRET: ""
+      AIRALO_WEBHOOK_VERIFY: "optional"
       APP_URL: http://localhost:3000
       # Paddle - sandbox mode by default
       PADDLE_API_KEY: ""

@@ -44,6 +44,18 @@ export function validateEnv() {
     log.warn({ configured: configuredSmtp, missing: missingSmtp }, 'Partial SMTP configuration');
   }
 
+  // Airalo webhook verification: warn if mode is `required` but no secret is
+  // available (no AIRALO_WEBHOOK_SECRET, no AIRALO_CLIENT_SECRET) — every
+  // inbound webhook would be rejected with 401.
+  const airaloVerifyMode = (process.env.AIRALO_WEBHOOK_VERIFY || 'optional').toLowerCase();
+  const airaloHasSecret = Boolean(process.env.AIRALO_WEBHOOK_SECRET || process.env.AIRALO_CLIENT_SECRET);
+  if (airaloVerifyMode === 'required' && !airaloHasSecret) {
+    log.warn('AIRALO_WEBHOOK_VERIFY=required but neither AIRALO_WEBHOOK_SECRET nor AIRALO_CLIENT_SECRET is set — every inbound Airalo webhook will be rejected with 401.');
+  }
+  if (!['optional', 'required', 'disabled'].includes(airaloVerifyMode)) {
+    log.warn({ value: process.env.AIRALO_WEBHOOK_VERIFY }, 'AIRALO_WEBHOOK_VERIFY has an unrecognised value; falling back to "optional"');
+  }
+
   if (missing.length > 0) {
     log.fatal({ missing }, 'Required environment variables are not set');
     process.exit(1);
