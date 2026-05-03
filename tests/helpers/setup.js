@@ -1,6 +1,4 @@
-import { jest } from '@jest/globals';
-
-// Mock environment
+// Mock environment for tests
 process.env.NODE_ENV = 'test';
 process.env.DATABASE_URL = 'postgres://test:test@localhost:5432/esim_test';
 process.env.SESSION_SECRET = 'test-secret';
