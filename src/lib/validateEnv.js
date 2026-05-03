@@ -44,6 +44,17 @@ export function validateEnv() {
     log.warn({ configured: configuredSmtp, missing: missingSmtp }, 'Partial SMTP configuration');
   }
 
+  // Redis is required for durable rate limiting in production. Without it, rate
+  // limit counters live in process memory and reset on every container restart,
+  // leaving login/payment endpoints briefly unprotected during deploys.
+  if (!process.env.REDIS_URL) {
+    if (process.env.NODE_ENV === 'production') {
+      log.warn('REDIS_URL not set — rate limits will reset on every container restart. Provision Redis and set REDIS_URL for durable rate limiting.');
+    } else {
+      log.info('REDIS_URL not set — using in-memory rate limiter (acceptable for development)');
+    }
+  }
+
   if (missing.length > 0) {
     log.fatal({ missing }, 'Required environment variables are not set');
     process.exit(1);
