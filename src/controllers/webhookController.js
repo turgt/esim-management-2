@@ -1,6 +1,7 @@
 import db from '../db/models/index.js';
 import logger from '../lib/logger.js';
 import { logAudit, ACTIONS } from '../services/auditService.js';
+import { verifyAiraloRequest, getVerifyMode } from '../services/airaloWebhookVerifier.js';
 
 const log = logger.child({ module: 'webhook' });
 
@@ -8,6 +9,24 @@ export async function handleAiraloWebhook(req, res) {
   const payload = req.body;
   const webhookType = payload?.type || payload?.event || 'unknown';
   const airaloRequestId = payload?.data?.request_id || payload?.request_id || null;
+
+  // Verify signature. In `required` mode an invalid/missing signature is
+  // rejected with 401 and the payload is not persisted. In `optional` mode
+  // (default) the result is logged and the payload still processes — useful
+  // for observing signing health before flipping the gate to `required`.
+  // `disabled` skips verification entirely.
+  const verifyMode = getVerifyMode();
+  const verify = verifyMode === 'disabled'
+    ? { ok: true, present: false, reason: 'verify_disabled' }
+    : verifyAiraloRequest(req);
+
+  if (verifyMode === 'required' && !verify.ok) {
+    log.warn(
+      { webhookType, airaloRequestId, reason: verify.reason },
+      'Airalo webhook rejected — signature verification failed (mode=required)'
+    );
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
 
   // Immediately persist raw payload
   let webhookLog;
@@ -28,7 +47,10 @@ export async function handleAiraloWebhook(req, res) {
 
   // Process async
   try {
-    await processWebhook(webhookLog || { id: null, webhookType, airaloRequestId, payload });
+    await processWebhook(
+      webhookLog || { id: null, webhookType, airaloRequestId, payload },
+      { verify, verifyMode }
+    );
   } catch (err) {
     log.error({ err, webhookLogId: webhookLog?.id }, 'Webhook processing failed');
     if (webhookLog) {
@@ -37,8 +59,9 @@ export async function handleAiraloWebhook(req, res) {
   }
 }
 
-export async function processWebhook(webhookLog) {
+export async function processWebhook(webhookLog, opts = {}) {
   const { webhookType, airaloRequestId, payload } = webhookLog;
+  const { verify, verifyMode } = opts;
 
   if (!airaloRequestId) {
     log.warn({ webhookType }, 'Webhook without request_id — skipping');
@@ -104,7 +127,16 @@ export async function processWebhook(webhookLog) {
   await logAudit(ACTIONS.WEBHOOK_PROCESSED, {
     entity: 'TravelerBooking',
     entityId: booking.id,
-    details: { webhookType, airaloRequestId }
+    details: {
+      webhookType,
+      airaloRequestId,
+      ...(verify ? {
+        signaturePresent: verify.present,
+        signatureValid: verify.ok,
+        signatureFailureReason: verify.ok ? undefined : verify.reason,
+        verifyMode
+      } : {})
+    }
   });
 }
 
