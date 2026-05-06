@@ -172,7 +172,11 @@ export async function showAssignEsim(req, res) {
 
     const country = process.env.COUNTRY || 'TR';
     const packages = await db.AiraloPackage.findAll({
-      where: { countryCode: country },
+      where: 
+      { 
+        countryCode: country ,
+        type: { [db.Sequelize.Op.ne]: 'topup' }
+      },
       order: [['price', 'ASC']],
       limit: 100,
     });
