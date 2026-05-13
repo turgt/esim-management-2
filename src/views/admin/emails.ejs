@@ -5,6 +5,10 @@
     <p class="text-sm text-[var(--text-secondary)] mb-1">Email Management</p>
     <h1 class="text-page-title">Emails</h1>
   </div>
+  <button onclick="openComposeModal()" class="btn btn-primary inline-flex items-center gap-2">
+    <i data-lucide="pencil" class="w-4 h-4"></i>
+    Compose
+  </button>
 </div>
 
 <!-- Stats -->
@@ -74,6 +78,7 @@
       <option value="payment_failed" <%= typeFilter === 'payment_failed' ? 'selected' : '' %>>Payment Failed</option>
       <option value="esim_assigned" <%= typeFilter === 'esim_assigned' ? 'selected' : '' %>>eSIM Assigned</option>
       <option value="esim_activation_failed" <%= typeFilter === 'esim_activation_failed' ? 'selected' : '' %>>Activation Failed</option>
+      <option value="custom" <%= typeFilter === 'custom' ? 'selected' : '' %>>Custom</option>
     </select>
     <label for="emailStatusFilter" class="sr-only">Email Status</label>
     <select name="status" id="emailStatusFilter" class="input !w-auto">
@@ -179,5 +184,156 @@
 <% if (pagination.totalPages > 1) { %>
 <%- include('../partials/pagination', { pagination }) %>
 <% } %>
+
+<!-- Compose Email Modal -->
+<div id="composeModal" class="fixed inset-0 z-50 hidden">
+  <div class="fixed inset-0 bg-black/50" onclick="closeComposeModal()"></div>
+  <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+    <div class="card w-full max-w-2xl pointer-events-auto">
+      <div class="card-header">
+        <h2 class="card-title flex items-center gap-2">
+          <i data-lucide="pencil" class="w-4 h-4"></i> Compose Email
+        </h2>
+        <button onclick="closeComposeModal()" class="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-5 space-y-4">
+        <div id="composeError" class="hidden alert alert-error text-sm"></div>
+        <div>
+          <label class="block text-sm font-medium mb-1">To</label>
+          <input id="composeTo" type="email" placeholder="recipient@example.com" class="input w-full">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Subject</label>
+          <input id="composeSubject" type="text" placeholder="Subject" maxlength="200" class="input w-full">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Message</label>
+          <div id="quillEditor" style="min-height:200px;background:#fff;border-radius:0 0 4px 4px;"></div>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button onclick="closeComposeModal()" class="btn btn-secondary">Cancel</button>
+          <button onclick="submitCompose()" id="composeSendBtn" class="btn btn-primary inline-flex items-center gap-2">
+            <i data-lucide="send" class="w-4 h-4" id="composeSendIcon"></i>
+            <span id="composeSendLabel">Send Email</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div id="composeToast" class="fixed top-4 right-4 z-[60] hidden max-w-sm"></div>
+
+<!-- Quill CDN (loaded only on this page) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css">
+<script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
+
+<script>
+(function () {
+  var quill;
+
+  window.openComposeModal = function () {
+    document.getElementById('composeModal').classList.remove('hidden');
+    if (!quill) {
+      quill = new Quill('#quillEditor', {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline'],
+            ['link'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['clean']
+          ]
+        }
+      });
+    }
+    lucide.createIcons();
+  };
+
+  window.closeComposeModal = function () {
+    document.getElementById('composeModal').classList.add('hidden');
+    var errorEl = document.getElementById('composeError');
+    errorEl.textContent = '';
+    errorEl.classList.add('hidden');
+    document.getElementById('composeTo').value = '';
+    document.getElementById('composeSubject').value = '';
+    if (quill) { quill.setText(''); }
+  };
+
+  window.submitCompose = async function () {
+    var to = document.getElementById('composeTo').value.trim();
+    var subject = document.getElementById('composeSubject').value.trim();
+    var body = quill ? quill.root.innerHTML : '';
+    var bodyText = body.replace(/<[^>]+>/g, '').trim();
+    var errorEl = document.getElementById('composeError');
+    var sendBtn = document.getElementById('composeSendBtn');
+    var sendIcon = document.getElementById('composeSendIcon');
+    var sendLabel = document.getElementById('composeSendLabel');
+
+    errorEl.textContent = '';
+    errorEl.classList.add('hidden');
+
+    if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+      errorEl.textContent = 'Enter a valid email address.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+    if (!subject) {
+      errorEl.textContent = 'Subject is required.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+    if (!bodyText) {
+      errorEl.textContent = 'Message body cannot be empty.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
+    sendBtn.disabled = true;
+    sendIcon.style.display = 'none';
+    sendLabel.textContent = 'Sending…';
+
+    try {
+      var res = await fetch('/admin/emails/compose', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': '<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>'
+        },
+        body: JSON.stringify({ to: to, subject: subject, body: body })
+      });
+      var data = await res.json();
+
+      if (data.success) {
+        closeComposeModal();
+        showComposeToast('Email sent successfully.', 'success');
+      } else {
+        errorEl.textContent = data.error || 'Failed to send email.';
+        errorEl.classList.remove('hidden');
+      }
+    } catch (e) {
+      errorEl.textContent = 'Network error. Please try again.';
+      errorEl.classList.remove('hidden');
+    } finally {
+      sendBtn.disabled = false;
+      sendIcon.style.display = '';
+      sendLabel.textContent = 'Send Email';
+      lucide.createIcons();
+    }
+  };
+
+  function showComposeToast(message, type) {
+    var toast = document.getElementById('composeToast');
+    toast.className = 'fixed top-4 right-4 z-[60] max-w-sm alert ' +
+      (type === 'success' ? 'alert-success' : 'alert-error');
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+    setTimeout(function () { toast.classList.add('hidden'); }, 3000);
+  }
+}());
+</script>
 
 <%- include('../partials/footer') %>
