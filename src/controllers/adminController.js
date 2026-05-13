@@ -5,7 +5,7 @@ import { listOffers, purchaseEsim as zenditPurchaseEsim, getUsage as zenditGetUs
 import { createOrder as airaloCreateOrder, getUsage as airaloGetUsage, getBalance as airaloGetBalance } from '../services/airaloClient.js';
 import { purchaseEsimAfterPayment, topupEsimAfterPayment } from '../services/paymentService.js';
 import cacheService from '../services/cacheService.js';
-import { sendEsimAssignedEmail } from '../services/emailService.js';
+import { sendEsimAssignedEmail, emailLayout, sendMail } from '../services/emailService.js';
 import { getPaginationParams, buildPagination } from '../utils/pagination.js';
 import { logAudit, ACTIONS, getIp } from '../services/auditService.js';
 import logger from '../lib/logger.js';
@@ -952,6 +952,58 @@ export async function replyToEmail(req, res) {
   } catch (err) {
     log.error({ err }, 'replyToEmail error');
     res.render('error', { title: 'Error', user: req.session.user, message: 'Failed to send reply' });
+  }
+}
+
+export async function composeEmail(req, res) {
+  try {
+    const { to, subject, body } = req.body;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!to || !emailRegex.test(to.trim())) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+
+    if (!subject || !subject.trim()) {
+      return res.status(400).json({ error: 'Subject is required' });
+    }
+    if (subject.trim().length > 200) {
+      return res.status(400).json({ error: 'Subject must be 200 characters or fewer' });
+    }
+
+    if (body && body.length > 51200) {
+      return res.status(400).json({ error: 'Message body is too large (max 50 KB)' });
+    }
+
+    const bodyText = body ? body.replace(/<[^>]+>/g, '').trim() : '';
+    if (!bodyText) {
+      return res.status(400).json({ error: 'Body cannot be empty' });
+    }
+
+    const html = emailLayout(body);
+    await sendMail(to.trim(), subject.trim(), html, { type: 'custom', userId: req.session.user.id });
+
+    const emailLogRecord = await db.EmailLog.findOne({
+      where: { to: to.trim(), type: 'custom', userId: req.session.user.id, subject: subject.trim() },
+      order: [['createdAt', 'DESC']]
+    });
+
+    if (!emailLogRecord) {
+      log.warn({ to: to.trim(), type: 'custom' }, 'EmailLog record not found after compose send');
+    }
+
+    await logAudit('admin.email_compose', {
+      userId: req.session.user.id,
+      entity: 'EmailLog',
+      entityId: emailLogRecord?.id ?? null,
+      details: { to: to.trim(), subject: subject.trim() },
+      ipAddress: getIp(req)
+    });
+
+    return res.json({ success: true });
+  } catch (err) {
+    log.error({ err }, 'composeEmail error');
+    return res.status(500).json({ error: 'Failed to send email' });
   }
 }
 

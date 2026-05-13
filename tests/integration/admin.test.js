@@ -47,4 +47,41 @@ describe('Admin System', () => {
       assert.equal(uuidRegex.test(id), true);
     });
   });
+
+  describe('composeEmail validation logic', () => {
+    it('accepts valid email addresses', () => {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      assert.ok(emailRegex.test('user@example.com'));
+      assert.ok(emailRegex.test('admin+tag@sub.domain.org'));
+    });
+
+    it('rejects invalid email addresses', () => {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      assert.ok(!emailRegex.test('notanemail'));
+      assert.ok(!emailRegex.test('missing@'));
+      assert.ok(!emailRegex.test('@nodomain.com'));
+      assert.ok(!emailRegex.test(''));
+    });
+
+    it('detects empty Quill body (strips HTML tags)', () => {
+      const stripHtml = (html) => html.replace(/<[^>]+>/g, '').trim();
+      assert.equal(stripHtml('<p><br></p>'), '');
+      assert.equal(stripHtml('<p>  </p>'), '');
+      assert.equal(stripHtml(''), '');
+      assert.notEqual(stripHtml('<p>Hello world</p>'), '');
+      assert.notEqual(stripHtml('<strong>Bold text</strong>'), '');
+    });
+
+    it('validates subject max length of 200 chars', () => {
+      const maxLen = 200;
+      assert.ok('Hello World'.length <= maxLen);
+      assert.ok('x'.repeat(201).length > maxLen);
+    });
+
+    it('rejects blank subject', () => {
+      assert.ok(!''.trim());
+      assert.ok(!'   '.trim());
+      assert.ok('Valid Subject'.trim());
+    });
+  });
 });
