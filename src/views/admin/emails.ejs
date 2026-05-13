@@ -186,10 +186,8 @@
 <% } %>
 
 <!-- Compose Email Modal -->
-<div id="composeModal" class="fixed inset-0 z-50 hidden">
-  <div class="fixed inset-0 bg-black/50" onclick="closeComposeModal()"></div>
-  <div class="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
-    <div class="card w-full max-w-2xl pointer-events-auto" role="dialog" aria-modal="true" aria-labelledby="composeModalTitle">
+<div id="composeModal" class="fixed inset-0 z-50 hidden bg-black/50 flex items-center justify-center p-4" onclick="closeComposeModal()">
+  <div class="card w-full max-w-2xl" role="dialog" aria-modal="true" aria-labelledby="composeModalTitle" onclick="event.stopPropagation()">
       <div class="card-header">
         <h2 id="composeModalTitle" class="card-title flex items-center gap-2">
           <i data-lucide="pencil" class="w-4 h-4"></i> Compose Email
@@ -221,7 +219,6 @@
         </div>
       </div>
     </div>
-  </div>
 </div>
 
 <!-- Toast notification -->
