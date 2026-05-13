@@ -955,6 +955,45 @@ export async function replyToEmail(req, res) {
   }
 }
 
+export async function composeEmail(req, res) {
+  try {
+    const { to, subject, body } = req.body;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!to || !emailRegex.test(to.trim())) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+
+    if (!subject || !subject.trim()) {
+      return res.status(400).json({ error: 'Subject is required' });
+    }
+    if (subject.trim().length > 200) {
+      return res.status(400).json({ error: 'Subject must be 200 characters or fewer' });
+    }
+
+    const bodyText = body ? body.replace(/<[^>]+>/g, '').trim() : '';
+    if (!bodyText) {
+      return res.status(400).json({ error: 'Body cannot be empty' });
+    }
+
+    const { emailLayout, sendMail } = await import('../services/emailService.js');
+    const html = emailLayout(body);
+    await sendMail(to.trim(), subject.trim(), html, { type: 'custom', userId: req.session.user.id });
+
+    await logAudit('admin.email_compose', {
+      userId: req.session.user.id,
+      entity: 'EmailLog',
+      details: { to: to.trim(), subject: subject.trim() },
+      ipAddress: getIp(req)
+    });
+
+    return res.json({ success: true });
+  } catch (err) {
+    log.error({ err }, 'composeEmail error');
+    return res.status(500).json({ error: 'Failed to send email' });
+  }
+}
+
 // Admin-only: Zendit purchase page (for consuming remaining balance)
 export async function showZenditPurchase(req, res) {
   try {
