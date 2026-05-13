@@ -980,9 +980,15 @@ export async function composeEmail(req, res) {
     const html = emailLayout(body);
     await sendMail(to.trim(), subject.trim(), html, { type: 'custom', userId: req.session.user.id });
 
+    const emailLogRecord = await db.EmailLog.findOne({
+      where: { to: to.trim(), type: 'custom', userId: req.session.user.id },
+      order: [['createdAt', 'DESC']]
+    });
+
     await logAudit('admin.email_compose', {
       userId: req.session.user.id,
       entity: 'EmailLog',
+      entityId: emailLogRecord?.id,
       details: { to: to.trim(), subject: subject.trim() },
       ipAddress: getIp(req)
     });
