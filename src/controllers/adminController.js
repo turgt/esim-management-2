@@ -1007,6 +1007,18 @@ export async function composeEmail(req, res) {
   }
 }
 
+export async function previewEmail(req, res) {
+  const { body } = req.body;
+  if (!body || typeof body !== 'string') {
+    return res.status(400).json({ error: 'body required' });
+  }
+  if (body.length > 51200) {
+    return res.status(400).json({ error: 'Body too large' });
+  }
+  const html = emailLayout(body);
+  return res.json({ html });
+}
+
 // Admin-only: Zendit purchase page (for consuming remaining balance)
 export async function showZenditPurchase(req, res) {
   try {

@@ -207,8 +207,19 @@
           <input id="composeSubject" type="text" placeholder="Subject" maxlength="200" class="input w-full">
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">Message</label>
-          <div id="quillEditor" style="min-height:200px;background:#fff;border-radius:0 0 4px 4px;"></div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-sm font-medium">Message</label>
+            <div class="flex rounded-md border border-[var(--border)] overflow-hidden text-xs">
+              <button type="button" id="tabWrite" onclick="switchTab('write')" class="px-3 py-1 bg-[var(--brand-primary)] text-white font-medium">Write</button>
+              <button type="button" id="tabPreview" onclick="switchTab('preview')" class="px-3 py-1 text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]">Preview</button>
+            </div>
+          </div>
+          <div id="quillEditorWrap">
+            <div id="quillEditor" style="min-height:200px;background:#fff;border-radius:0 0 4px 4px;"></div>
+          </div>
+          <div id="previewWrap" class="hidden border border-[var(--border)] rounded-md overflow-hidden" style="height:320px;">
+            <iframe id="previewFrame" class="w-full h-full border-0" title="Email preview"></iframe>
+          </div>
         </div>
         <div class="flex justify-end gap-2 pt-2">
           <button onclick="closeComposeModal()" class="btn btn-secondary">Cancel</button>
@@ -265,6 +276,44 @@
     document.getElementById('composeTo').value = '';
     document.getElementById('composeSubject').value = '';
     if (quill) { quill.setText(''); }
+    switchTab('write');
+  };
+
+  window.switchTab = function (tab) {
+    var writeWrap = document.getElementById('quillEditorWrap');
+    var previewWrap = document.getElementById('previewWrap');
+    var tabWrite = document.getElementById('tabWrite');
+    var tabPreview = document.getElementById('tabPreview');
+    var activeClass = ['bg-[var(--brand-primary)]', 'text-white', 'font-medium'];
+    var inactiveClass = ['text-[var(--text-secondary)]', 'hover:bg-[var(--bg-secondary)]'];
+
+    if (tab === 'write') {
+      writeWrap.classList.remove('hidden');
+      previewWrap.classList.add('hidden');
+      tabWrite.className = 'px-3 py-1 bg-[var(--brand-primary)] text-white font-medium';
+      tabPreview.className = 'px-3 py-1 text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]';
+    } else {
+      writeWrap.classList.add('hidden');
+      previewWrap.classList.remove('hidden');
+      tabWrite.className = 'px-3 py-1 text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]';
+      tabPreview.className = 'px-3 py-1 bg-[var(--brand-primary)] text-white font-medium';
+      var body = quill ? quill.root.innerHTML : '';
+      fetch('/admin/emails/preview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': '<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>'
+        },
+        body: JSON.stringify({ body: body })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.html) {
+            document.getElementById('previewFrame').srcdoc = data.html;
+          }
+        })
+        .catch(function () {});
+    }
   };
 
   window.submitCompose = async function () {

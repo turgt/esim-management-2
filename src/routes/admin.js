@@ -5,7 +5,7 @@ import {
   showAssignEsim, assignEsim, showTopup, topupEsim,
   showAllEsims, showEsimDetail,
   listPayments, retryEsimPurchase, resolvePayment, cancelPayment,
-  listEmails, showEmailDetail, downloadAttachment, replyToEmail, composeEmail,
+  listEmails, showEmailDetail, downloadAttachment, replyToEmail, composeEmail, previewEmail,
   showZenditPurchase, zenditPurchase,
   listAgencies, showAgencyDetail, createAgency, createContract,
   assignAgencyUser, removeAgencyUser, updateAgencyUserRole,
@@ -68,6 +68,7 @@ router.get('/emails/:id', ensureAuth, ensureAdmin, showEmailDetail);
 router.get('/emails/:id/attachment/:attachmentIndex', ensureAuth, ensureAdmin, downloadAttachment);
 router.post('/emails/:id/reply', ensureAuth, ensureAdmin, replyToEmail);
 router.post('/emails/compose', ensureAuth, ensureAdmin, composeEmail);
+router.post('/emails/preview', ensureAuth, ensureAdmin, express.json(), previewEmail);
 
 // Zendit Purchase (admin-only)
 router.get('/zendit/purchase', ensureAuth, ensureAdmin, showZenditPurchase);
