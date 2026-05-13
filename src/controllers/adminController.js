@@ -981,14 +981,18 @@ export async function composeEmail(req, res) {
     await sendMail(to.trim(), subject.trim(), html, { type: 'custom', userId: req.session.user.id });
 
     const emailLogRecord = await db.EmailLog.findOne({
-      where: { to: to.trim(), type: 'custom', userId: req.session.user.id },
+      where: { to: to.trim(), type: 'custom', userId: req.session.user.id, subject: subject.trim() },
       order: [['createdAt', 'DESC']]
     });
+
+    if (!emailLogRecord) {
+      log.warn({ to: to.trim(), type: 'custom' }, 'EmailLog record not found after compose send');
+    }
 
     await logAudit('admin.email_compose', {
       userId: req.session.user.id,
       entity: 'EmailLog',
-      entityId: emailLogRecord?.id,
+      entityId: emailLogRecord?.id ?? null,
       details: { to: to.trim(), subject: subject.trim() },
       ipAddress: getIp(req)
     });
