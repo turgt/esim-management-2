@@ -19,7 +19,7 @@ function getResendClient() {
   return resendClient;
 }
 
-async function sendMail(to, subject, html, { type = 'general', userId = null } = {}) {
+export async function sendMail(to, subject, html, { type = 'general', userId = null } = {}) {
   const client = getResendClient();
   const from = process.env.SMTP_FROM || 'DataPatch <noreply@datapatch.net>';
 

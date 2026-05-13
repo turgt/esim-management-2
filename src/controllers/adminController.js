@@ -5,7 +5,7 @@ import { listOffers, purchaseEsim as zenditPurchaseEsim, getUsage as zenditGetUs
 import { createOrder as airaloCreateOrder, getUsage as airaloGetUsage, getBalance as airaloGetBalance } from '../services/airaloClient.js';
 import { purchaseEsimAfterPayment, topupEsimAfterPayment } from '../services/paymentService.js';
 import cacheService from '../services/cacheService.js';
-import { sendEsimAssignedEmail } from '../services/emailService.js';
+import { sendEsimAssignedEmail, emailLayout, sendMail } from '../services/emailService.js';
 import { getPaginationParams, buildPagination } from '../utils/pagination.js';
 import { logAudit, ACTIONS, getIp } from '../services/auditService.js';
 import logger from '../lib/logger.js';
@@ -971,12 +971,15 @@ export async function composeEmail(req, res) {
       return res.status(400).json({ error: 'Subject must be 200 characters or fewer' });
     }
 
+    if (body && body.length > 51200) {
+      return res.status(400).json({ error: 'Message body is too large (max 50 KB)' });
+    }
+
     const bodyText = body ? body.replace(/<[^>]+>/g, '').trim() : '';
     if (!bodyText) {
       return res.status(400).json({ error: 'Body cannot be empty' });
     }
 
-    const { emailLayout, sendMail } = await import('../services/emailService.js');
     const html = emailLayout(body);
     await sendMail(to.trim(), subject.trim(), html, { type: 'custom', userId: req.session.user.id });
 
