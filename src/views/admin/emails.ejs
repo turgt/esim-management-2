@@ -198,13 +198,31 @@
       </div>
       <div class="p-5 space-y-4">
         <div id="composeError" class="hidden alert alert-error text-sm"></div>
-        <div>
-          <label for="composeTo" class="block text-sm font-medium mb-1">To</label>
-          <input id="composeTo" type="email" placeholder="recipient@example.com" class="input w-full">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="composeTo" class="block text-sm font-medium mb-1">To</label>
+            <input id="composeTo" type="email" placeholder="recipient@example.com" class="input w-full">
+          </div>
+          <div>
+            <label for="composeFrom" class="block text-sm font-medium mb-1">From <span class="text-[var(--text-tertiary)] font-normal">(optional)</span></label>
+            <input id="composeFrom" type="email" placeholder="<%= smtpFrom %>" class="input w-full">
+          </div>
         </div>
-        <div>
-          <label for="composeSubject" class="block text-sm font-medium mb-1">Subject</label>
-          <input id="composeSubject" type="text" placeholder="Subject" maxlength="200" class="input w-full">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="composeSubject" class="block text-sm font-medium mb-1">Subject</label>
+            <input id="composeSubject" type="text" placeholder="Subject" maxlength="200" class="input w-full">
+          </div>
+          <div>
+            <label for="composeTemplate" class="block text-sm font-medium mb-1">Template <span class="text-[var(--text-tertiary)] font-normal">(optional)</span></label>
+            <select id="composeTemplate" class="input w-full" onchange="applyComposeTemplate(this.value)">
+              <option value="">— No template —</option>
+              <option value="esim_assigned">eSIM Assigned</option>
+              <option value="welcome">Welcome</option>
+              <option value="payment_success">Payment Successful</option>
+              <option value="action_required">Action Required</option>
+            </select>
+          </div>
         </div>
         <div>
           <div class="flex items-center justify-between mb-1">
@@ -274,8 +292,42 @@
     errorEl.textContent = '';
     errorEl.classList.add('hidden');
     document.getElementById('composeTo').value = '';
+    document.getElementById('composeFrom').value = '';
     document.getElementById('composeSubject').value = '';
+    document.getElementById('composeTemplate').value = '';
     if (quill) { quill.setText(''); }
+    switchTab('write');
+  };
+
+  var COMPOSE_TEMPLATES = {
+    esim_assigned: {
+      subject: 'Your eSIM is Ready',
+      body: 'Hello,\n\nYour eSIM has been assigned and is ready to use. Please check your account for the QR code and activation instructions.\n\nIf you have any questions, feel free to reply to this email.\n\nBest regards,\nDataPatch Team'
+    },
+    welcome: {
+      subject: 'Welcome to DataPatch',
+      body: 'Hello,\n\nWelcome to DataPatch! Your account has been created successfully.\n\nYou can now browse available eSIM plans and make purchases from your dashboard.\n\nBest regards,\nDataPatch Team'
+    },
+    payment_success: {
+      subject: 'Payment Confirmed',
+      body: 'Hello,\n\nYour payment has been successfully processed. Your order is now being prepared.\n\nYou will receive another email once your eSIM is ready.\n\nBest regards,\nDataPatch Team'
+    },
+    action_required: {
+      subject: 'Action Required',
+      body: 'Hello,\n\nYour attention is required regarding your DataPatch account. Please log in to your account and review the pending action.\n\nIf you have any questions, feel free to reply to this email.\n\nBest regards,\nDataPatch Team'
+    }
+  };
+
+  window.applyComposeTemplate = function (key) {
+    if (!key || !COMPOSE_TEMPLATES[key]) return;
+    var tpl = COMPOSE_TEMPLATES[key];
+    var subjectEl = document.getElementById('composeSubject');
+    if (!subjectEl.value.trim()) {
+      subjectEl.value = tpl.subject;
+    }
+    if (quill) {
+      quill.setText(tpl.body);
+    }
     switchTab('write');
   };
 
@@ -318,6 +370,7 @@
 
   window.submitCompose = async function () {
     var to = document.getElementById('composeTo').value.trim();
+    var from = document.getElementById('composeFrom').value.trim();
     var subject = document.getElementById('composeSubject').value.trim();
     var body = quill ? quill.root.innerHTML : '';
     var bodyText = quill ? quill.getText().trim() : '';
@@ -356,7 +409,7 @@
           'Content-Type': 'application/json',
           'X-CSRF-Token': '<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>'
         },
-        body: JSON.stringify({ to: to, subject: subject, body: body })
+        body: JSON.stringify({ to: to, from: from || undefined, subject: subject, body: body })
       });
       var data = await res.json();
 

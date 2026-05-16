@@ -19,9 +19,10 @@ function getResendClient() {
   return resendClient;
 }
 
-export async function sendMail(to, subject, html, { type = 'general', userId = null } = {}) {
+export async function sendMail(to, subject, html, { type = 'general', userId = null, fromAddress = null } = {}) {
   const client = getResendClient();
-  const from = process.env.SMTP_FROM || 'DataPatch <noreply@datapatch.net>';
+  const defaultFrom = process.env.SMTP_FROM || 'DataPatch <noreply@datapatch.net>';
+  const from = fromAddress || defaultFrom;
 
   if (!client) {
     log.info({ to, subject }, 'Email logged (no Resend API key)');
