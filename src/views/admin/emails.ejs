@@ -371,7 +371,7 @@
           'Content-Type': 'application/json',
           'X-CSRF-Token': '<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>'
         },
-        body: JSON.stringify({ body: body })
+        body: JSON.stringify({ body: body, useLayout: !!lastAppliedTemplate })
       })
         .then(function (r) { return r.json(); })
         .then(function (data) {
@@ -425,7 +425,7 @@
           'Content-Type': 'application/json',
           'X-CSRF-Token': '<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>'
         },
-        body: JSON.stringify({ to, from: from || undefined, fromName: fromName || undefined, subject, body })
+        body: JSON.stringify({ to, from: from || undefined, fromName: fromName || undefined, subject, body, useLayout: !!lastAppliedTemplate })
       });
       var data = await res.json();
 

@@ -958,7 +958,7 @@ export async function replyToEmail(req, res) {
 
 export async function composeEmail(req, res) {
   try {
-    const { to, subject, body, from, fromName } = req.body;
+    const { to, subject, body, from, fromName, useLayout } = req.body;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!to || !emailRegex.test(to.trim())) {
@@ -989,7 +989,7 @@ export async function composeEmail(req, res) {
       return res.status(400).json({ error: 'Body cannot be empty' });
     }
 
-    const html = emailLayout(body);
+    const html = useLayout ? emailLayout(body) : body;
     const fromAddress = from && from.trim() ? from.trim() : null;
     const senderName = fromName && typeof fromName === 'string' && fromName.trim() ? fromName.trim() : null;
     await sendMail(to.trim(), subject.trim(), html, { type: 'custom', userId: req.session.user.id, fromAddress, fromName: senderName });
@@ -1019,14 +1019,14 @@ export async function composeEmail(req, res) {
 }
 
 export async function previewEmail(req, res) {
-  const { body } = req.body;
+  const { body, useLayout } = req.body;
   if (!body || typeof body !== 'string') {
     return res.status(400).json({ error: 'body required' });
   }
   if (body.length > 51200) {
     return res.status(400).json({ error: 'Body too large' });
   }
-  const html = emailLayout(body);
+  const html = useLayout ? emailLayout(body) : body;
   return res.json({ html });
 }
 
