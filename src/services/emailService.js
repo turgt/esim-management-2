@@ -278,10 +278,15 @@ export async function sendEsimActivationFailedEmail(user, payment) {
 // Exported for use by booking/expiry emails
 export { emailLayout, emailButton, emailInfoCard };
 
-export async function sendReplyEmail(to, subject, html, { inReplyTo, userId, fromAddress } = {}) {
+export async function sendReplyEmail(to, subject, html, { inReplyTo, userId, fromAddress, fromName } = {}) {
   const client = getResendClient();
   const defaultFrom = process.env.SMTP_FROM || 'DataPatch <noreply@datapatch.net>';
-  const from = fromAddress ? `DataPatch <${fromAddress}>` : defaultFrom;
+  let from = defaultFrom;
+  if (fromAddress && fromName) {
+    from = `${fromName} <${fromAddress}>`;
+  } else if (fromAddress) {
+    from = fromAddress;
+  }
 
   if (!client) {
     log.info({ to, subject }, 'Reply email logged (no Resend API key)');
