@@ -958,7 +958,7 @@ export async function replyToEmail(req, res) {
 
 export async function composeEmail(req, res) {
   try {
-    const { to, subject, body, from } = req.body;
+    const { to, subject, body, from, fromName } = req.body;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!to || !emailRegex.test(to.trim())) {
@@ -967,6 +967,10 @@ export async function composeEmail(req, res) {
 
     if (from && !emailRegex.test(from.trim())) {
       return res.status(400).json({ error: 'Invalid from email address' });
+    }
+
+    if (fromName && typeof fromName === 'string' && fromName.trim().length > 100) {
+      return res.status(400).json({ error: 'From name must be 100 characters or fewer' });
     }
 
     if (!subject || !subject.trim()) {
@@ -987,7 +991,8 @@ export async function composeEmail(req, res) {
 
     const html = emailLayout(body);
     const fromAddress = from && from.trim() ? from.trim() : null;
-    await sendMail(to.trim(), subject.trim(), html, { type: 'custom', userId: req.session.user.id, fromAddress });
+    const senderName = fromName && typeof fromName === 'string' && fromName.trim() ? fromName.trim() : null;
+    await sendMail(to.trim(), subject.trim(), html, { type: 'custom', userId: req.session.user.id, fromAddress, fromName: senderName });
 
     const emailLogRecord = await db.EmailLog.findOne({
       where: { to: to.trim(), type: 'custom', userId: req.session.user.id, subject: subject.trim() },

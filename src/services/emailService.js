@@ -19,10 +19,29 @@ function getResendClient() {
   return resendClient;
 }
 
-export async function sendMail(to, subject, html, { type = 'general', userId = null, fromAddress = null } = {}) {
+export async function sendMail(to, subject, html, { type = 'general', userId = null, fromAddress = null, fromName = null } = {}) {
   const client = getResendClient();
   const defaultFrom = process.env.SMTP_FROM || 'DataPatch <noreply@datapatch.net>';
-  const from = fromAddress || defaultFrom;
+
+  let from = defaultFrom;
+  if (fromAddress && fromName) {
+    from = `${fromName} <${fromAddress}>`;
+  } else if (fromAddress) {
+    from = fromAddress;
+  } else if (fromName) {
+    const emailMatch = defaultFrom.match(/<([^>]+)>/);
+    const email = emailMatch ? emailMatch[1] : defaultFrom;
+    from = `${fromName} <${email}>`;
+  }
+
+  const text = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/ {2,}/g, ' ')
+    .trim();
 
   if (!client) {
     log.info({ to, subject }, 'Email logged (no Resend API key)');
@@ -34,7 +53,7 @@ export async function sendMail(to, subject, html, { type = 'general', userId = n
   }
 
   try {
-    const { data, error } = await client.emails.send({ from, to, subject, html });
+    const { data, error } = await client.emails.send({ from, to, subject, html, text });
 
     if (error) {
       log.error({ err: error, to, subject }, 'Resend API error');

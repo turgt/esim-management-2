@@ -187,67 +187,73 @@
 
 <!-- Compose Email Modal -->
 <div id="composeModal" class="fixed inset-0 z-50 hidden bg-black/50 flex items-center justify-center p-4" onclick="closeComposeModal()">
-  <div class="card w-full max-w-2xl" role="dialog" aria-modal="true" aria-labelledby="composeModalTitle" onclick="event.stopPropagation()">
-      <div class="card-header">
-        <h2 id="composeModalTitle" class="card-title flex items-center gap-2">
-          <i data-lucide="pencil" class="w-4 h-4"></i> Compose Email
-        </h2>
-        <button onclick="closeComposeModal()" aria-label="Close compose dialog" class="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+  <div class="card w-full max-w-2xl max-h-[90vh] flex flex-col" role="dialog" aria-modal="true" aria-labelledby="composeModalTitle" onclick="event.stopPropagation()">
+    <div class="card-header flex-shrink-0">
+      <h2 id="composeModalTitle" class="card-title flex items-center gap-2">
+        <i data-lucide="pencil" class="w-4 h-4"></i> Compose Email
+      </h2>
+      <button onclick="closeComposeModal()" aria-label="Close compose dialog" class="text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <div class="p-5 space-y-4 overflow-y-auto flex-1">
+      <div id="composeError" class="hidden alert alert-error text-sm"></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="composeTo" class="block text-sm font-medium mb-1">To</label>
+          <input id="composeTo" type="email" placeholder="recipient@example.com" class="input w-full">
+        </div>
+        <div>
+          <label for="composeSubject" class="block text-sm font-medium mb-1">Subject</label>
+          <input id="composeSubject" type="text" placeholder="Subject" maxlength="200" class="input w-full">
+        </div>
       </div>
-      <div class="p-5 space-y-4">
-        <div id="composeError" class="hidden alert alert-error text-sm"></div>
-        <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-2">
           <div>
-            <label for="composeTo" class="block text-sm font-medium mb-1">To</label>
-            <input id="composeTo" type="email" placeholder="recipient@example.com" class="input w-full">
+            <label for="composeFromName" class="block text-sm font-medium mb-1">From Name <span class="text-[var(--text-tertiary)] font-normal">(optional)</span></label>
+            <input id="composeFromName" type="text" placeholder="DataPatch" maxlength="100" class="input w-full">
           </div>
           <div>
-            <label for="composeFrom" class="block text-sm font-medium mb-1">From <span class="text-[var(--text-tertiary)] font-normal">(optional)</span></label>
+            <label for="composeFrom" class="block text-sm font-medium mb-1">From Email <span class="text-[var(--text-tertiary)] font-normal">(optional)</span></label>
             <input id="composeFrom" type="email" placeholder="<%= smtpFrom %>" class="input w-full">
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label for="composeSubject" class="block text-sm font-medium mb-1">Subject</label>
-            <input id="composeSubject" type="text" placeholder="Subject" maxlength="200" class="input w-full">
-          </div>
-          <div>
-            <label for="composeTemplate" class="block text-sm font-medium mb-1">Template <span class="text-[var(--text-tertiary)] font-normal">(optional)</span></label>
-            <select id="composeTemplate" class="input w-full" onchange="applyComposeTemplate(this.value)">
-              <option value="">— No template —</option>
-              <option value="esim_assigned">eSIM Assigned</option>
-              <option value="welcome">Welcome</option>
-              <option value="payment_success">Payment Successful</option>
-              <option value="action_required">Action Required</option>
-            </select>
-          </div>
-        </div>
         <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-sm font-medium">Message</label>
-            <div class="flex rounded-md border border-[var(--border)] overflow-hidden text-xs">
-              <button type="button" id="tabWrite" onclick="switchTab('write')" class="px-3 py-1 bg-[var(--brand-primary)] text-white font-medium">Write</button>
-              <button type="button" id="tabPreview" onclick="switchTab('preview')" class="px-3 py-1 text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]">Preview</button>
-            </div>
-          </div>
-          <div id="quillEditorWrap">
-            <div id="quillEditor" style="min-height:200px;background:#fff;border-radius:0 0 4px 4px;"></div>
-          </div>
-          <div id="previewWrap" class="hidden border border-[var(--border)] rounded-md overflow-hidden" style="height:320px;">
-            <iframe id="previewFrame" class="w-full h-full border-0" title="Email preview"></iframe>
+          <label for="composeTemplate" class="block text-sm font-medium mb-1">Template <span class="text-[var(--text-tertiary)] font-normal">(optional)</span></label>
+          <select id="composeTemplate" class="input w-full" onchange="applyComposeTemplate(this.value)">
+            <option value="">— No template —</option>
+            <option value="esim_assigned">eSIM Assigned</option>
+            <option value="welcome">Welcome</option>
+            <option value="payment_success">Payment Successful</option>
+            <option value="action_required">Action Required</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <label class="block text-sm font-medium">Message</label>
+          <div class="flex rounded-md border border-[var(--border)] overflow-hidden text-xs">
+            <button type="button" id="tabWrite" onclick="switchTab('write')" class="px-3 py-1 bg-[var(--brand-primary)] text-white font-medium">Write</button>
+            <button type="button" id="tabPreview" onclick="switchTab('preview')" class="px-3 py-1 text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]">Preview</button>
           </div>
         </div>
-        <div class="flex justify-end gap-2 pt-2">
-          <button onclick="closeComposeModal()" class="btn btn-secondary">Cancel</button>
-          <button onclick="submitCompose()" id="composeSendBtn" class="btn btn-primary inline-flex items-center gap-2">
-            <i data-lucide="send" class="w-4 h-4" id="composeSendIcon"></i>
-            <span id="composeSendLabel">Send Email</span>
-          </button>
+        <div id="quillEditorWrap">
+          <div id="quillEditor" style="min-height:200px;background:#fff;border-radius:0 0 4px 4px;"></div>
+        </div>
+        <div id="previewWrap" class="hidden border border-[var(--border)] rounded-md overflow-hidden" style="height:320px;">
+          <iframe id="previewFrame" class="w-full h-full border-0" title="Email preview"></iframe>
         </div>
       </div>
     </div>
+    <div class="flex justify-end gap-2 p-4 border-t border-[var(--border)] flex-shrink-0">
+      <button onclick="closeComposeModal()" class="btn btn-secondary">Cancel</button>
+      <button onclick="submitCompose()" id="composeSendBtn" class="btn btn-primary inline-flex items-center gap-2">
+        <i data-lucide="send" class="w-4 h-4" id="composeSendIcon"></i>
+        <span id="composeSendLabel">Send Email</span>
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- Toast notification -->
@@ -292,12 +298,16 @@
     errorEl.textContent = '';
     errorEl.classList.add('hidden');
     document.getElementById('composeTo').value = '';
+    document.getElementById('composeFromName').value = '';
     document.getElementById('composeFrom').value = '';
     document.getElementById('composeSubject').value = '';
     document.getElementById('composeTemplate').value = '';
+    lastAppliedTemplate = null;
     if (quill) { quill.setText(''); }
     switchTab('write');
   };
+
+  var lastAppliedTemplate = null;
 
   var COMPOSE_TEMPLATES = {
     esim_assigned: {
@@ -319,15 +329,20 @@
   };
 
   window.applyComposeTemplate = function (key) {
-    if (!key || !COMPOSE_TEMPLATES[key]) return;
-    var tpl = COMPOSE_TEMPLATES[key];
     var subjectEl = document.getElementById('composeSubject');
-    if (!subjectEl.value.trim()) {
-      subjectEl.value = tpl.subject;
+    if (!key) {
+      if (lastAppliedTemplate) {
+        if (subjectEl.value === lastAppliedTemplate.subject) { subjectEl.value = ''; }
+        if (quill) { quill.setText(''); }
+        lastAppliedTemplate = null;
+      }
+      return;
     }
-    if (quill) {
-      quill.setText(tpl.body);
-    }
+    if (!COMPOSE_TEMPLATES[key]) return;
+    var tpl = COMPOSE_TEMPLATES[key];
+    subjectEl.value = tpl.subject;
+    if (quill) { quill.setText(tpl.body); }
+    lastAppliedTemplate = tpl;
     switchTab('write');
   };
 
@@ -370,6 +385,7 @@
 
   window.submitCompose = async function () {
     var to = document.getElementById('composeTo').value.trim();
+    var fromName = document.getElementById('composeFromName').value.trim();
     var from = document.getElementById('composeFrom').value.trim();
     var subject = document.getElementById('composeSubject').value.trim();
     var body = quill ? quill.root.innerHTML : '';
@@ -409,7 +425,7 @@
           'Content-Type': 'application/json',
           'X-CSRF-Token': '<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>'
         },
-        body: JSON.stringify({ to: to, from: from || undefined, subject: subject, body: body })
+        body: JSON.stringify({ to, from: from || undefined, fromName: fromName || undefined, subject, body })
       });
       var data = await res.json();
 
