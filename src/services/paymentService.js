@@ -315,9 +315,13 @@ export async function processPaddleWebhook(body) {
     return null;
   }
 
-  // Idempotent: skip if already processed
-  if (payment.status !== 'pending') {
-    log.info({ merchantOid, existingStatus: payment.status }, 'Payment already processed, skipping');
+  // Idempotent: skip only if the payment is already completed (eSIM provisioned).
+  // A pending/failed/cancelled payment can still be completed later: Paddle emits
+  // transaction.payment_failed for a failed payment *attempt* and then
+  // transaction.completed for the SAME transaction once a retry succeeds. Treating
+  // 'failed' as terminal here would block that later completion (no eSIM, no email).
+  if (payment.status === 'completed') {
+    log.info({ merchantOid, existingStatus: payment.status }, 'Payment already completed, skipping');
     return payment;
   }
 
@@ -357,21 +361,24 @@ export async function processPaddleWebhook(body) {
       await sendEmailNotification(payment, null);
     }
   } else if (event_type === 'transaction.payment_failed') {
+    // A failed payment *attempt* is NOT terminal — Paddle keeps the transaction open
+    // and may emit transaction.completed for the same transaction on a later retry.
+    // Do NOT mark the payment failed or email the customer here, otherwise a customer
+    // who succeeds on retry gets a wrong "Payment Failed" email and the success event
+    // is blocked by the idempotency guard above. Truly abandoned payments are cancelled
+    // by the stale-payment job after a timeout.
     await payment.update({
-      status: 'failed',
-      metadata: { ...payment.metadata, paddleCallback: { event_type, transactionId: data.id } }
+      metadata: { ...payment.metadata, lastPaymentFailedAt: new Date().toISOString(), paddleCallback: { event_type, transactionId: data.id } }
     });
 
-    log.info({ merchantOid, paymentId: payment.id }, 'Payment failed via Paddle');
+    log.info({ merchantOid, paymentId: payment.id }, 'Paddle payment attempt failed (non-terminal, awaiting retry or stale-job cancel)');
 
     await logAudit(ACTIONS.PAYMENT_FAILED, {
       userId: payment.userId,
       entity: 'Payment',
       entityId: payment.id,
-      details: { merchantOid, event_type }
+      details: { merchantOid, event_type, note: 'failed_attempt_non_terminal' }
     });
-
-    await sendEmailNotification(payment, null);
   } else {
     log.info({ event_type, merchantOid }, 'Unhandled Paddle webhook event, ignoring');
   }

@@ -1,5 +1,6 @@
 import db from '../db/models/index.js';
 import logger from '../lib/logger.js';
+import { logAudit, ACTIONS } from '../services/auditService.js';
 
 const log = logger.child({ module: 'job:stale-payments' });
 
@@ -223,7 +224,17 @@ async function reconcileAsPaid(payment) {
 
     log.info({ paymentId: payment.id, merchantOid: payment.merchantOid }, 'Stale payment reconciled as completed');
 
-    // Try to trigger eSIM purchase if not already done
+    // Audit completion — parity with processPaddleWebhook's success path.
+    await logAudit(ACTIONS.PAYMENT_SUCCESS, {
+      userId: payment.userId,
+      entity: 'Payment',
+      entityId: payment.id,
+      details: { merchantOid: payment.merchantOid, reconciled: true, reason: 'stale_job_provider_paid' }
+    });
+
+    // Trigger eSIM purchase if not already done.
+    let esim = null;
+    let purchaseFailed = false;
     if (!payment.esimId) {
       try {
         let purchaseFn;
@@ -232,9 +243,10 @@ async function reconcileAsPaid(payment) {
         } else {
           ({ purchaseEsimAfterPayment: purchaseFn } = await import('../services/paymentService.js'));
         }
-        await purchaseFn(payment);
+        esim = await purchaseFn(payment);
         log.info({ paymentId: payment.id }, 'eSIM purchase triggered after reconciliation');
       } catch (purchaseErr) {
+        purchaseFailed = true;
         log.error({ err: purchaseErr, paymentId: payment.id }, 'eSIM purchase failed after reconciliation');
         await payment.update({
           metadata: {
@@ -244,6 +256,25 @@ async function reconcileAsPaid(payment) {
           }
         });
       }
+    } else {
+      esim = await db.Esim.findByPk(payment.esimId);
+    }
+
+    // Send the same customer notification the webhook completion path would have sent.
+    // Without this, reconciled payments provision an eSIM but the customer is never
+    // emailed (the original incident: payment 188).
+    try {
+      const { sendPaymentSuccessEmail, sendEsimActivationFailedEmail } = await import('../services/emailService.js');
+      const user = await db.User.findByPk(payment.userId);
+      if (user?.email) {
+        if (purchaseFailed) {
+          await sendEsimActivationFailedEmail(user, payment);
+        } else {
+          await sendPaymentSuccessEmail(user, payment, esim);
+        }
+      }
+    } catch (emailErr) {
+      log.error({ err: emailErr, paymentId: payment.id }, 'Failed to send reconciliation email notification');
     }
   } catch (err) {
     log.error({ err, paymentId: payment.id }, 'Reconciliation failed');
