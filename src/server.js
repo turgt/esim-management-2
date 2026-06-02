@@ -174,7 +174,7 @@ app.post('/payment/webhook', async (req, res) => {
   const wLog = logger.child({ module: 'paddle-webhook' });
   const eventType = req.body?.event_type;
   const paddleTxId = req.body?.data?.id;
-  const merchantOid = req.body?.data?.custom_data?.merchant_oid;
+  const merchantOid = req.body?.data?.custom_data?.merchantOid;
   let signatureValid = false;
   try {
     const signature = req.headers['paddle-signature'];
